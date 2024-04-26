@@ -10,28 +10,30 @@ from src.utils import (
 
 
 class MonitoringEnvironment:
-    def __init__(
-            self,
-            path: str,
-            sleep_time: int,
-            software: str,
-            containers: list,
-            sleep_time_container_metrics: int,
-            old_software: str,
-            old_system: str,
-            system: str,
+    def __init__(self,
+                 path: str,
+                 sleep_time: int,
+                 software: str,
+                 containers: list,
+                 sleep_time_container_metrics: int,
+                 old_software: str,
+                 old_system: str,
+                 system: str,
     ):
         log_dir = software
         if old_software:
-            log_dir = log_dir + "_old_"
+            log_dir = f'{log_dir}_old_'
+            
         else:
-            log_dir = log_dir + "_new_"
+            log_dir = f'{log_dir}_new_'
 
         log_dir = log_dir + system
         if old_system:
-            log_dir = log_dir + "_old"
+            log_dir = f'{log_dir}_old'
+            
         else:
-            log_dir = log_dir + "_new"
+            log_dir = f'{log_dir}_new'
+            
         self.path = path
         self.log_dir = log_dir
         self.sleep_time = sleep_time
@@ -39,38 +41,47 @@ class MonitoringEnvironment:
         self.containers = containers
         self.sleep_time_container_metrics = sleep_time_container_metrics
 
+
     def start(self):
         print("Starting monitoring scripts")
+        
         self.start_systemtap()
         self.start_container_lifecycle_monitoring()
+        
         if self.software == "docker":
             self.start_docker_process_monitoring()
+            
         elif self.software == "podman":
             self.start_podman_process_monitoring()
+            
         self.start_machine_resources_monitoring()
+
 
     def start_systemtap(self):
         def systemtap():
-            command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
-            execute_command(command)
+            # command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
+            # execute_command(command)
+            return execute_command(f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp")
 
         monitoring_thread = threading.Thread(target=systemtap, name="systemtap")
         monitoring_thread.daemon = True
         monitoring_thread.start()
+
 
     def start_container_lifecycle_monitoring(self):
         container_metrics_thread = threading.Thread(target=self.container_metrics, name="container_metrics")
         container_metrics_thread.daemon = True
         container_metrics_thread.start()
 
+
     def start_docker_process_monitoring(self):
         processes = ["dockerd", "containerd"]
 
         for process in processes:
-            process_thread = threading.Thread(target=self.process_monitoring_thread,
-                                              name="docker_processes" + process, args=(process,))
+            process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'docker_processes{process}', args=(process,))
             process_thread.daemon = True
             process_thread.start()
+
 
     def get_process_data(self, process_name: str):
         date_time = current_time()
@@ -83,10 +94,15 @@ class MonitoringEnvironment:
 
                 data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
 
-                threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
-                                          continue_if_error=True)
-                swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
-                                       continue_if_error=True)
+                threads = execute_command(
+                    f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
+                    continue_if_error=True
+                )
+                
+                swap = execute_command(
+                    f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
+                    continue_if_error=True
+                )
 
                 cpu = data[7]
                 mem = data[13]
@@ -101,10 +117,12 @@ class MonitoringEnvironment:
             except:
                 continue
 
+
     def process_monitoring_thread(self, process: str):
         while True:
             self.get_process_data(process)
             time.sleep(self.sleep_time - 1)
+
 
     def start_podman_process_monitoring(self):
         # processes = ["dockerd", "containerd"]
@@ -116,14 +134,17 @@ class MonitoringEnvironment:
         #     container_metrics_thread.start()
         return
 
+
     def start_machine_resources_monitoring(self):
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
         monitoring_thread.daemon = True
         monitoring_thread.start()
 
+
     def container_lifecycle(self):
         for container in self.containers:
             date_time = current_time()
+            
             container_name = container["name"]
             host_port = container["host_port"]
             container_port = container["port"]
@@ -154,6 +175,7 @@ class MonitoringEnvironment:
                 f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
             )
 
+
     def machine_resources(self):
         while True:
             date_time = current_time()
@@ -163,14 +185,17 @@ class MonitoringEnvironment:
             self.process_monitoring(date_time)
             time.sleep(self.sleep_time)
 
+
     def container_metrics(self):
         while True:
             self.container_lifecycle()
             time.sleep(self.sleep_time_container_metrics)
 
+
     def disk_monitoring(self, date_time):
-        comando = "df | grep '/$' | awk '{print $3}'"
-        mem = execute_command(comando)
+        # comando = "df | grep '/$' | awk '{print $3}'"
+        # mem = execute_command(comando)
+        mem = execute_command("df | grep '/$' | awk '{print $3}'")
 
         write_to_file(
             f"{self.path}/{self.log_dir}/disk.csv",
@@ -178,8 +203,10 @@ class MonitoringEnvironment:
             f"{mem};{date_time}"
         )
 
+
     def cpu_monitoring(self, date_time):
         cpu_info = execute_command("mpstat | grep all").split()
+        
         usr = cpu_info[2]
         nice = cpu_info[3]
         sys_used = cpu_info[4]
@@ -192,6 +219,7 @@ class MonitoringEnvironment:
             f"{usr};{nice};{sys_used};{iowait};{soft};{date_time}"
         )
 
+
     def memory_monitoring(self, date_time):
         used = execute_command("free | grep Mem | awk '{print $3}'")
         cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
@@ -203,6 +231,7 @@ class MonitoringEnvironment:
             "used;cached;buffers;swap;time",
             f"{used};{cached};{buffers};{swap};{date_time}"
         )
+
 
     def process_monitoring(self, date_time):
         zombies = execute_command("ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l")
