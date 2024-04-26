@@ -5,18 +5,42 @@ from datetime import datetime
 
 
 def process_data(pid):
+    """
+    Get process usage information
+    
+    :param pid: process pid
+    :return process usage information
+    """
     return [execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'")]
 
 
 def process_threads(pid):
+    """
+    Get process threads
+    
+    :param pid: process pid
+    :return threads information
+    """
     return execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'")
 
 
 def process_swap(pid):
+    """
+    Get process swap informations
+    
+    :param pid: process pid
+    :return informations of swap process
+    """
     return execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'")
 
 
 def current_time():
+    """
+    Get current time
+    
+    :param none
+    :return datetime now in format "%Y-%m-%d %H:%M:%S"
+    """
     now = datetime.now()
     return now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -36,8 +60,10 @@ def write_to_file(filename, header, content):
     with open(filename, "a+") as file:
         file.seek(0, os.SEEK_END)
         file_size = file.tell()
+        
         if file_size == 0:
             file.write(f"{header}\n")
+            
         file.write(f"{content}\n")
 
 
@@ -59,8 +85,10 @@ def execute_command(command, informative=False, continue_if_error=False, error_i
     if return_code != 0:
         if error_informative:
             print(f'ERROR: {error.decode("utf-8").strip()}\n COMMAND: ${command}')
+            
         if not continue_if_error:
             exit(return_code)
+            
     else:
         if informative:
             print(output.decode("utf-8").strip())
@@ -77,5 +105,6 @@ def get_time(command) -> int:
     """
     start_time = time.perf_counter_ns()
     execute_command(command)
+    
     end_time = time.perf_counter_ns()
     return end_time - start_time
