@@ -42,6 +42,7 @@ class MonitoringEnvironment:
         self.sleep_time_container_metrics = sleep_time_container_metrics
 
 
+    # INITIAL CALL
     def start(self):
         print("Starting monitoring scripts")
         
@@ -57,13 +58,9 @@ class MonitoringEnvironment:
         self.start_machine_resources_monitoring()
 
 
+# ----------------------------------------------------------- START THREADS ----------------------------------------------------- #
     def start_systemtap(self):
-        def systemtap():
-            # command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
-            # execute_command(command)
-            return execute_command(f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp")
-
-        monitoring_thread = threading.Thread(target=systemtap, name="systemtap")
+        monitoring_thread = threading.Thread(target=self.systemtap, name="systemtap")
         monitoring_thread.daemon = True
         monitoring_thread.start()
 
@@ -75,73 +72,68 @@ class MonitoringEnvironment:
 
 
     def start_docker_process_monitoring(self):
-        processes = ["dockerd", "containerd"]
+        docker_processes = ["dockerd", "containerd", "java", "containerd-shim"]
 
-        for process in processes:
+        for process in docker_processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'docker_processes{process}', args=(process,))
             process_thread.daemon = True
             process_thread.start()
-
-
-    def get_process_data(self, process_name: str):
-        date_time = current_time()
-
-        data = []
-
-        while len(data) == 0:
-            try:
-                pid = execute_command(f'pidof -s {process_name}')
-
-                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
-
-                threads = execute_command(
-                    f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
-                    continue_if_error=True
-                )
-                
-                swap = execute_command(
-                    f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
-                    continue_if_error=True
-                )
-
-                cpu = data[7]
-                mem = data[13]
-                rss = data[12]
-                vsz = data[11]
-
-                write_to_file(
-                    f'{self.path}/{self.log_dir}/{process_name}.csv',
-                    'cpu;mem;rss;vsz;threads;swap;date_time',
-                    f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
-                )
-            except:
-                continue
-
-
-    def process_monitoring_thread(self, process: str):
-        while True:
-            self.get_process_data(process)
-            time.sleep(self.sleep_time - 1)
-
-
+            
+    
     def start_podman_process_monitoring(self):
-        # processes = ["dockerd", "containerd"]
-        # Só escolher os processos acima já deve funcionar
-        # for process in processes:
-        #     container_metrics_thread = threading.Thread(target=self.container_metrics,
-        #                                                 name="podman_processes" + process, args=process)
-        #     container_metrics_thread.daemon = True
-        #     container_metrics_thread.start()
-        return
+        podman_processes = ["podman", "java", "containerd-shim"]
+
+        for process in podman_processes:
+            process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'podman_processes{process}', args=(process,))
+            process_thread.daemon = True
+            process_thread.start()
 
 
     def start_machine_resources_monitoring(self):
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
         monitoring_thread.daemon = True
         monitoring_thread.start()
+# ----------------------------------------------------------- END-START THREADS ----------------------------------------------------- #
 
 
+# ---------------------------------------------------- STARTING FUNCTIONS CALLS IN THREADS ---------------------------------------------- #
+    def systemtap(self):
+        # command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
+        # execute_command(command)
+        return execute_command(f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp")
+
+
+    def container_metrics(self):
+        while True:
+            self.container_lifecycle()
+            time.sleep(self.sleep_time_container_metrics)
+          
+            
+    def process_monitoring_thread(self, process: str):
+        """
+        Run each docker and podman process
+        """
+        while True:
+            self.get_process_data(process)
+            time.sleep(self.sleep_time - 1)
+        
+
+    def machine_resources(self):
+        while True:
+            date_time = current_time()
+            self.cpu_monitoring(date_time)
+            self.disk_monitoring(date_time)
+            self.memory_monitoring(date_time)
+            self.process_monitoring(date_time)
+            time.sleep(self.sleep_time)
+# ---------------------------------------------------- ENDING FUNCTIONS CALLS IN THREADS ---------------------------------------------- #
+
+
+# ----------------------------------------------------------- OTHER START FUNCTIONS ------------------------------------------------- #
     def container_lifecycle(self):
+        """
+        Load container lifecycles
+        """
         for container in self.containers:
             date_time = current_time()
             
@@ -174,36 +166,48 @@ class MonitoringEnvironment:
                 "load_image;start;up_time;stop;remove_container;remove_image;date_time",
                 f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
             )
+            
+            
+    def get_process_data(self, process_name: str):
+        """
+        Get process information, such as cpu, mem, rss, vsz, threads and swap usage
+        """
+        date_time = current_time()
+
+        data = []
+
+        while len(data) == 0:
+            try:
+                pid = execute_command(f'pidof -s {process_name}')
+                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+
+                cpu = data[7]
+                mem = data[13]
+                rss = data[12]
+                vsz = data[11]
+                
+                threads = execute_command(
+                    f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
+                    continue_if_error=True
+                )
+                
+                swap = execute_command(
+                    f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
+                    continue_if_error=True
+                )
 
 
-    def machine_resources(self):
-        while True:
-            date_time = current_time()
-            self.cpu_monitoring(date_time)
-            self.disk_monitoring(date_time)
-            self.memory_monitoring(date_time)
-            self.process_monitoring(date_time)
-            time.sleep(self.sleep_time)
+                write_to_file(
+                    f'{self.path}/{self.log_dir}/{process_name}.csv',
+                    'cpu;mem;rss;vsz;threads;swap;date_time',
+                    f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
+                )
+            except:
+                continue
+# ----------------------------------------------------------- OTHER END-START FUNCTIONS ------------------------------------------------- #
 
 
-    def container_metrics(self):
-        while True:
-            self.container_lifecycle()
-            time.sleep(self.sleep_time_container_metrics)
-
-
-    def disk_monitoring(self, date_time):
-        # comando = "df | grep '/$' | awk '{print $3}'"
-        # mem = execute_command(comando)
-        mem = execute_command("df | grep '/$' | awk '{print $3}'")
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/disk.csv",
-            "used;time",
-            f"{mem};{date_time}"
-        )
-
-
+# -------------------------------------------- STARTING FUNCTIONS MONITORING MACHINE RESOURCES ------------------------------------------ #
     def cpu_monitoring(self, date_time):
         cpu_info = execute_command("mpstat | grep all").split()
         
@@ -218,8 +222,20 @@ class MonitoringEnvironment:
             "usr;nice;sys;iowait;soft;time",
             f"{usr};{nice};{sys_used};{iowait};{soft};{date_time}"
         )
+        
+        
+    def disk_monitoring(self, date_time):
+        # comando = "df | grep '/$' | awk '{print $3}'"
+        # mem = execute_command(comando)
+        mem = execute_command("df | grep '/$' | awk '{print $3}'")
 
-
+        write_to_file(
+            f"{self.path}/{self.log_dir}/disk.csv",
+            "used;time",
+            f"{mem};{date_time}"
+        )
+        
+        
     def memory_monitoring(self, date_time):
         used = execute_command("free | grep Mem | awk '{print $3}'")
         cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
@@ -241,3 +257,4 @@ class MonitoringEnvironment:
             "zombies;time",
             f"{zombies};{date_time}"
         )
+# -------------------------------------------- FINISHING FUNCTIONS MONITORING MACHINE RESOURCES ----------------------------------------- #
