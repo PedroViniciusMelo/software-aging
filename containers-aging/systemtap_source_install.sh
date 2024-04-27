@@ -9,14 +9,30 @@ reset
 
 echo "Verifique se você está no diretorio /root: "; echo "Seu dir atual é: $(pwd)"; echo "Caso não, mude para ele!"
 
-GET_SYSTEMTAP_SOURCE() {
-    apt install git gcc g++ build-essential zlib1g-dev elfutils libdw-dev gettext -y || {
-        echo "erro ao instalar dependencias para o systemtap"; echo "saindo"; exit 1
-    }
-
+GIT() {
+    apt install git -y
     git clone "git://sourceware.org/git/systemtap.git" || {
         echo "erro ao tentar baixar o codigo fonte do systemtap a partir do repositório git"; echo "saindo..."; exit 1
     }
+
+}
+
+TAR() {
+    # Será baixado a versao 5.1 do systemtap a partir dos arquivos do site do systemtap o sourceware
+    # Qualquer coisa acesse a lista de releases com: https://sourceware.org/ftp/systemtap/releases
+    apt install wget tar -y
+    wget "https://sourceware.org/ftp/systemtap/releases/systemtap-5.1.tar.gz"
+    tar -xvf "systemtap-5.1.tar.gz"
+    mv "systemtap-5.1" "systemtap"
+    rm -r "systemtap-5.1.tar.gz"
+
+}
+
+GET_SYSTEMTAP() {
+    apt install gcc g++ build-essential zlib1g-dev elfutils libdw-dev gettext -y || {
+        echo "erro ao instalar dependencias para o systemtap"; echo "saindo"; exit 1
+    }
+
 
     mv systemtap /root || {
         echo "erro ao mover systemtap para o dir /root"
@@ -60,7 +76,25 @@ RUNNING_SMALL_SYSTEMTAP_TEST() {
 }
 
 MAIN() {
-    GET_SYSTEMTAP_SOURCE
+    echo "Deseja instalar via git ou .tar?"
+    echo "Git - [1]"
+    echo ".tar - [2]"
+    echo "none - qualquer tecla"
+
+    read -r -p "escolha: " escolha
+
+    if [ "$escolha" -eq 1 ]; then
+        GIT
+        GET_SYSTEMTAP
+
+    elif [ "$escolha" -eq 2 ]; then
+        TAR
+        GET_SYSTEMTAP
+
+    else
+        echo "saindo...."
+        exit 0
+    fi
 
     # shellcheck disable=SC2317
     echo "Deseja rodar um pequeno teste de verificação de instalação? [s]/[n]"
