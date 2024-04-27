@@ -1,5 +1,4 @@
-import threading
-import time
+import threading, time, sys
 
 from src.utils import (
     execute_command,
@@ -34,76 +33,130 @@ class MonitoringEnvironment:
         else:
             log_dir = f'{log_dir}_new'
             
+        self.log_dir = log_dir                                            # Logs path
         self.path = path
-        self.log_dir = log_dir
-        self.sleep_time = sleep_time
-        self.software = software
-        self.containers = containers
-        self.sleep_time_container_metrics = sleep_time_container_metrics
+        self.sleep_time = sleep_time                                      # Sleep time the machine data will be collected in seconds
+        self.software = software                                          # Use docker or podman
+        self.containers = containers                                      # Get list of all containers for monitoring
+        self.sleep_time_container_metrics = sleep_time_container_metrics  # Sleep time the machine data will be collected in seconds
 
 
     # INITIAL CALL
     def start(self):
-        print("Starting monitoring scripts")
-        
-        self.start_systemtap()
-        self.start_container_lifecycle_monitoring()
-        
-        if self.software == "docker":
-            self.start_docker_process_monitoring()
+        """
+        Start class function
+        """
+        try:
+            print("Starting monitoring scripts")
             
-        elif self.software == "podman":
-            self.start_podman_process_monitoring()
+            self.start_systemtap()
+            self.start_container_lifecycle_monitoring()
             
-        self.start_machine_resources_monitoring()
+            if self.software == "docker":
+                self.start_docker_process_monitoring()
+                
+            elif self.software == "podman":
+                self.start_podman_process_monitoring()
+                
+            self.start_machine_resources_monitoring()
+        
+        except Exception as e:
+            print('Error in the monitoring.py file in the start() function: {e}')
+            sys.exit(1) 
 
 
 # ----------------------------------------------------------- START THREADS ----------------------------------------------------- #
     def start_systemtap(self):
-        monitoring_thread = threading.Thread(target=self.systemtap, name="systemtap")
-        monitoring_thread.daemon = True
-        monitoring_thread.start()
+        """
+        Create a thread for systemtap
+        """
+        try:
+            monitoring_thread = threading.Thread(target=self.systemtap, name="systemtap")
+            monitoring_thread.daemon = True
+            monitoring_thread.start()
+        
+        except Exception as e:
+            print('Error in the monitoring.py file in the start_systemtap() function: {e}')
+            sys.exit(1) 
 
 
     def start_container_lifecycle_monitoring(self):
-        container_metrics_thread = threading.Thread(target=self.container_metrics, name="container_metrics")
-        container_metrics_thread.daemon = True
-        container_metrics_thread.start()
+        """
+        Create a thread for the container monitoring lifecycle
+        """
+        try:
+            container_metrics_thread = threading.Thread(target=self.container_metrics, name="container_metrics")
+            container_metrics_thread.daemon = True
+            container_metrics_thread.start()
+            
+        except Exception as e:
+            print('Error in the monitoring.py file in the start_container_lifecycle_monitoring() function: {e}')
+            sys.exit(1) 
 
 
     def start_docker_process_monitoring(self):
-        docker_processes = ["dockerd", "containerd", "java", "containerd-shim"]
+        """
+        Create a thread to monitor docker related processes
+        """
+        try:
+            docker_processes = ["dockerd", "containerd", "java", "containerd-shim"]
 
-        for process in docker_processes:
-            process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'docker_processes{process}', args=(process,))
-            process_thread.daemon = True
-            process_thread.start()
+            for process in docker_processes:
+                process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'docker_processes{process}', args=(process,))
+                process_thread.daemon = True
+                process_thread.start()
+                
+        except Exception as e:
+            print('Error in the monitoring.py file in the start_docker_process_monitoring() function: {e}')
+            sys.exit(1) 
             
     
     def start_podman_process_monitoring(self):
-        podman_processes = ["podman", "java", "containerd-shim"]
+        """
+        Create a thread to monitor podman related processes
+        """
+        try:
+            podman_processes = ["podman", "java", "containerd-shim"]
 
-        for process in podman_processes:
-            process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'podman_processes{process}', args=(process,))
-            process_thread.daemon = True
-            process_thread.start()
+            for process in podman_processes:
+                process_thread = threading.Thread(target=self.process_monitoring_thread, name=f'podman_processes{process}', args=(process,))
+                process_thread.daemon = True
+                process_thread.start()
+        
+        except Exception as e:
+            print('Error in the monitoring.py file in the start_podman_process_monitoring() function: {e}')
+            sys.exit(1) 
 
 
     def start_machine_resources_monitoring(self):
-        monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
-        monitoring_thread.daemon = True
-        monitoring_thread.start()
+        """
+        Create a thread to monitor processes related to the entire machine
+        """
+        try:
+            monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
+            monitoring_thread.daemon = True
+            monitoring_thread.start()
+        
+        except Exception as e:
+            print('Error in the monitoring.py file in the start_machine_resources_monitoring() function: {e}')
+            sys.exit(1) 
 # ----------------------------------------------------------- END-START THREADS ----------------------------------------------------- #
 
 
 # ---------------------------------------------------- STARTING FUNCTIONS CALLS IN THREADS ---------------------------------------------- #
     def systemtap(self):
+        """
+        Monitor issues related to memory allocation, fragmentation, and leakage
+        """
         # command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
         # execute_command(command)
         return execute_command(f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp")
 
 
     def container_metrics(self):
+        """
+        Start monitoring container metrics
+        """
         while True:
             self.container_lifecycle()
             time.sleep(self.sleep_time_container_metrics)
@@ -119,6 +172,9 @@ class MonitoringEnvironment:
         
 
     def machine_resources(self):
+        """
+        Start process monitoring of the entire machine
+        """
         while True:
             date_time = current_time()
             self.cpu_monitoring(date_time)
@@ -134,39 +190,44 @@ class MonitoringEnvironment:
         """
         Load container lifecycles
         """
-        for container in self.containers:
-            date_time = current_time()
-            
-            container_name = container["name"]
-            host_port = container["host_port"]
-            container_port = container["port"]
+        try:
+            for container in self.containers:
+                date_time = current_time()
+                
+                container_name = container["name"]
+                host_port = container["host_port"]
+                container_port = container["port"]
 
-            load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
+                load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
 
-            start_time = get_time(
-                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
+                start_time = get_time(
+                    f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
 
-            up_time = execute_command(
-                f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
-                continue_if_error=True, error_informative=False)
-
-            while up_time is None:
                 up_time = execute_command(
                     f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                     continue_if_error=True, error_informative=False)
 
-            stop_time = get_time(f"{self.software} stop {container_name}")
+                while up_time is None:
+                    up_time = execute_command(
+                        f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
+                        continue_if_error=True, error_informative=False)
 
-            remove_container_time = get_time(f"{self.software} rm {container_name}")
+                stop_time = get_time(f"{self.software} stop {container_name}")
 
-            remove_image_time = get_time(f"{self.software} rmi {container_name}")
+                remove_container_time = get_time(f"{self.software} rm {container_name}")
 
-            write_to_file(
-                f"{self.path}/{self.log_dir}/{container_name}.csv",
-                "load_image;start;up_time;stop;remove_container;remove_image;date_time",
-                f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
-            )
-            
+                remove_image_time = get_time(f"{self.software} rmi {container_name}")
+
+                write_to_file(
+                    f"{self.path}/{self.log_dir}/{container_name}.csv",
+                    "load_image;start;up_time;stop;remove_container;remove_image;date_time",
+                    f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
+                )
+                
+        except Exception as e:
+            print('Error in the monitoring.py file in the container_lifecycle() function: {e}')
+            sys.exit(1) 
+          
             
     def get_process_data(self, process_name: str):
         """
@@ -209,6 +270,9 @@ class MonitoringEnvironment:
 
 # -------------------------------------------- STARTING FUNCTIONS MONITORING MACHINE RESOURCES ------------------------------------------ #
     def cpu_monitoring(self, date_time):
+        """
+        Monitoring cpu
+        """
         cpu_info = execute_command("mpstat | grep all").split()
         
         usr = cpu_info[2]
@@ -225,6 +289,9 @@ class MonitoringEnvironment:
         
         
     def disk_monitoring(self, date_time):
+        """
+        Monitoring disk
+        """
         # comando = "df | grep '/$' | awk '{print $3}'"
         # mem = execute_command(comando)
         mem = execute_command("df | grep '/$' | awk '{print $3}'")
@@ -237,6 +304,9 @@ class MonitoringEnvironment:
         
         
     def memory_monitoring(self, date_time):
+        """
+        Monitoring memory
+        """
         used = execute_command("free | grep Mem | awk '{print $3}'")
         cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
         buffers = execute_command("cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'")
@@ -250,6 +320,9 @@ class MonitoringEnvironment:
 
 
     def process_monitoring(self, date_time):
+        """
+        Monitoring zombies processes
+        """
         zombies = execute_command("ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l")
 
         write_to_file(

@@ -1,24 +1,24 @@
 general:
-    runs: 5 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
-    software: "docker" # Use docker or podman
-    old_software : false #used to creat logs folder
-    system: "debian" #used to creat logs folder
-    old_system: false #used to creat logs folder
-    scripts_folder: "/root/software-aging/containers-aging"
+    runs: 5                                                   # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
+    software: "docker"                                        # Use docker or podman
+    old_software : false                                      # Used to creat logs folder
+    system: "debian"                                          # Used to creat logs folder
+    old_system: false                                         # Used to creat logs folder
+    scripts_folder: "/root/software-aging/containers-aging"   # Default path for scripts executing
 
 monitoring:
-    sleep_time: 60  # Sleep time the machine data will be collected in seconds
+    sleep_time: 60                    # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 60  # Sleep time the machine data will be collected in seconds
 
 stressload:
     max_stress_time: 180  # Time the stress will be running in seconds (default 259200s = 3 days)
-    wait_after_stress: 60  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
+    wait_after_stress: 60 # Time the script will wait until next stress period in seconds (default 43200 = 12h)
 
-    min_lifecycle_runs: 3 # min number of lifecycle runs for each container
-    max_lifecycle_runs: 5 # max number of lifecycle runs for each container
+    min_lifecycle_runs: 3 # Min number of lifecycle runs for each container
+    max_lifecycle_runs: 5 # Max number of lifecycle runs for each container
 
-    min_qtt_containers: 5 # min number of containers that will be created and deleted on each lifecycle run
-    max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
+    min_qtt_containers: 5  # Min number of containers that will be created and deleted on each lifecycle run
+    max_qtt_containers: 10 # Max number of containers that will be created and deleted on each lifecycle run
 
 containers:
   - name: postgres
