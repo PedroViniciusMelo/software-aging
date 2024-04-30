@@ -64,7 +64,7 @@ class MonitoringEnvironment:
         container_metrics_thread.start()
 
     def start_docker_process_monitoring(self):
-        processes = ["docker", "dockerd", "containerd", "java", "containerd-shim"]
+        processes = ["docker", "dockerd", "containerd", "containerd-shim"]
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
@@ -107,7 +107,7 @@ class MonitoringEnvironment:
             time.sleep(self.sleep_time - 1)
 
     def start_podman_process_monitoring(self):
-        processes = ["podman", "java", "conmon"]
+        processes = ["podman", "conmon"]
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
