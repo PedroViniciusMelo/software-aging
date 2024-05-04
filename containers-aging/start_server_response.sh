@@ -60,7 +60,7 @@ run_server_response() {
 # ------------------------------------------------- DOCKER OLD --------------------------------------------------- #
 # run_server_response "$THREE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_OLD_VERSION_ONE_FILE"
 # run_server_response "$TWO_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_OLD_VERSION_TWO_FILE"
-run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_OLD_VERSION_THREE_FILE"
+# run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_OLD_VERSION_THREE_FILE"
 
 # ----------------------------------------------- CURRENT DOCKER ------------------------------------------------- #
 # run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_CURRENT_VERSION_ONE_FILE"
@@ -68,7 +68,7 @@ run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_
 # run_server_response "$THREE_IP_AND_PORT/tools.descartes.teastore.webui/" "$DOCKER_CURRENT_VERSION_THREE_FILE"
 
 # ------------------------------------------------- PODMAN ------------------------------------------------------- #
-# run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$PODMAN_CURRENT_VERSION_ONE_FILE"
+run_server_response "$ONE_IP_AND_PORT/tools.descartes.teastore.webui/" "$PODMAN_CURRENT_VERSION_THREE_FILE"
 # run_server_response "$TWO_IP_AND_PORT/tools.descartes.teastore.webui/" "$PODMAN_CURRENT_VERSION_TWO_FILE"
 # run_server_response "$THREE_IP_AND_PORT/tools.descartes.teastore.webui/" "$PODMAN_CURRENT_VERSION_THREE_FILE"
 
