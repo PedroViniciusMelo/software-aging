@@ -18,9 +18,6 @@ CHECK_ARGUMENTS() {
     echo "favor: passar 2 argumentos ao script"
     exit 1
   fi
-
-  # Create the CSV file header
-  echo "date_time;response_time" >"$FILE_NAME".csv
 }
 
 CHECK_ARGUMENTS "$@"

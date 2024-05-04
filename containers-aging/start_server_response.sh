@@ -17,6 +17,10 @@ EXIT() {
 run_server_response() {
     local ip_address="$1"
     local output_file="$2"
+
+    # Create the CSV file header
+    echo "date_time;response_time" >"$FILE_NAME"
+
     "$server_response" "$ip_address" "$output_file" &
     pids+=($!)  # Adiciona o PID do processo à lista
 }
