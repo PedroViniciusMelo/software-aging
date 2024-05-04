@@ -38,9 +38,9 @@ INSTALL_PYTHON_DEPENDENCIES() {
 
   python3.11 -m venv env
 
-  source env/bin/activate
-  
   echo "export PATH=\$PATH:/root/podman/bin" >> env/bin/activate
+
+  source env/bin/activate
 
   pip install PyYAML
 }
