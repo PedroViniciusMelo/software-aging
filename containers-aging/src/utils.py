@@ -79,3 +79,47 @@ def get_time(command) -> int:
     execute_command(command)
     end_time = time.perf_counter_ns()
     return end_time - start_time
+
+
+def detect_used_software() -> str:
+    docker = execute_command("which docker", continue_if_error=True, error_informative=False)
+    podman = execute_command("which podman", continue_if_error=True, error_informative=False)
+
+    if docker is not None and podman is not None:
+        print("Both docker and podman are installed. Please, uninstall one of them.")
+        exit(1)
+
+    if docker is None and podman is None:
+        print("Neither docker nor podman is installed. Please, install one of them.")
+        exit(1)
+
+    container = "docker"
+    if docker is not None:
+        container = "docker"
+
+    if podman is not None:
+        container = "podman"
+
+    return container
+
+
+def check_environment() -> str:
+    system = (execute_command("lsb_release -i", continue_if_error=True, error_informative=False)
+              .replace("No LSB modules are available.", "")
+              .replace("Distributor ID:", "").strip())
+
+    version = (execute_command("lsb_release -r", continue_if_error=True, error_informative=False)
+               .replace("No LSB modules are available.", "")
+               .replace("Release:", "").strip())
+
+    software = detect_used_software()
+
+    software_version = execute_command(f"{software} -v", continue_if_error=False, error_informative=True)
+
+    message = f""""
+Software={software}
+Software Version={software_version}
+OS={system}
+OS Version={version}
+    """
+    return message

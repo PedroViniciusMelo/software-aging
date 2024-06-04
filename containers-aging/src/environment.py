@@ -6,8 +6,8 @@ from random import random
 import yaml
 import random
 
-from src.monitoring import MonitoringEnvironment
-from src.utils import execute_command, write_to_file, current_time
+from monitoring import MonitoringEnvironment
+from utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
 
 
 class Environment:
@@ -19,9 +19,6 @@ class Environment:
             max_stress_time: int,
             wait_after_stress: int,
             runs: int,
-            old_software: bool,
-            system: str,
-            old_system: bool,
             scripts_folder: str,
             max_qtt_containers: int,
             min_qtt_containers: int,
@@ -30,19 +27,7 @@ class Environment:
             sleep_time_container_metrics: int,
             monitoring_environment: MonitoringEnvironment
     ):
-        log_dir = software
-        if old_software:
-            log_dir = log_dir + "_old_"
-        else:
-            log_dir = log_dir + "_new_"
-
-        log_dir = log_dir + system
-        if old_system:
-            log_dir = log_dir + "_old"
-        else:
-            log_dir = log_dir + "_new"
-
-        self.logs_dir = log_dir
+        self.logs_dir = ""
         self.containers = containers
         self.path = scripts_folder
         self.sleep_time = sleep_time
@@ -190,6 +175,7 @@ class Environment:
 
 
 class EnvironmentConfig:
+
     def __init__(self):
         with open("config.yaml", "r") as yml_file:
             config = yaml.load(yml_file, Loader=yaml.FullLoader)
@@ -200,12 +186,10 @@ class EnvironmentConfig:
         monitoring_enviroment = MonitoringEnvironment(
             path=general_config["scripts_folder"],
             sleep_time=monitoring_config["sleep_time"],
-            software=general_config["software"],
             containers=config["containers"],
             sleep_time_container_metrics=monitoring_config["sleep_time_container_metrics"],
-            old_system=general_config["old_system"],
-            old_software=general_config["old_software"],
-            system=general_config["system"],
+            software=detect_used_software(),
+            environment_description=check_environment()
         )
 
         framework = Environment(
@@ -213,7 +197,8 @@ class EnvironmentConfig:
             **config["monitoring"],
             **config["stressload"],
             containers=config["containers"],
-            monitoring_environment=monitoring_enviroment
+            monitoring_environment=monitoring_enviroment,
+            software=detect_used_software()
         )
 
         framework.run()

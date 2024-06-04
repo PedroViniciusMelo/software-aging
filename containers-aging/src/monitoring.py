@@ -1,7 +1,7 @@
 import threading
 import time
 
-from src.utils import (
+from utils import (
     execute_command,
     write_to_file,
     get_time,
@@ -17,30 +17,26 @@ class MonitoringEnvironment:
             software: str,
             containers: list,
             sleep_time_container_metrics: int,
-            old_software: str,
-            old_system: str,
-            system: str,
+            environment_description: str
     ):
-        log_dir = software
-        if old_software:
-            log_dir = log_dir + "_old_"
-        else:
-            log_dir = log_dir + "_new_"
-
-        log_dir = log_dir + system
-        if old_system:
-            log_dir = log_dir + "_old"
-        else:
-            log_dir = log_dir + "_new"
         self.path = path
-        self.log_dir = log_dir
+        self.log_dir = "logs"
         self.sleep_time = sleep_time
         self.software = software
         self.containers = containers
         self.sleep_time_container_metrics = sleep_time_container_metrics
+        self.environment_description = environment_description
 
     def start(self):
+        print("Environment:")
+        print(self.environment_description)
         print("Starting monitoring scripts")
+
+        write_to_file(
+            f"{self.path}/{self.log_dir}/environment.txt",
+            "Environment",
+            self.environment_description
+        )
         self.start_systemtap()
         self.start_container_lifecycle_monitoring()
         if self.software == "docker":
