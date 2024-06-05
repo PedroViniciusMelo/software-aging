@@ -27,7 +27,7 @@ class Environment:
             sleep_time_container_metrics: int,
             monitoring_environment: MonitoringEnvironment
     ):
-        self.logs_dir = ""
+        self.logs_dir = "logs"
         self.containers = containers
         self.path = scripts_folder
         self.sleep_time = sleep_time
