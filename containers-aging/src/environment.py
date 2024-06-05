@@ -6,8 +6,8 @@ from random import random
 import yaml
 import random
 
-from monitoring import MonitoringEnvironment
-from utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
+from src.monitoring import MonitoringEnvironment
+from src.utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
 
 
 class Environment:
