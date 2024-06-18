@@ -134,9 +134,6 @@ class MonitoringEnvironment:
             host_port = container["host_port"]
             container_port = container["port"]
 
-            if (container_name == "redis"):
-                print(execute_command(f"{self.software} ps -a"))
-
             load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
 
             start_time = get_time(
