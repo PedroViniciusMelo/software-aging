@@ -7,8 +7,8 @@ monitoring:
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
 
 stressload:
-    max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
-    wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
+    max_stress_time: 120  # Time the stress will be running in seconds (default 259200s = 3 days)
+    wait_after_stress: 30  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
 
     min_lifecycle_runs: 3 # min number of lifecycle runs for each container
     max_lifecycle_runs: 5 # max number of lifecycle runs for each container
