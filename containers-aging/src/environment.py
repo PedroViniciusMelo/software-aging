@@ -120,7 +120,7 @@ class Environment:
             container_name = f"temp_{image_name}-{run}-{i}"
 
             execute_command(
-                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
+                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} {image_name}")
             up_time = execute_command(
                 f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                 continue_if_error=True, error_informative=False)

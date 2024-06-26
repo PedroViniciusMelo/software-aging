@@ -137,7 +137,7 @@ class MonitoringEnvironment:
             load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
 
             start_time = get_time(
-                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
+                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} {container_name}")
 
             up_time = execute_command(
                 f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",

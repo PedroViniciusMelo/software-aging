@@ -157,13 +157,52 @@ DOCKER() {
 }
 
 COMPILE_PODMAN() {
-  #SETTINGS
+  cd ~
+
+  apt install build-essential curl wget cmake gcc g++ -y
+
+  apt-get install -y \
+    libapparmor-dev \
+    btrfs-progs \
+    runc \
+    git \
+    iptables \
+    libassuan-dev \
+    libbtrfs-dev \
+    libc6-dev \
+    libdevmapper-dev \
+    libglib2.0-dev \
+    libgpgme-dev \
+    libgpg-error-dev \
+    libprotobuf-dev \
+    libprotobuf-c-dev \
+    libseccomp-dev \
+    libselinux1-dev \
+    libsystemd-dev \
+    pkg-config \
+    uidmap
+
+  apt-get install netavark -y || apt-get install containernetworking-plugins -y
+
+  #Addes go lang
+  wget https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
+  tar -xzf go1.22.4.linux-amd64.tar.gz -C /usr/local
+  rm go1.22.4.linux-amd64.tar.gz
+  echo "export PATH=\$PATH:/usr/local/go/bin" >> $HOME/.profile
+  export PATH=$PATH:/usr/local/go/bin
+
+  cd ~
+
+  git clone https://github.com/containers/conmon
+  cd conmon
+  export GOCACHE="$(mktemp -d)"
+  make
+  make podman
+
+
   mkdir -p /etc/containers
 
-  if [ ! -f "/etc/containers/policy.json" ]; then
-    touch /etc/containers/policy.json
-
-    cat <<EOF >/etc/containers/policy.json
+  cat <<EOF >/etc/containers/policy.json
 {
   "default": [
     {
@@ -172,24 +211,16 @@ COMPILE_PODMAN() {
   ]
 }
 EOF
-  fi
 
-  apt install catatonit git gcc make curl wget pkg-config conmon crun containernetworking-plugins iptables -y
-  apt install -y libsystemd-dev libgpgme-dev libseccomp-dev -y
+  cd ~
 
-  wget https://go.dev/dl/go1.22.2.linux-amd64.tar.gz
-  rm -rf /usr/local/go && tar -C /usr/local -xzf go1.22.2.linux-amd64.tar.gz
-
-  #COMPILE
-  cd /root || exit
-  git clone https://github.com/containers/podman.git
+  git clone https://github.com/containers/podman/
   cd podman || exit 1
   git checkout v4.9
-  make install.tools
-  make binaries
-  export PATH=$PATH:/root/podman/bin
-  echo "export PATH=\$PATH:/root/podman/bin" >> "/root/.bashrc"
-  echo "export PATH=\$PATH:/root/podman/bin" >> "$BASE_DIR/env/bin/activate"
+  make BUILDTAGS="selinux seccomp exclude_graphdriver_devicemapper systemd" PREFIX=/usr
+  make install PREFIX=/usr
+
+  apt remove crun
   podman --version
   RESET_TO_ORIGINAL_DIR
 }
@@ -206,6 +237,12 @@ COMPILE_SYSTEMTAP() {
     RESET_TO_ORIGINAL_DIR
 }
 
+INSTALL_LXD() {
+  apt install snapd
+  snap install lxd
+  lxd init --minimal
+}
+
 INSTALL_QEMU_KVM_DEPENDENCIES
 INSTALL_PYTHON_DEPENDENCIES
 INSTALL_LIBRARIES_FOR_MONITORING
@@ -213,14 +250,16 @@ INSTALL_LIBRARIES_FOR_MONITORING
 printf "%s\n" "Which service are you using?"
 printf "%s\n" "Docker - [1]"
 printf "%s\n" "Podman - [2]"
+printf "%s\n" "LXD/LXC - [3]"
 printf "%s\n" "None - [Another Keyboard]"
 
 read -r -p "choice: " service
 if [ "$service" -eq 1 ]; then
   DOCKER
-
 elif [ "$service" -eq 2 ]; then
   COMPILE_PODMAN
+elif [ "$service" -eq 3]; then
+  INSTALL_LXD
 fi
 
 apt autoremove -y
