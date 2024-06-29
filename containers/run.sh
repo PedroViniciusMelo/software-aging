@@ -16,8 +16,8 @@ error() {
 
 # The command to execute on script end or Ctrl + C
 cleanup() {
-  rm -f image.tar || echo "No file, skipping"
-  rm -f image.tar.gz || echo "No file, skipping"
+  #rm -f image.tar || echo "No file, skipping"
+  #rm -f image.tar.gz || echo "No file, skipping"
   stop_command || echo "No container, skipping"
   remove_container_command || echo "No container, skipping"
   remove_image_command || echo "No Image, skipping"

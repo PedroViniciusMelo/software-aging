@@ -180,6 +180,7 @@ COMPILE_PODMAN() {
     libselinux1-dev \
     libsystemd-dev \
     pkg-config \
+    catatonit \
     uidmap
 
   apt-get install netavark -y || apt-get install containernetworking-plugins -y
