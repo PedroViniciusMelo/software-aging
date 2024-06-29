@@ -60,7 +60,7 @@ INSTALL_QEMU_KVM_DEPENDENCIES() {
     apt install --no-install-recommends libvirt-daemon-system -y
 
     # add root user group on libvirt
-    sudo adduser "$USER" libvirt
+    adduser "$USER" libvirt
 
     # Make Network active and auto-restart
     virsh net-start default

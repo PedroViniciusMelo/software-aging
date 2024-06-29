@@ -13,6 +13,7 @@ error() {
   cleanup
   exit 1
 }
+
 # The command to execute on script end or Ctrl + C
 cleanup() {
   rm -f image.tar || echo "No file, skipping"
@@ -58,7 +59,7 @@ count=0
 
 while [[ $count -lt $max_runs ]]; do
   progress $count "$max_runs"
-  download_time=$(get_command_time download_command)
+  #download_time=$(get_command_time download_command)
   load_time=$(get_command_time load_command)
   image_available=$(is_image_available)
 
@@ -75,7 +76,7 @@ while [[ $count -lt $max_runs ]]; do
     image_removal_time=$(get_command_time remove_image_command)
     display_date=$(get_date_time)
 
-    echo "$download_time;$load_time;$instantiate_time;$service_up_time;$stop_time;$container_removal_time;$image_removal_time;$image_size;$application;$service;$display_date" >>"logs/$log_file"
+    echo "$load_time;$instantiate_time;$service_up_time;$stop_time;$container_removal_time;$image_removal_time;$image_size;$application;$service;$display_date" >> "logs/$log_file"
     count=$((count + 1))
     image_available=""
   fi
