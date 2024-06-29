@@ -258,7 +258,7 @@ if [ "$service" -eq 1 ]; then
   DOCKER
 elif [ "$service" -eq 2 ]; then
   COMPILE_PODMAN
-elif [ "$service" -eq 3]; then
+elif [ "$service" -eq 3 ]; then
   INSTALL_LXD
 fi
 
