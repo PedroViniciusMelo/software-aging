@@ -9,7 +9,7 @@ function download_command() {
 
 function load_command() {
   lxc image import image.tar.gz --alias "$image_name"
-  rm -f image.tar.gz
+  #rm -f image.tar.gz
 }
 
 function start_command() {

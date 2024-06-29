@@ -9,7 +9,7 @@ function download_command() {
 
 function load_command() {
   podman load -q -i image.tar
-  rm -f image.tar
+  #rm -f image.tar
 }
 
 function start_command() {
