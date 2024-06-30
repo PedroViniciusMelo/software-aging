@@ -58,7 +58,7 @@ def execute_command(command, informative=False, continue_if_error=False, error_i
 
     if return_code != 0:
         if error_informative:
-            print(f'ERROR: {error.decode("utf-8").strip()}\n COMMAND: ${command}')
+            print(f'\nERROR {current_time()}: {error.decode("utf-8").strip()}\nCOMMAND: ${command}')
         if not continue_if_error:
             exit(return_code)
     else:

@@ -47,7 +47,7 @@ class MonitoringEnvironment:
 
     def start_systemtap(self):
         def systemtap():
-            command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv {self.path}/fragmentation.stp"
+            command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv -D STP_OVERLOAD_THRESHOLD=650000000LL -D STP_OVERLOAD_INTERVAL=1000000000LL {self.path}/fragmentation.stp"
             execute_command(command)
 
         monitoring_thread = threading.Thread(target=systemtap, name="systemtap")
@@ -170,7 +170,6 @@ class MonitoringEnvironment:
             self.process_monitoring(date_time)
             time.sleep(self.sleep_time)
 
-
     def container_metrics(self):
         start_time = time.time()
         self.container_lifecycle()
@@ -188,7 +187,6 @@ class MonitoringEnvironment:
 
             time_taken = end_time - start_time
             sleep_time = self.sleep_time_container_metrics - time_taken
-
 
     def disk_monitoring(self, date_time):
         comando = "df | grep '/$' | awk '{print $3}'"
