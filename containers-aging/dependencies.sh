@@ -217,9 +217,22 @@ EOF
 
   git clone https://github.com/containers/podman/
   cd podman || exit 1
-  git checkout v4.9
+  git checkout v5.0
   make BUILDTAGS="selinux seccomp exclude_graphdriver_devicemapper systemd" PREFIX=/usr
   make install PREFIX=/usr
+
+  cd ~
+
+  apt install -y protobuf-compiler
+
+  curl https://sh.rustup.rs -sSf | sh
+  source $HOME/.cargo/env
+
+  cd ~
+  git clone https://github.com/containers/netavark.git
+  cd netavark
+  make
+  cp bin/* /usr/local/libexec/podman/
 
   apt remove crun
   podman --version
