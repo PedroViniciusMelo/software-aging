@@ -1,6 +1,6 @@
 #!/bin/bash
 
-max_runs=100 #Number of runs default 100
+max_runs=1000 #Number of runs default 1000
 server_link="172.20.101.13" #The IP of the server
 
 #Test scenarios
