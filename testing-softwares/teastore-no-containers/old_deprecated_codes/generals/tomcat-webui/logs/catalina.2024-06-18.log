@@ -1,0 +1,592 @@
+18-Jun-2024 16:12:15.938 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:12:15.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:12:15.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:12:15.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:12:15.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:12:15.943 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:12:15.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:12:15.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:12:15.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:12:15.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:12:15.944 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:12:15.953 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:12:15.954 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:12:15.956 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:12:16.234 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+18-Jun-2024 16:12:16.252 SEVERE [main] org.apache.catalina.util.LifecycleBase.handleSubClassException Failed to initialize component [Connector["http-nio-8080"]]
+	org.apache.catalina.LifecycleException: Protocol handler initialization failed
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1016)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardService.initInternal(StandardService.java:525)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardServer.initInternal(StandardServer.java:961)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:708)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:731)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+		at org.apache.catalina.startup.Bootstrap.load(Bootstrap.java:302)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:472)
+	Caused by: java.net.BindException: Endereço já em uso
+		at java.base/sun.nio.ch.Net.bind0(Native Method)
+		at java.base/sun.nio.ch.Net.bind(Net.java:555)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:337)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:294)
+		at org.apache.tomcat.util.net.NioEndpoint.initServerSocket(NioEndpoint.java:239)
+		at org.apache.tomcat.util.net.NioEndpoint.bind(NioEndpoint.java:194)
+		at org.apache.tomcat.util.net.AbstractEndpoint.bindWithCleanup(AbstractEndpoint.java:1286)
+		at org.apache.tomcat.util.net.AbstractEndpoint.init(AbstractEndpoint.java:1299)
+		at org.apache.coyote.AbstractProtocol.init(AbstractProtocol.java:624)
+		at org.apache.coyote.http11.AbstractHttp11Protocol.init(AbstractHttp11Protocol.java:77)
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1014)
+		... 13 more
+18-Jun-2024 16:12:16.253 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:12:16.255 SEVERE [main] org.apache.catalina.util.LifecycleBase.handleSubClassException Failed to initialize component [Connector["ajp-nio-127.0.0.1-8009"]]
+	org.apache.catalina.LifecycleException: Protocol handler initialization failed
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1016)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardService.initInternal(StandardService.java:525)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardServer.initInternal(StandardServer.java:961)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:708)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:731)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+		at org.apache.catalina.startup.Bootstrap.load(Bootstrap.java:302)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:472)
+	Caused by: java.net.BindException: Endereço já em uso
+		at java.base/sun.nio.ch.Net.bind0(Native Method)
+		at java.base/sun.nio.ch.Net.bind(Net.java:555)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:337)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:294)
+		at org.apache.tomcat.util.net.NioEndpoint.initServerSocket(NioEndpoint.java:239)
+		at org.apache.tomcat.util.net.NioEndpoint.bind(NioEndpoint.java:194)
+		at org.apache.tomcat.util.net.AbstractEndpoint.bindWithCleanup(AbstractEndpoint.java:1286)
+		at org.apache.tomcat.util.net.AbstractEndpoint.init(AbstractEndpoint.java:1299)
+		at org.apache.coyote.AbstractProtocol.init(AbstractProtocol.java:624)
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1014)
+		... 13 more
+18-Jun-2024 16:12:16.256 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [496] milliseconds
+18-Jun-2024 16:12:16.303 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:12:16.304 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:12:16.313 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:12:16.604 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [288] ms
+18-Jun-2024 16:12:16.604 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:12:16.625 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [20] ms
+18-Jun-2024 16:12:16.625 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:12:16.821 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [196] ms
+18-Jun-2024 16:12:16.821 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:12:16.840 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [19] ms
+18-Jun-2024 16:12:16.841 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:12:16.862 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [21] ms
+18-Jun-2024 16:12:16.870 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [613] milliseconds
+18-Jun-2024 16:12:16.874 SEVERE [main] org.apache.catalina.core.StandardServer.await Failed to create server shutdown socket on address [localhost] and port [8005] (base port [8005] and offset [0])
+	java.net.BindException: Endereço já em uso
+		at java.base/sun.nio.ch.Net.bind0(Native Method)
+		at java.base/sun.nio.ch.Net.bind(Net.java:555)
+		at java.base/sun.nio.ch.Net.bind(Net.java:544)
+		at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:648)
+		at java.base/java.net.ServerSocket.bind(ServerSocket.java:388)
+		at java.base/java.net.ServerSocket.<init>(ServerSocket.java:274)
+		at org.apache.catalina.core.StandardServer.await(StandardServer.java:537)
+		at org.apache.catalina.startup.Catalina.await(Catalina.java:847)
+		at org.apache.catalina.startup.Catalina.start(Catalina.java:795)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+		at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:345)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:473)
+18-Jun-2024 16:12:16.875 INFO [main] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8080"]
+18-Jun-2024 16:12:16.875 INFO [main] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:12:16.875 INFO [main] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:12:16.942 INFO [main] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8080"]
+18-Jun-2024 16:12:16.945 INFO [main] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8080"]
+18-Jun-2024 16:12:16.946 INFO [main] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:12:16.946 INFO [main] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:13:07.383 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:13:07.387 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:13:07.388 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:13:07.398 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:13:07.398 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:13:07.398 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:13:07.399 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:13:07.400 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:13:07.401 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:13:07.647 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:13:07.671 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:13:07.674 SEVERE [main] org.apache.catalina.util.LifecycleBase.handleSubClassException Failed to initialize component [Connector["ajp-nio-127.0.0.1-8009"]]
+	org.apache.catalina.LifecycleException: Protocol handler initialization failed
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1016)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardService.initInternal(StandardService.java:525)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.core.StandardServer.initInternal(StandardServer.java:961)
+		at org.apache.catalina.util.LifecycleBase.init(LifecycleBase.java:127)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:708)
+		at org.apache.catalina.startup.Catalina.load(Catalina.java:731)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+		at org.apache.catalina.startup.Bootstrap.load(Bootstrap.java:302)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:472)
+	Caused by: java.net.BindException: Endereço já em uso
+		at java.base/sun.nio.ch.Net.bind0(Native Method)
+		at java.base/sun.nio.ch.Net.bind(Net.java:555)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.netBind(ServerSocketChannelImpl.java:337)
+		at java.base/sun.nio.ch.ServerSocketChannelImpl.bind(ServerSocketChannelImpl.java:294)
+		at org.apache.tomcat.util.net.NioEndpoint.initServerSocket(NioEndpoint.java:239)
+		at org.apache.tomcat.util.net.NioEndpoint.bind(NioEndpoint.java:194)
+		at org.apache.tomcat.util.net.AbstractEndpoint.bindWithCleanup(AbstractEndpoint.java:1286)
+		at org.apache.tomcat.util.net.AbstractEndpoint.init(AbstractEndpoint.java:1299)
+		at org.apache.coyote.AbstractProtocol.init(AbstractProtocol.java:624)
+		at org.apache.catalina.connector.Connector.initInternal(Connector.java:1014)
+		... 13 more
+18-Jun-2024 16:13:07.675 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [469] milliseconds
+18-Jun-2024 16:13:07.723 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:13:07.723 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:13:07.733 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:13:08.006 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [272] ms
+18-Jun-2024 16:13:08.007 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:13:08.025 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [17] ms
+18-Jun-2024 16:13:08.025 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:13:08.207 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [182] ms
+18-Jun-2024 16:13:08.207 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:13:08.224 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [17] ms
+18-Jun-2024 16:13:08.225 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:13:08.244 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [19] ms
+18-Jun-2024 16:13:08.249 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:13:08.264 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [588] milliseconds
+18-Jun-2024 16:13:08.268 SEVERE [main] org.apache.catalina.core.StandardServer.await Failed to create server shutdown socket on address [localhost] and port [8005] (base port [8005] and offset [0])
+	java.net.BindException: Endereço já em uso
+		at java.base/sun.nio.ch.Net.bind0(Native Method)
+		at java.base/sun.nio.ch.Net.bind(Net.java:555)
+		at java.base/sun.nio.ch.Net.bind(Net.java:544)
+		at java.base/sun.nio.ch.NioSocketImpl.bind(NioSocketImpl.java:648)
+		at java.base/java.net.ServerSocket.bind(ServerSocket.java:388)
+		at java.base/java.net.ServerSocket.<init>(ServerSocket.java:274)
+		at org.apache.catalina.core.StandardServer.await(StandardServer.java:537)
+		at org.apache.catalina.startup.Catalina.await(Catalina.java:847)
+		at org.apache.catalina.startup.Catalina.start(Catalina.java:795)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+		at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+		at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+		at org.apache.catalina.startup.Bootstrap.start(Bootstrap.java:345)
+		at org.apache.catalina.startup.Bootstrap.main(Bootstrap.java:473)
+18-Jun-2024 16:13:08.269 INFO [main] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:13:08.280 INFO [main] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:13:08.281 INFO [main] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:13:08.331 INFO [main] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:13:08.335 INFO [main] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:13:08.336 INFO [main] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:13:08.336 INFO [main] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:14:34.104 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:14:34.109 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:14:34.110 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:14:34.110 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:14:34.110 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:14:34.110 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:14:34.119 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:14:34.120 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:14:34.122 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:14:34.368 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:14:34.394 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:14:34.396 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [451] milliseconds
+18-Jun-2024 16:14:34.444 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:14:34.445 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:14:34.453 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:14:34.726 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [271] ms
+18-Jun-2024 16:14:34.726 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:14:34.742 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [16] ms
+18-Jun-2024 16:14:34.743 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:14:34.922 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [180] ms
+18-Jun-2024 16:14:34.923 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:14:34.942 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [18] ms
+18-Jun-2024 16:14:34.942 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:14:34.960 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [18] ms
+18-Jun-2024 16:14:34.967 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:14:34.981 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:14:34.985 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [588] milliseconds
+18-Jun-2024 16:14:57.363 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:14:57.368 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:14:57.369 INFO [Thread-1] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:14:57.412 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:14:57.420 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:14:57.435 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:14:57.436 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8009"]
+18-Jun-2024 16:16:38.328 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:16:38.333 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:16:38.334 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:16:38.344 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:16:38.344 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:16:38.345 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:16:38.346 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:16:38.348 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:16:38.610 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:16:38.636 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:16:38.638 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [505] milliseconds
+18-Jun-2024 16:16:38.688 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:16:38.689 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:16:38.699 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:16:38.990 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [288] ms
+18-Jun-2024 16:16:38.990 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:16:39.009 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [18] ms
+18-Jun-2024 16:16:39.009 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:16:39.207 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [197] ms
+18-Jun-2024 16:16:39.207 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:16:39.228 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [20] ms
+18-Jun-2024 16:16:39.228 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:16:39.251 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [22] ms
+18-Jun-2024 16:16:39.258 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:16:39.271 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:16:39.275 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [636] milliseconds
+18-Jun-2024 16:17:31.026 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:17:31.031 INFO [Thread-1] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:17:31.031 INFO [Thread-1] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:17:31.079 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:17:31.084 INFO [Thread-1] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:17:31.099 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:17:31.099 INFO [Thread-1] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:28:41.148 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:28:41.153 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:28:41.154 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:28:41.154 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:28:41.164 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:28:41.164 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:28:41.164 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:28:41.165 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:28:41.166 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:28:41.167 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:28:41.420 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:28:41.447 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:28:41.449 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [477] milliseconds
+18-Jun-2024 16:28:41.499 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:28:41.499 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:28:41.524 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war]
+18-Jun-2024 16:28:43.283 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+18-Jun-2024 16:28:44.372 SEVERE [main] org.apache.catalina.core.StandardContext.startInternal One or more Filters failed to start. Full details will be found in the appropriate container log file
+18-Jun-2024 16:28:44.373 SEVERE [main] org.apache.catalina.core.StandardContext.startInternal Context [/tools.descartes.teastore.webui] startup failed due to previous errors
+18-Jun-2024 16:28:44.404 WARNING [main] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [tools.descartes.teastore.webui] appears to have started a thread named [jaeger.RemoteReporter-QueueProcessor] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.11/jdk.internal.misc.Unsafe.park(Native Method)
+ java.base@17.0.11/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+ java.base@17.0.11/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+ java.base@17.0.11/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+ java.base@17.0.11/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+ java.base@17.0.11/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+ java.base@17.0.11/java.util.concurrent.ArrayBlockingQueue.take(ArrayBlockingQueue.java:420)
+ io.jaegertracing.internal.reporters.RemoteReporter$QueueProcessor.run(RemoteReporter.java:170)
+ java.base@17.0.11/java.lang.Thread.run(Thread.java:842)
+18-Jun-2024 16:28:44.404 WARNING [main] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [tools.descartes.teastore.webui] appears to have started a thread named [jaeger.RemoteReporter-FlushTimer] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.11/java.lang.Object.wait(Native Method)
+ java.base@17.0.11/java.util.TimerThread.mainLoop(Timer.java:563)
+ java.base@17.0.11/java.util.TimerThread.run(Timer.java:516)
+18-Jun-2024 16:28:44.410 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war] has finished in [2.886] ms
+18-Jun-2024 16:28:44.411 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:28:44.447 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [36] ms
+18-Jun-2024 16:28:44.447 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:28:44.459 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [12] ms
+18-Jun-2024 16:28:44.460 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:28:44.526 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [66] ms
+18-Jun-2024 16:28:44.526 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:28:44.537 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [11] ms
+18-Jun-2024 16:28:44.537 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:28:44.549 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [12] ms
+18-Jun-2024 16:28:44.552 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:28:44.564 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:28:44.568 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [3118] milliseconds
+18-Jun-2024 16:31:24.095 INFO [Thread-2] org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$CloseCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+	java.lang.IllegalStateException: Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$CloseCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading(WebappClassLoaderBase.java:1352)
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForClassLoading(WebappClassLoaderBase.java:1340)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1177)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1144)
+		at io.jaegertracing.internal.reporters.RemoteReporter.close(RemoteReporter.java:91)
+		at io.jaegertracing.internal.JaegerTracer.close(JaegerTracer.java:216)
+		at io.jaegertracing.internal.JaegerTracer$1.run(JaegerTracer.java:130)
+18-Jun-2024 16:31:24.095 INFO [Thread-3] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:31:24.098 INFO [Thread-3] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:31:24.099 INFO [Thread-3] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:31:24.136 INFO [Thread-3] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:31:24.141 INFO [Thread-3] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:31:24.156 INFO [Thread-3] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:31:24.157 INFO [Thread-3] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:31:29.060 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:31:29.066 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:31:29.067 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:31:29.067 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:31:29.067 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:31:29.076 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:31:29.076 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:31:29.076 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:31:29.076 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:31:29.076 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:31:29.077 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:31:29.078 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:31:29.078 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:31:29.078 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:31:29.078 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:31:29.079 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:31:29.342 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:31:29.368 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:31:29.369 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [503] milliseconds
+18-Jun-2024 16:31:29.420 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:31:29.420 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:31:29.443 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war]
+18-Jun-2024 16:31:31.091 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+18-Jun-2024 16:31:32.058 SEVERE [main] org.apache.catalina.core.StandardContext.startInternal One or more Filters failed to start. Full details will be found in the appropriate container log file
+18-Jun-2024 16:31:32.058 SEVERE [main] org.apache.catalina.core.StandardContext.startInternal Context [/tools.descartes.teastore.webui] startup failed due to previous errors
+18-Jun-2024 16:31:32.083 WARNING [main] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [tools.descartes.teastore.webui] appears to have started a thread named [jaeger.RemoteReporter-QueueProcessor] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.11/jdk.internal.misc.Unsafe.park(Native Method)
+ java.base@17.0.11/java.util.concurrent.locks.LockSupport.park(LockSupport.java:341)
+ java.base@17.0.11/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(AbstractQueuedSynchronizer.java:506)
+ java.base@17.0.11/java.util.concurrent.ForkJoinPool.unmanagedBlock(ForkJoinPool.java:3465)
+ java.base@17.0.11/java.util.concurrent.ForkJoinPool.managedBlock(ForkJoinPool.java:3436)
+ java.base@17.0.11/java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1623)
+ java.base@17.0.11/java.util.concurrent.ArrayBlockingQueue.take(ArrayBlockingQueue.java:420)
+ io.jaegertracing.internal.reporters.RemoteReporter$QueueProcessor.run(RemoteReporter.java:170)
+ java.base@17.0.11/java.lang.Thread.run(Thread.java:842)
+18-Jun-2024 16:31:32.083 WARNING [main] org.apache.catalina.loader.WebappClassLoaderBase.clearReferencesThreads The web application [tools.descartes.teastore.webui] appears to have started a thread named [jaeger.RemoteReporter-FlushTimer] but has failed to stop it. This is very likely to create a memory leak. Stack trace of thread:
+ java.base@17.0.11/java.lang.Object.wait(Native Method)
+ java.base@17.0.11/java.util.TimerThread.mainLoop(Timer.java:563)
+ java.base@17.0.11/java.util.TimerThread.run(Timer.java:516)
+18-Jun-2024 16:31:32.088 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war] has finished in [2.645] ms
+18-Jun-2024 16:31:32.089 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:31:32.122 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [33] ms
+18-Jun-2024 16:31:32.122 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:31:32.134 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [12] ms
+18-Jun-2024 16:31:32.134 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:31:32.156 INFO [jaeger.RemoteReporter-FlushTimer] org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$FlushCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+	java.lang.IllegalStateException: Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$FlushCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading(WebappClassLoaderBase.java:1352)
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForClassLoading(WebappClassLoaderBase.java:1340)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1177)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1144)
+		at io.jaegertracing.internal.reporters.RemoteReporter.flush(RemoteReporter.java:118)
+		at io.jaegertracing.internal.reporters.RemoteReporter$1.run(RemoteReporter.java:70)
+		at java.base/java.util.TimerThread.mainLoop(Timer.java:566)
+		at java.base/java.util.TimerThread.run(Timer.java:516)
+18-Jun-2024 16:31:32.202 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [68] ms
+18-Jun-2024 16:31:32.202 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:31:32.212 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [10] ms
+18-Jun-2024 16:31:32.212 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:31:32.226 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [14] ms
+18-Jun-2024 16:31:32.230 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:31:32.240 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:31:32.244 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [2874] milliseconds
+18-Jun-2024 16:33:27.637 INFO [Thread-3] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:33:27.638 INFO [Thread-2] org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$CloseCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+	java.lang.IllegalStateException: Illegal access: this web application instance has been stopped already. Could not load [io.jaegertracing.internal.reporters.RemoteReporter$CloseCommand]. The following stack trace is thrown for debugging purposes as well as to attempt to terminate the thread which caused the illegal access.
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForResourceLoading(WebappClassLoaderBase.java:1352)
+		at org.apache.catalina.loader.WebappClassLoaderBase.checkStateForClassLoading(WebappClassLoaderBase.java:1340)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1177)
+		at org.apache.catalina.loader.WebappClassLoaderBase.loadClass(WebappClassLoaderBase.java:1144)
+		at io.jaegertracing.internal.reporters.RemoteReporter.close(RemoteReporter.java:91)
+		at io.jaegertracing.internal.JaegerTracer.close(JaegerTracer.java:216)
+		at io.jaegertracing.internal.JaegerTracer$1.run(JaegerTracer.java:130)
+18-Jun-2024 16:33:27.641 INFO [Thread-3] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:33:27.641 INFO [Thread-3] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:33:27.677 INFO [Thread-3] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:33:27.684 INFO [Thread-3] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:33:27.697 INFO [Thread-3] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:33:27.697 INFO [Thread-3] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:33:30.652 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/10.1.24
+18-Jun-2024 16:33:30.658 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          May 9 2024 17:41:23 UTC
+18-Jun-2024 16:33:30.658 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 10.1.24.0
+18-Jun-2024 16:33:30.658 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            6.1.0-21-amd64
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/jdk-17.0.11
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           17.0.11+7-LTS-207
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:33:30.659 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/home/thayson/pasta-tomcat/tomcat-webui/conf/logging.properties
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -javaagent:/home/thayson/pasta-tomcat/tomcat-webui/kieker/agent/agent.jar
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.configuration=/home/thayson/pasta-tomcat/tomcat-webui/kieker/config/kieker.monitoring.properties
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.verbose=false
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.aspectj.weaver.loadtime.configuration=aop.xml
+18-Jun-2024 16:33:30.668 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dkieker.monitoring.skipDefaultAOPConfiguration=true
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Daj.weaving.loadersToSkip=java.net.URLClassLoader
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcom.sun.jndi.ldap.object.disableEndpointIdentification=true
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.lang=ALL-UNNAMED
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.io=ALL-UNNAMED
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util=ALL-UNNAMED
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: --add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:33:30.669 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/home/thayson/pasta-tomcat/tomcat-webui
+18-Jun-2024 16:33:30.670 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/home/thayson/pasta-tomcat/tomcat-webui/temp
+18-Jun-2024 16:33:30.671 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent The Apache Tomcat Native library which allows using OpenSSL was not found on the java.library.path: [/usr/java/packages/lib:/usr/lib64:/lib64:/lib:/usr/lib]
+18-Jun-2024 16:33:30.915 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:33:30.941 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:33:30.942 INFO [main] org.apache.catalina.startup.Catalina.load Server initialization in [472] milliseconds
+18-Jun-2024 16:33:30.990 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+18-Jun-2024 16:33:30.990 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet engine: [Apache Tomcat/10.1.24]
+18-Jun-2024 16:33:31.014 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deploying web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war]
+18-Jun-2024 16:33:32.605 INFO [main] org.apache.jasper.servlet.TldScanner.scanJars At least one JAR was scanned for TLDs yet contained no TLDs. Enable debug logging for this logger for a complete list of JARs that were scanned but no TLDs were found in them. Skipping unneeded JARs during scanning can improve startup time and JSP compilation time.
+18-Jun-2024 16:33:33.734 WARNING [main] org.glassfish.jersey.server.wadl.WadlFeature.configure JAXBContext implementation could not be found. WADL feature is disabled.
+18-Jun-2024 16:33:33.871 INFO [main] org.apache.catalina.startup.HostConfig.deployWAR Deployment of web application archive [/home/thayson/pasta-tomcat/tomcat-webui/webapps/tools.descartes.teastore.webui.war] has finished in [2.857] ms
+18-Jun-2024 16:33:33.872 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager]
+18-Jun-2024 16:33:33.901 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/host-manager] has finished in [29] ms
+18-Jun-2024 16:33:33.902 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs]
+18-Jun-2024 16:33:33.918 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/docs] has finished in [16] ms
+18-Jun-2024 16:33:33.918 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples]
+18-Jun-2024 16:33:34.014 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/examples] has finished in [96] ms
+18-Jun-2024 16:33:34.015 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT]
+18-Jun-2024 16:33:34.036 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/ROOT] has finished in [21] ms
+18-Jun-2024 16:33:34.036 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Diretório de instalação da aplicação web [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager]
+18-Jun-2024 16:33:34.056 INFO [main] org.apache.catalina.startup.HostConfig.deployDirectory Deployment of web application directory [/home/thayson/pasta-tomcat/tomcat-webui/webapps/manager] has finished in [20] ms
+18-Jun-2024 16:33:34.060 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:33:34.076 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:33:34.080 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in [3137] milliseconds
+18-Jun-2024 16:36:43.471 INFO [Thread-5] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:36:43.474 INFO [Thread-5] org.apache.coyote.AbstractProtocol.pause Pausing ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:36:43.474 INFO [Thread-5] org.apache.catalina.core.StandardService.stopInternal Stopping service [Catalina]
+18-Jun-2024 16:36:43.528 INFO [Thread-5] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:36:43.537 INFO [Thread-5] org.apache.coyote.AbstractProtocol.stop Stopping ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
+18-Jun-2024 16:36:43.559 INFO [Thread-5] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["http-nio-8181"]
+18-Jun-2024 16:36:43.560 INFO [Thread-5] org.apache.coyote.AbstractProtocol.destroy Destroying ProtocolHandler ["ajp-nio-127.0.0.1-8109"]
