@@ -10,6 +10,10 @@ configuration files are found in
 all services can be configured and turned on by running this script
 ```bash
 cd ./teastore-no-containeres/
+bash config-all-services.sh
+```
+and
+```bash
 bash start-all-services.sh
 ```
 

@@ -4,6 +4,9 @@
 # MAINTAINER Chair of Software Engineering <se2-it@informatik.uni-wuerzburg.de>
 
 # ------------------------------------------------------------------- SET VARS --------------------------------------------------------------------------
+PWD_PATH="$(pwd)/Tea"
+TOMCAT=tomcat-persistence
+
 # SERVICE CONFIGS
 use_https="false"
 rabbitmq_host="unset"
@@ -89,10 +92,12 @@ export CONNECTOR_PORT=$connector_port
 mysql=$( find / -name "mysql-apt-config_0.8.32-1_all.deb" )
 
 # MYSQL INSTALLATION
-
 echo -e "\nConfigure a senha do root para o mysql como: password\n"
 if [[ "$mysql" != "mysql-apt-config_0.8.32-1_all.deb" ]]; then
     wget "https://dev.mysql.com/get/mysql-apt-config_0.8.32-1_all.deb" && {
+
+        wget "http://ftp.us.debian.org/debian/pool/main/l/lsb-release-minimal/lsb-release_12.0-1_all.deb"
+        dpkg -i "lsb-release_12.0-1_all.deb"; apt update
 
         # isso pode quebrar, então corrija se for o caso
         dpkg -i "mysql-apt-config_0.8.32-1_all.deb"; apt update; apt install mysql-server -y
@@ -104,11 +109,12 @@ else
 fi
 
 # SET setup.sql and setupData.sql for TeaStore database
-mysql -u root -ppassword < ./tools.descartes.teastore.database/setup.sql
-mysql -u teauser -pteapassword < ./tools.descartes.teastore.database/setupData.sql
+mysql -u root -ppassword < "$PWD_PATH/tools.descartes.teastore.database/setup.sql"
+mysql -u teauser -pteapassword teadb < "$PWD_PATH/tools.descartes.teastore.database/setupData.sql"
 
 # COPY JAVA SERVICE .WAR
-cp teastores_war/*persistence.war "$CATALINA_HOME"/webapps/
+mkdir -p "$CATALINA_HOME"/webapps
+cp "$PWD_PATH"/teastores_war/*persistence.war "$CATALINA_HOME"/webapps/
 
 # RUN JVM CONFIG MEMORY
 java -jar "$CATALINA_HOME"/bin/dockermemoryconfigurator.jar "${TOMCAT_HEAP_MEM_PERCENTAGE}"
@@ -116,4 +122,7 @@ java -jar "$CATALINA_HOME"/bin/dockermemoryconfigurator.jar "${TOMCAT_HEAP_MEM_P
 # RUN START TOMCAT SERVICE FOR CONFIG SERVICE
 "$CATALINA_HOME"/bin/start.sh
 
-# "$CATALINA_HOME"/bin/catalina.sh run
+rm -r "mysql-apt-config_0.8.32-1_all.deb"
+rm -r "lsb-release_12.0-1_all.deb"
+
+[[ -d "/usr/local/tomcat" ]] && mv /usr/local/tomcat /usr/local/"$TOMCAT" || echo "pasta base tomcat não existe, talvês já tenha sido movida!"

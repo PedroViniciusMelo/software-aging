@@ -4,6 +4,9 @@
 # MAINTAINER Chair of Software Engineering <se2-it@informatik.uni-wuerzburg.de>
 
 # ------------------------------------------------------------------- SET VARS --------------------------------------------------------------------------
+PWD_PATH="$(pwd)/Tea"
+TOMCAT=tomcat-auth
+
 # SERVICE CONFIGS
 use_https="false"
 rabbitmq_host="unset"
@@ -86,7 +89,8 @@ export CONNECTOR_PORT=$connector_port
 # --------------------------------------------------------------------------------------------------------------------------------------------------
 
 # COPY JAVA SERVICE .WAR
-cp teastores_war/*auth.war "$CATALINA_HOME"/webapps/
+mkdir -p "$CATALINA_HOME"/webapps
+cp "$PWD_PATH"/teastores_war/*auth.war "$CATALINA_HOME"/webapps/
 
 # RUN JVM CONFIG MEMORY
 java -jar "$CATALINA_HOME"/bin/dockermemoryconfigurator.jar "${TOMCAT_HEAP_MEM_PERCENTAGE}"
@@ -94,4 +98,4 @@ java -jar "$CATALINA_HOME"/bin/dockermemoryconfigurator.jar "${TOMCAT_HEAP_MEM_P
 # RUN START TOMCAT SERVICE FOR CONFIG SERVICE
 "$CATALINA_HOME"/bin/start.sh
 
-# "$CATALINA_HOME"/bin/catalina.sh run
+[[ -d "/usr/local/tomcat" ]] && mv /usr/local/tomcat /usr/local/"$TOMCAT" || echo "pasta base tomcat não existe, talvês já tenha sido movida!"
