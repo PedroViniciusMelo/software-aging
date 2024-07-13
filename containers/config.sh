@@ -26,4 +26,5 @@ mkdir -p "logs"
 
 log_file="$service-$image_name.csv"
 
-echo "download_image;load_container;start_container;start_application;stop_container;remove_container;remove_image;image_size;application;service;date_time" >"logs/$log_file"
+#echo "download_image;load_container;start_container;start_application;stop_container;remove_container;remove_image;image_size;application;service;date_time" >"logs/$log_file"
+echo "load_container;start_container;start_application;stop_container;remove_container;remove_image;image_size;application;service;date_time" >"logs/$log_file"
