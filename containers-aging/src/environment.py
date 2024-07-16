@@ -25,6 +25,7 @@ class Environment:
             max_lifecycle_runs: int,
             min_lifecycle_runs: int,
             sleep_time_container_metrics: int,
+            stressload_first: bool,
             monitoring_environment: MonitoringEnvironment
     ):
         self.logs_dir = "logs"
@@ -41,6 +42,7 @@ class Environment:
         self.min_lifecycle_runs = min_lifecycle_runs
         self.sleep_time_container_metrics = sleep_time_container_metrics
         self.monitoring_environment = monitoring_environment
+        self.stressload_first = stressload_first
 
     def clear(self):
         print("Cleaning old logs and containers")
@@ -67,18 +69,29 @@ class Environment:
 
         for current_run in range(self.runs):
             self.__print_progress_bar(current_run, "Progress")
-            write_to_file(
-                f"{self.path}/{self.logs_dir}/runs.csv",
-                "event;date_time",
-                f"sleep;{current_time()}"
-            )
-            time.sleep(self.wait_after_stress)
+
+            if not self.stressload_first:
+                write_to_file(
+                    f"{self.path}/{self.logs_dir}/runs.csv",
+                    "event;date_time",
+                    f"sleep;{current_time()}"
+                )
+                time.sleep(self.wait_after_stress)
+
             write_to_file(
                 f"{self.path}/{self.logs_dir}/runs.csv",
                 "event;date_time",
                 f"stress;{current_time()}"
             )
             self.init_containers_threads(self.max_stress_time)
+
+            if self.stressload_first:
+                write_to_file(
+                    f"{self.path}/{self.logs_dir}/runs.csv",
+                    "event;date_time",
+                    f"sleep;{current_time()}"
+                )
+                time.sleep(self.wait_after_stress)
 
         self.__print_progress_bar(self.runs, "Progress")
 

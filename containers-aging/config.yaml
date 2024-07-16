@@ -7,14 +7,15 @@ monitoring:
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
 
 stressload:
+    stressload_first: true # If true, the stressload will be executed before the sleep time
     max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
     wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
 
     min_lifecycle_runs: 3 # min number of lifecycle runs for each container
     max_lifecycle_runs: 5 # max number of lifecycle runs for each container
 
-    min_qtt_containers: 5 # min number of containers that will be created and deleted on each lifecycle run
-    max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
+    min_qtt_containers: 3 # min number of containers that will be created and deleted on each lifecycle run
+    max_qtt_containers: 5 # max number of containers that will be created and deleted on each lifecycle run
 
 containers:
 #  - name: postgres
