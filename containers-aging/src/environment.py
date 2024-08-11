@@ -27,6 +27,7 @@ class Environment:
             min_lifecycle_runs: int,
             sleep_time_container_metrics: int,
             stressload_first: bool,
+            using_containers_app_time: str,
             monitoring_environment: MonitoringEnvironment
     ):
         self.logs_dir = "logs"
@@ -211,6 +212,7 @@ class EnvironmentConfig:
             containers=config["containers"],
             sleep_time_container_metrics=monitoring_config["sleep_time_container_metrics"],
             software=detect_used_software(),
+            using_containers_app_time=monitoring_config["using_containers_app_time"],
             environment_description=check_environment()
         )
 
