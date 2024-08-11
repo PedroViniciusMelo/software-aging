@@ -7,6 +7,7 @@ import yaml
 import random
 
 from src.monitoring import MonitoringEnvironment
+from src.setup import Setup
 from src.utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
 
 
@@ -200,13 +201,13 @@ class EnvironmentConfig:
         general_config = config["general"]
         monitoring_config = config["monitoring"]
 
-        # setup = Setup(
-        #     containers=config["containers"],
-        #     scripts_folder=general_config["scripts_folder"],
-        #     software=detect_used_software()
-        # )
-        #
-        # setup.build_images()
+        setup = Setup(
+            containers=config["containers"],
+            scripts_folder=general_config["scripts_folder"],
+            software=detect_used_software()
+        )
+
+        setup.build_images()
 
         monitoring_enviroment = MonitoringEnvironment(
             path=general_config["scripts_folder"],
