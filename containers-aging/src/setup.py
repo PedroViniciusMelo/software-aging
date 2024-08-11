@@ -15,7 +15,11 @@ class Setup:
         for container in self.containers:
             print(f"Building image {container['name']}:{container['version']}")
             execute_command(f"{self.software} pull docker.io/{container['name']}:{container['version']}")
-            execute_command(f"{self.software} save {container['name']}:{container['version']} > {self.path}/{container['name']}.tar")
-            execute_command(f"{self.software} save {container['name']}:{container['version']} > {self.path}/temp_{container['name']}.tar")
+            execute_command(f"{self.software} tag {container['name']}:{container['version']} {container['name']}:latest")
+            execute_command(f"{self.software} tag {container['name']}:{container['version']} temp_{container['name']}:latest")
+            execute_command(f"{self.software} save {container['name']}:latest > {self.path}/{container['name']}.tar")
+            execute_command(f"{self.software} save temp_{container['name']}:latest > {self.path}/temp_{container['name']}.tar")
+            execute_command(f"{self.software} docker rmi {container['name']}:latest")
+            execute_command(f"{self.software} docker rmi temp_{container['name']}:latest")
             execute_command(f"{self.software} rmi {container['name']}:{container['version']}")
             print(f"Done!")

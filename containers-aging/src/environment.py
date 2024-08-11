@@ -7,7 +7,6 @@ import yaml
 import random
 
 from src.monitoring import MonitoringEnvironment
-from src.setup import Setup
 from src.utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
 
 
@@ -27,6 +26,7 @@ class Environment:
             min_lifecycle_runs: int,
             sleep_time_container_metrics: int,
             stressload_first: bool,
+            using_containers_app_time: bool,
             monitoring_environment: MonitoringEnvironment
     ):
         self.logs_dir = "logs"
@@ -44,6 +44,7 @@ class Environment:
         self.sleep_time_container_metrics = sleep_time_container_metrics
         self.monitoring_environment = monitoring_environment
         self.stressload_first = stressload_first
+        self.using_containers_app_time = using_containers_app_time
 
     def clear(self):
         print("Cleaning old logs and containers")
@@ -135,15 +136,17 @@ class Environment:
 
             execute_command(
                 f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
-            up_time = execute_command(
-                f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
-                continue_if_error=True, error_informative=False)
 
-            while up_time is None:
-                time.sleep(0.5)
+            if self.using_containers_app_time:
                 up_time = execute_command(
                     f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                     continue_if_error=True, error_informative=False)
+
+                while up_time is None:
+                    time.sleep(0.5)
+                    up_time = execute_command(
+                        f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
+                        continue_if_error=True, error_informative=False)
 
             execute_command(f"{self.software} stop {container_name}")
             execute_command(f"{self.software} rm {container_name}")
@@ -197,13 +200,13 @@ class EnvironmentConfig:
         general_config = config["general"]
         monitoring_config = config["monitoring"]
 
-        setup = Setup(
-            containers=config["containers"],
-            scripts_folder=general_config["scripts_folder"],
-            software=detect_used_software()
-        )
-
-        setup.build_images()
+        # setup = Setup(
+        #     containers=config["containers"],
+        #     scripts_folder=general_config["scripts_folder"],
+        #     software=detect_used_software()
+        # )
+        #
+        # setup.build_images()
 
         monitoring_enviroment = MonitoringEnvironment(
             path=general_config["scripts_folder"],
@@ -211,6 +214,7 @@ class EnvironmentConfig:
             containers=config["containers"],
             sleep_time_container_metrics=monitoring_config["sleep_time_container_metrics"],
             software=detect_used_software(),
+            using_containers_app_time=monitoring_config["using_containers_app_time"],
             environment_description=check_environment()
         )
 

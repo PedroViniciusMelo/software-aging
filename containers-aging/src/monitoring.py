@@ -169,7 +169,7 @@ class MonitoringEnvironment:
                 write_to_file(
                     f"{self.path}/{self.log_dir}/{container_name}.csv",
                     "load_image;start;stop;remove_container;remove_image;date_time",
-                    f"{load_image_time};{start_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
+                    f"{load_image_time};{start_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}")
 
     def machine_resources(self):
         while True:
