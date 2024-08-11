@@ -4,7 +4,7 @@ from sklearn.linear_model import LinearRegression
 from pathlib import Path
 import shutil
 
-base_dir = "C:/Users/pedro/WebstormProjects/software-aging/containers-aging/plot/data"
+base_dir = "C:/Users/pedro/PycharmProjects/software-aging/containers-aging/plot/data"
 
 class Plot:
     def __init__(self):

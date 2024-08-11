@@ -22,7 +22,7 @@ run_server_response() {
     pids+=($!)  # Adiciona o PID do processo à lista
 }
 
-printf "Choose the host to run the tests: \n[1] Host 1 - Vms: 105, 106, 107\n[2] Host 2 - Vms: 108, 109, 110\n[3] Host3 - Vms: 111, 112, 113"
+printf "Choose the host to run the tests: \n[1] Host 1 - Vms: 105, 106, 107\n[2] Host 2 - Vms: 108, 109, 110\n[3] Host3 - Vms: 111, 112, 113\n"
 read -r -p "choice: " choice
 
 if [ "$choice" -eq 1 ]; then

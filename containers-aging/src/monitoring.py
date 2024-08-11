@@ -17,7 +17,8 @@ class MonitoringEnvironment:
             software: str,
             containers: list,
             sleep_time_container_metrics: int,
-            environment_description: str
+            environment_description: str,
+            using_containers_app_time: bool
     ):
         self.path = path
         self.log_dir = "logs"
@@ -26,6 +27,7 @@ class MonitoringEnvironment:
         self.containers = containers
         self.sleep_time_container_metrics = sleep_time_container_metrics
         self.environment_description = environment_description
+        self.using_containers_app_time = using_containers_app_time
 
     def start(self):
         print("Environment:")
@@ -139,15 +141,17 @@ class MonitoringEnvironment:
             start_time = get_time(
                 f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
 
-            up_time = execute_command(
-                f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
-                continue_if_error=True, error_informative=False)
-
-            while up_time is None:
-                time.sleep(0.5)
+            up_time = ""
+            if self.using_containers_app_time:
                 up_time = execute_command(
                     f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                     continue_if_error=True, error_informative=False)
+
+                while up_time is None:
+                    time.sleep(0.5)
+                    up_time = execute_command(
+                        f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
+                        continue_if_error=True, error_informative=False)
 
             stop_time = get_time(f"{self.software} stop {container_name}")
 
@@ -155,11 +159,17 @@ class MonitoringEnvironment:
 
             remove_image_time = get_time(f"{self.software} rmi {container_name}")
 
-            write_to_file(
-                f"{self.path}/{self.log_dir}/{container_name}.csv",
-                "load_image;start;up_time;stop;remove_container;remove_image;date_time",
-                f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
-            )
+            if self.using_containers_app_time:
+                write_to_file(
+                    f"{self.path}/{self.log_dir}/{container_name}.csv",
+                    "load_image;start;up_time;stop;remove_container;remove_image;date_time",
+                    f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
+                )
+            else:
+                write_to_file(
+                    f"{self.path}/{self.log_dir}/{container_name}.csv",
+                    "load_image;start;stop;remove_container;remove_image;date_time",
+                    f"{load_image_time};{start_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
 
     def machine_resources(self):
         while True:

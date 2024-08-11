@@ -5,6 +5,7 @@ general:
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
+    using_containers_app_time: False  # If true, the app time will be collected from the containers
 
 stressload:
     stressload_first: true # If true, the stressload will be executed before the sleep time
@@ -14,33 +15,33 @@ stressload:
     min_lifecycle_runs: 3 # min number of lifecycle runs for each container
     max_lifecycle_runs: 5 # max number of lifecycle runs for each container
 
-    min_qtt_containers: 3 # min number of containers that will be created and deleted on each lifecycle run
-    max_qtt_containers: 5 # max number of containers that will be created and deleted on each lifecycle run
+    min_qtt_containers: 5 # min number of containers that will be created and deleted on each lifecycle run
+    max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
 
 containers:
-#  - name: postgres
-#    version: "15.6"
-#    host_port: 5432
-#    port: 5432
-#    min_container_wait_time: 1
-#    max_container_wait_time: 10
+  - name: postgres
+    version: "15.8-bullseye"
+    host_port: 5432
+    port: 5432
+    min_container_wait_time: 1
+    max_container_wait_time: 10
 
   - name: redis
-    version: "7.2.4"
+    version: "7.4.0-bookworm"
     host_port: 6380
     port: 6379
     min_container_wait_time: 1
     max_container_wait_time: 10
 
   - name: rabbitmq
-    version: "3.13.1"
+    version: "4.0-rc-management"
     host_port: 5672
     port: 5672
     min_container_wait_time: 1
     max_container_wait_time: 10
 
   - name: nginx
-    version: "1.22.1"
+    version: "1.27.0-bookworm-perl"
     host_port: 8085
     port: 80
     min_container_wait_time: 1
