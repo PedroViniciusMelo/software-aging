@@ -5,7 +5,7 @@ general:
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
-    using_containers_app_time: False  # If true, the app time will be collected from the containers
+    using_containers_app_time: false  # If true, the app time will be collected from the containers
 
 stressload:
     stressload_first: true # If true, the stressload will be executed before the sleep time
