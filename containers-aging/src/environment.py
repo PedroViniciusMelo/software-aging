@@ -151,7 +151,7 @@ class Environment:
 
             execute_command(f"{self.software} stop {container_name}")
             execute_command(f"{self.software} rm {container_name}")
-            execute_command(f"{self.software} volume prune -f")
+            execute_command(f"{self.software} volume prune -f", continue_if_error=True, error_informative=True)
 
     def container_thread(self, container, max_stress_time):
         now = datetime.now()

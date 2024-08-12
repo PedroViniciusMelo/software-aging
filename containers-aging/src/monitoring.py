@@ -159,7 +159,7 @@ class MonitoringEnvironment:
 
             remove_image_time = get_time(f"{self.software} rmi {container_name}")
 
-            execute_command(f"{self.software} volume prune -f")
+            execute_command(f"{self.software} volume prune -f", continue_if_error=True, error_informative=True)
 
             if self.using_containers_app_time:
                 write_to_file(
