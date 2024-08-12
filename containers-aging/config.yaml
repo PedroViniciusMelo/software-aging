@@ -19,12 +19,12 @@ stressload:
     max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
 
 containers:
-  - name: postgres
-    version: "15.8-bullseye"
-    host_port: 5432
-    port: 5432
-    min_container_wait_time: 1
-    max_container_wait_time: 10
+  #- name: postgres
+  #  version: "15.8-bullseye"
+  #  host_port: 5432
+  #  port: 5432
+  #  min_container_wait_time: 1
+  #  max_container_wait_time: 10
 
   - name: redis
     version: "7.4.0-bookworm"
