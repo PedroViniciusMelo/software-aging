@@ -68,7 +68,7 @@ def execute_command(command, informative=False, continue_if_error=False, error_i
         return output.decode("utf-8").strip().replace("\n", "")
 
 
-def get_time(command) -> int:
+def get_time(command, informative=False, continue_if_error=False, error_informative=True ) -> int:
     """
     Get the execution time of a command.
 
@@ -76,7 +76,7 @@ def get_time(command) -> int:
     :return: The execution time of the command in nanoseconds.
     """
     start_time = time.perf_counter_ns()
-    execute_command(command)
+    execute_command(command, informative=informative, continue_if_error=continue_if_error, error_informative=error_informative)
     end_time = time.perf_counter_ns()
     return end_time - start_time
 

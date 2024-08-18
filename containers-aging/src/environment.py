@@ -149,8 +149,17 @@ class Environment:
                         f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                         continue_if_error=True, error_informative=False)
 
-            execute_command(f"{self.software} stop {container_name}")
-            execute_command(f"{self.software} rm -v {container_name}")
+            try:
+                execute_command(f"{self.software} stop {container_name}", continue_if_error=False,
+                                error_informative=False)
+            except:
+                execute_command(f"{self.software} kill {container_name}", continue_if_error=True,
+                                error_informative=False)
+
+            try:
+                execute_command(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
+            except:
+                execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
 
     def container_thread(self, container, max_stress_time):
         now = datetime.now()

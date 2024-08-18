@@ -153,9 +153,17 @@ class MonitoringEnvironment:
                         f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
                         continue_if_error=True, error_informative=False)
 
-            stop_time = get_time(f"{self.software} stop {container_name}")
+            try:
+                stop_time = get_time(f"{self.software} stop {container_name}", continue_if_error=False,
+                                error_informative=False)
+            except:
+                stop_time = get_time(f"{self.software} kill {container_name}", continue_if_error=True,
+                                error_informative=False)
 
-            remove_container_time = get_time(f"{self.software} rm -v {container_name}")
+            try:
+                remove_container_time = get_time(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
+            except:
+                remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
 
             remove_image_time = get_time(f"{self.software} rmi {container_name}")
 
