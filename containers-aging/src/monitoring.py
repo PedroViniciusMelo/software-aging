@@ -49,8 +49,24 @@ class MonitoringEnvironment:
 
     def start_systemtap(self):
         def systemtap():
-            command = f"stap -o {self.path}/{self.log_dir}/fragmentation.csv -D STP_OVERLOAD_THRESHOLD=650000000LL -D STP_OVERLOAD_INTERVAL=1000000000LL {self.path}/fragmentation.stp"
-            execute_command(command)
+            retry_count = 0
+            while True:
+                log_file = f"{self.path}/{self.log_dir}/fragmentation_{retry_count}.csv"
+                if retry_count > 10:
+                    print("Tried to start systemtap more than 10 times, skipping....")
+                    break
+
+                command = (
+                    f"stap -o {log_file} "
+                    "-D STP_OVERLOAD_THRESHOLD=650000000LL "
+                    "-D STP_OVERLOAD_INTERVAL=1000000000LL "
+                    f"{self.path}/fragmentation.stp"
+                )
+
+                execute_command(command, continue_if_error=True, error_informative=False)
+
+                retry_count += 1
+                time.sleep(120)
 
         monitoring_thread = threading.Thread(target=systemtap, name="systemtap")
         monitoring_thread.daemon = True
