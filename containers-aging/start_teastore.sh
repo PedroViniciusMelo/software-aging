@@ -3,7 +3,7 @@
 ip_address=$(hostname -I | awk '{print $1}')
 
 software=$1
-sleep_time=0
+sleep_time=60
 
 $software run -e "HOST_NAME=$ip_address" -e "SERVICE_PORT=10000" -p 10000:8080 -d --restart=always docker.io/descartesresearch/teastore-registry
 
