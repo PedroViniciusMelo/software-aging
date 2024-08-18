@@ -153,12 +153,14 @@ class Environment:
                 execute_command(f"{self.software} stop {container_name}", continue_if_error=False,
                                 error_informative=False)
             except:
+                print("Killing container")
                 execute_command(f"{self.software} kill {container_name}", continue_if_error=True,
                                 error_informative=False)
 
             try:
                 execute_command(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
             except:
+                print("Forced container removal")
                 execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
 
     def container_thread(self, container, max_stress_time):

@@ -157,12 +157,14 @@ class MonitoringEnvironment:
                 stop_time = get_time(f"{self.software} stop {container_name}", continue_if_error=False,
                                 error_informative=False)
             except:
+                print("Killing container")
                 stop_time = get_time(f"{self.software} kill {container_name}", continue_if_error=True,
                                 error_informative=False)
 
             try:
                 remove_container_time = get_time(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
             except:
+                print("Forced container removal")
                 remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
 
             remove_image_time = get_time(f"{self.software} rmi {container_name}")
