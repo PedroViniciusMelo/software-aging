@@ -135,8 +135,35 @@ class Environment:
         for i in range(qtt_containers):
             container_name = f"temp_{image_name}-{run}-{i}"
 
-            execute_command(
-                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
+            try:
+                execute_command(
+                    f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
+            except:
+                print("Could not start container, executing fallback method")
+                has_container = execute_command(f"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
+                                                continue_if_error=True, error_informative=False)
+                if has_container is not None:
+                    execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
+                                    error_informative=False)
+                    has_container = None
+
+                tries = 0
+                while has_container is None:
+                    if tries > 5:
+                        print(f"Could not start container, exiting {image_name} lifecycle")
+                        execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
+                                        error_informative=False)
+                        return
+                    time.sleep(2)
+                    try:
+                        execute_command(
+                            f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}",
+                            continue_if_error=False, error_informative=False)
+                        has_container = execute_command(f"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
+                                                        continue_if_error=True, error_informative=False)
+                    except:
+                        print(f"Error on fallback method, trying {tries + 1} time")
+                        tries += 1
 
             if self.using_containers_app_time:
                 up_time = execute_command(

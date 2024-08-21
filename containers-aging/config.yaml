@@ -8,7 +8,7 @@ monitoring:
     using_containers_app_time: false  # If true, the app time will be collected from the containers
 
 stressload:
-    stressload_first: true # If true, the stressload will be executed before the sleep time
+    stressload_first: false # If true, the stressload will be executed before the sleep time
     max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
     wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
 
@@ -19,12 +19,12 @@ stressload:
     max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
 
 containers:
-  #- name: postgres
-  #  version: "15.8-bullseye"
-  #  host_port: 5432
-  #  port: 5432
-  #  min_container_wait_time: 1
-  #  max_container_wait_time: 10
+  - name: postgres
+    version: "16.4-bookworm"
+    host_port: 5432
+    port: 5432
+    min_container_wait_time: 1
+    max_container_wait_time: 10
 
   - name: redis
     version: "7.4.0-bookworm"
@@ -41,7 +41,7 @@ containers:
     max_container_wait_time: 10
 
   - name: nginx
-    version: "1.27.0-bookworm-perl"
+    version: "1.27.1-bookworm"
     host_port: 8085
     port: 80
     min_container_wait_time: 1

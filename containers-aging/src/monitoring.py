@@ -80,7 +80,8 @@ class MonitoringEnvironment:
     # process priority:
     #   ['docker', 'dockerd', 'containerd', 'containerd-shim', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
     def start_docker_process_monitoring(self):
-        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
+        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy', 'java', 'postgres',
+                     'beam.smp', 'initdb', 'mysqld']
 
         for process in processes:
             process_thread = threading.Thread(target=self.process_monitoring_thread,
@@ -154,8 +155,35 @@ class MonitoringEnvironment:
 
             load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
 
-            start_time = get_time(
-                f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
+            try:
+                start_time = get_time(
+                    f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
+            except:
+                print("Could not start container, executing fallback method")
+                has_container = execute_command(f"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
+                                                continue_if_error=True, error_informative=False)
+                if has_container is not None:
+                    execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
+                                    error_informative=False)
+                    has_container = None
+
+                tries = 0
+                while has_container is None:
+                    if tries > 5:
+                        print(f"Could not start container, exiting {container_name} lifecycle")
+                        execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
+                                        error_informative=False)
+                        return
+                    time.sleep(2)
+                    try:
+                        start_time = get_time(
+                            f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}",
+                            continue_if_error=False, error_informative=False)
+                        has_container = execute_command(f"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
+                                                        continue_if_error=True, error_informative=False)
+                    except:
+                        print(f"Error on fallback method, trying {tries + 1} time")
+                        tries += 1
 
             up_time = ""
             if self.using_containers_app_time:
@@ -171,17 +199,19 @@ class MonitoringEnvironment:
 
             try:
                 stop_time = get_time(f"{self.software} stop {container_name}", continue_if_error=False,
-                                error_informative=False)
+                                     error_informative=False)
             except:
                 print("Killing container")
                 stop_time = get_time(f"{self.software} kill {container_name}", continue_if_error=True,
-                                error_informative=False)
+                                     error_informative=False)
 
             try:
-                remove_container_time = get_time(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
+                remove_container_time = get_time(f"{self.software} rm -v {container_name}", continue_if_error=False,
+                                                 error_informative=False)
             except:
                 print("Forced container removal")
-                remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
+                remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
+                                                 error_informative=True)
 
             remove_image_time = get_time(f"{self.software} rmi {container_name}")
 
@@ -204,6 +234,7 @@ class MonitoringEnvironment:
             self.disk_monitoring(date_time)
             self.memory_monitoring(date_time)
             self.process_monitoring(date_time)
+            self.disk_write_and_read_monitoring(date_time)
             time.sleep(self.sleep_time)
 
     def container_metrics(self):
@@ -232,6 +263,19 @@ class MonitoringEnvironment:
             f"{self.path}/{self.log_dir}/disk.csv",
             "used;date_time",
             f"{mem};{date_time}"
+        )
+
+    def disk_write_and_read_monitoring(self, date_time):
+        comando = "iostat -d | grep vda"
+        comando = comando.split()
+        tps = comando[1]
+        read = comando[2]
+        write = comando[3]
+        dscd = comando[4]
+        write_to_file(
+            f"{self.path}/{self.log_dir}/disk_write_read.csv",
+            "tps;kB_reads;kB_wrtns;kB_dscds;date_time",
+            f"{tps};{read};{write};{dscd};{date_time}"
         )
 
     def cpu_monitoring(self, date_time):
