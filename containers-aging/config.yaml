@@ -1,7 +1,9 @@
 general:
     runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     scripts_folder: "/root/software-aging/containers-aging"
-    rebuild_images: false # If true, the images will be rebuilt before the experiments
+
+setup:
+  rebuild_images: false # If true, the images will be rebuilt before the experiments
 
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds

@@ -239,11 +239,12 @@ class EnvironmentConfig:
 
         general_config = config["general"]
         monitoring_config = config["monitoring"]
+        setup_config = config["setup"]
 
         setup = Setup(
             containers=config["containers"],
             scripts_folder=general_config["scripts_folder"],
-            rebuild_images=general_config["rebuild_images"],
+            rebuild_images=setup_config["rebuild_images"],
             software=detect_used_software()
         )
 
