@@ -267,11 +267,11 @@ class MonitoringEnvironment:
 
     def disk_write_and_read_monitoring(self, date_time):
         comando = "iostat -d | grep vda"
-        comando = comando.split()
-        tps = comando[1]
-        read = comando[2]
-        write = comando[3]
-        dscd = comando[4]
+        data = execute_command(comando).split()
+        tps = data[1]
+        read = data[2]
+        write = data[3]
+        dscd = data[4]
         write_to_file(
             f"{self.path}/{self.log_dir}/disk_write_read.csv",
             "tps;kB_reads;kB_wrtns;kB_dscds;date_time",
