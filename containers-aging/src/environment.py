@@ -164,7 +164,6 @@ class Environment:
                             f"{self.software} container inspect {container_name} > /dev/null 2>&1 && echo true",
                             continue_if_error=True, error_informative=False)
                     except:
-                        print(f"Error on fallback method, trying {tries + 1} time")
                         tries += 1
 
             if self.using_containers_app_time:
