@@ -140,8 +140,9 @@ class Environment:
                     f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}")
             except:
                 print("Could not start container, executing fallback method")
-                has_container = execute_command(rf"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
-                                                continue_if_error=True, error_informative=False)
+                has_container = execute_command(
+                    f"{self.software} container inspect {container_name} > /dev/null 2>&1 && echo true",
+                    continue_if_error=True, error_informative=False)
                 if has_container is not None:
                     execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
                                     error_informative=False)
@@ -159,8 +160,9 @@ class Environment:
                         execute_command(
                             f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {image_name}",
                             continue_if_error=False, error_informative=False)
-                        has_container = execute_command(rf"{self.software} ps -a | grep '(^|\s){container_name}($|\s)'",
-                                                        continue_if_error=True, error_informative=False)
+                        has_container = execute_command(
+                            f"{self.software} container inspect {container_name} > /dev/null 2>&1 && echo true",
+                            continue_if_error=True, error_informative=False)
                     except:
                         print(f"Error on fallback method, trying {tries + 1} time")
                         tries += 1
