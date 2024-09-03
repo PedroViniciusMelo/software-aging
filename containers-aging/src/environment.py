@@ -239,7 +239,6 @@ class Environment:
             for thread in threads:
                 result = thread.join()
                 qtd_container += result
-                print(qtd_container)
 
         write_to_file(
             f"{self.path}/{self.logs_dir}/qtd_containers.csv",
