@@ -2,7 +2,7 @@
 
 server_response="../rejuvenation/machine_resources_monitoring/server-response-time.sh"
 jmeter="/home/jojema/Transferências/apache-jmeter-5.6.3/bin"
-num_users=100
+num_users=50
 ramp_up=60
 
 pids=() # Array para armazenar os PIDs dos processos
