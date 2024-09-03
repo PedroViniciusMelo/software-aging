@@ -3,7 +3,7 @@ general:
     scripts_folder: "/root/software-aging/containers-aging"
 
 setup:
-  rebuild_images: false # If true, the images will be rebuilt before the experiments
+  rebuild_images: true # If true, the images will be rebuilt before the experiments
 
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
