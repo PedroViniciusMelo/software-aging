@@ -11,6 +11,20 @@ from src.setup import Setup
 from src.utils import execute_command, write_to_file, current_time, detect_used_software, check_environment
 
 
+class CustomThread(threading.Thread):
+    def __init__(self, group=None, target=None, name=None, args=(), kwargs=None, Verbose=None):
+        threading.Thread.__init__(self, group, target, name, args, kwargs)
+        self._return = None
+
+    def run(self):
+        if self._target is not None:
+            self._return = self._target(*self._args, **self._kwargs)
+
+    def join(self) -> any:
+        threading.Thread.join(self)
+        return self._return
+
+
 class Environment:
     def __init__(
             self,
@@ -110,7 +124,7 @@ class Environment:
     def init_containers_threads(self, max_stress_time):
         threads = []
         for container in self.containers:
-            thread = threading.Thread(
+            thread = CustomThread(
                 target=self.container_thread,
                 name=container,
                 args=(container, max_stress_time)
@@ -124,7 +138,7 @@ class Environment:
             thread.join()
 
     def container_stressload(self, image_name, host_port, container_port, min_container_wait_time,
-                             max_container_wait_time, run):
+                             max_container_wait_time, run) -> int:
 
         sleep_time = random.randint(min_container_wait_time, max_container_wait_time)
         qtt_containers = random.randint(self.min_qtt_containers, self.max_qtt_containers)
@@ -132,6 +146,7 @@ class Environment:
         image_name = "temp_" + image_name
         time.sleep(sleep_time)
 
+        errors = 0
         for i in range(qtt_containers):
             container_name = f"temp_{image_name}-{run}-{i}"
 
@@ -154,7 +169,8 @@ class Environment:
                         print(f"Could not start container, exiting {image_name} lifecycle")
                         execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
                                         error_informative=False)
-                        return
+                        errors += 1
+                        continue
                     time.sleep(2)
                     try:
                         execute_command(
@@ -190,18 +206,20 @@ class Environment:
             except:
                 print("Forced container removal")
                 execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
+        return qtt_containers - errors
 
     def container_thread(self, container, max_stress_time):
         now = datetime.now()
         max_date = now + timedelta(seconds=max_stress_time)
         execute_command(f"{self.software} load -i {self.path}/temp_{container['name']}.tar -q")
 
+        qtd_container = 0
         while datetime.now() < max_date:
             exec_runs = random.randint(self.min_lifecycle_runs, self.max_lifecycle_runs)
 
             threads = []
             for index in range(exec_runs):
-                thread = threading.Thread(
+                thread = CustomThread(
                     target=self.container_stressload,
                     name=container,
                     args=(
@@ -219,7 +237,15 @@ class Environment:
                 threads.append(thread)
 
             for thread in threads:
-                thread.join()
+                result = thread.join()
+                qtd_container += result
+
+        write_to_file(
+            f"{self.path}/{self.logs_dir}/qtd_containers.csv",
+            "thread;qtd_containers;date",
+            f"{container['name']};{qtd_container};{current_time()}"
+        )
+
 
     def __print_progress_bar(self, current_run, text):
         progress_bar_size = 50
