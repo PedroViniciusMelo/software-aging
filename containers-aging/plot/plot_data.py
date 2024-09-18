@@ -47,10 +47,10 @@ class Plot:
             x = df.index.to_numpy().reshape((-1, 1))
             y = df[col].to_numpy().reshape((-1, 1))
 
-            model = LinearRegression()
-            model.fit(x, y)
-
-            Y_pred = model.predict(x)
+            # model = LinearRegression()
+            # model.fit(x, y)
+            #
+            # Y_pred = model.predict(x)
 
             ax = df.plot(
                 y=col,
@@ -64,7 +64,7 @@ class Plot:
             )
 
             # Adicionar a linha da regressão
-            ax.plot(x, Y_pred, color='red')
+            # ax.plot(x, Y_pred, color='red')
             fig = ax.get_figure()
             fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.png"))
             plt.close('all')
@@ -106,9 +106,29 @@ def start(base_folder, qtd_item):
         title="Memory",
         folder=base_folder,
         filename='memory.csv',
-        ylabel='(MB)',
+        ylabel={
+            "used": "Memory used(MB)",
+            "cached": "Memory cached(MB)",
+            "buffers": "Memory buffers(MB)",
+            "swap": "Swap free(MB)"
+        },
         division=1024,
         includeColYlabel=True
+    )
+
+    plot_obj.plot(
+        title="Server response time",
+        folder=base_folder,
+        filename=base_folder.name + '.csv',
+        ylabel='Response time(s)',
+        division=1000
+    )
+
+    plot_obj.plot(
+        title="Read and Write",
+        folder=base_folder,
+        filename='disk_write_read.csv',
+        ylabel={'tps': 'TPS', "kB_reads": "kB_reads", "kB_wrtns": "kB_wrtns", "kB_dscds": "kB_dscds"}
     )
 
     plot_obj.plot(
@@ -256,13 +276,7 @@ def start(base_folder, qtd_item):
         division=1024
     )
 
-    plot_obj.plot(
-        title="Server response time",
-        folder=base_folder,
-        filename='response_times.csv',
-        ylabel='Response time(s)',
-        division=1000
-    )
+
 
     print(f"Ploted {plot_obj.plotted}/{qtd_item -1} ")
 

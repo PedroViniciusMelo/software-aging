@@ -167,6 +167,14 @@ class Environment:
                 while has_container is None:
                     if tries > 5:
                         print(f"Could not start container, exiting {image_name} lifecycle")
+                        date_time = current_time()
+
+                        write_to_file(
+                            f'{self.path}/{self.logs_dir}/errors.csv',
+                            'event;container;date_time',
+                            f'start;{image_name};{date_time}'
+                        )
+
                         execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
                                         error_informative=False)
                         errors += 1
@@ -198,6 +206,13 @@ class Environment:
                                 error_informative=False)
             except:
                 print("Killing container")
+                date_time = current_time()
+
+                write_to_file(
+                    f'{self.path}/{self.logs_dir}/errors.csv',
+                    'event;container;date_time',
+                    f'kill;{image_name};{date_time}'
+                )
                 execute_command(f"{self.software} kill {container_name}", continue_if_error=True,
                                 error_informative=False)
 
@@ -205,6 +220,13 @@ class Environment:
                 execute_command(f"{self.software} rm -v {container_name}", continue_if_error=False, error_informative=False)
             except:
                 print("Forced container removal")
+                date_time = current_time()
+
+                write_to_file(
+                    f'{self.path}/{self.logs_dir}/errors.csv',
+                    'event;container;date_time',
+                    f'force-remove;{image_name};{date_time}'
+                )
                 execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False, error_informative=True)
         return qtt_containers - errors
 

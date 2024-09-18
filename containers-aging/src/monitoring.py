@@ -171,6 +171,11 @@ class MonitoringEnvironment:
                 tries = 0
                 while has_container is None:
                     if tries > 5:
+                        write_to_file(
+                            f'{self.path}/{self.log_dir}/errors.csv',
+                            'event;container;date_time',
+                            f'start;{container_name};{date_time}'
+                        )
                         print(f"Could not start container, exiting {container_name} lifecycle")
                         execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
                                         error_informative=False)
@@ -202,7 +207,11 @@ class MonitoringEnvironment:
                 stop_time = get_time(f"{self.software} stop {container_name}", continue_if_error=False,
                                      error_informative=False)
             except:
-                print("Killing container")
+                write_to_file(
+                    f'{self.path}/{self.log_dir}/errors.csv',
+                    'event;container;date_time',
+                    f'kill;{container_name};{date_time}'
+                )
                 stop_time = get_time(f"{self.software} kill {container_name}", continue_if_error=True,
                                      error_informative=False)
 
@@ -211,6 +220,11 @@ class MonitoringEnvironment:
                                                  error_informative=False)
             except:
                 print("Forced container removal")
+                write_to_file(
+                    f'{self.path}/{self.log_dir}/errors.csv',
+                    'event;container;date_time',
+                    f'force-remove;{container_name};{date_time}'
+                )
                 remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
                                                  error_informative=True)
 

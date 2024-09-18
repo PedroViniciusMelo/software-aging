@@ -126,12 +126,12 @@ DOCKER() {
     case $DISTRO_ID in
     "ubuntu")
       ADD_UBUNTU_DOCKER_REPOSITORY
-      INSTALL_DOCKER "5:26.0.1-1~ubuntu.22.04~jammy"
+      INSTALL_DOCKER "5:27.2.0-1~ubuntu.22.04~jammy"
       ;;
 
     "debian")
       ADD_DEBIAN_DOCKER_REPOSITORY
-      INSTALL_DOCKER "5:26.0.1-1~debian.11~bullseye"
+      INSTALL_DOCKER "5:27.2.0-1~debian.11~bullseye"
       ;;
     esac
 
@@ -139,12 +139,12 @@ DOCKER() {
     case $DISTRO_ID in
     "ubuntu")
       ADD_UBUNTU_DOCKER_REPOSITORY
-      INSTALL_DOCKER "5:20.10.13~3-0~ubuntu-jammy"
+      INSTALL_DOCKER "5:23.0.0-1~ubuntu.22.04~jammy"
       ;;
 
     "debian")
       ADD_DEBIAN_DOCKER_REPOSITORY
-      INSTALL_DOCKER "5:20.10.13~3-0~debian-bullseye"
+      INSTALL_DOCKER "5:23.0.0-1~debian.11~bullseye"
       ;;
     esac
 
@@ -164,7 +164,6 @@ COMPILE_PODMAN() {
   apt-get install -y \
     libapparmor-dev \
     btrfs-progs \
-    runc \
     git \
     iptables \
     libassuan-dev \
@@ -183,8 +182,21 @@ COMPILE_PODMAN() {
     catatonit \
     uidmap
 
+  apt-get install -y make git gcc build-essential pkgconf libtool \
+   libsystemd-dev libprotobuf-c-dev libcap-dev libseccomp-dev libyajl-dev \
+   go-md2man autoconf python3 automake
+
+  cd ~ || exit 1
+  git clone https://github.com/containers/crun.git
+  cd crun || exit 1
+  ./autogen.sh
+  ./configure CFLAGS='-I/usr/include/libseccomp'
+  make
+  make install
+
   apt-get install netavark -y || apt-get install containernetworking-plugins -y
 
+  cd ~ || exit 1
   #Addes go lang
   wget https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
   tar -xzf go1.22.4.linux-amd64.tar.gz -C /usr/local
@@ -234,7 +246,6 @@ EOF
   make
   cp bin/* /usr/local/libexec/podman/
 
-  apt remove crun
   podman --version
   RESET_TO_ORIGINAL_DIR
 }
