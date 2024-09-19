@@ -229,7 +229,7 @@ EOF
 
   git clone https://github.com/containers/podman/
   cd podman || exit 1
-  git checkout v5.0
+  git checkout v5.1
   make BUILDTAGS="selinux seccomp exclude_graphdriver_devicemapper systemd" PREFIX=/usr
   make install PREFIX=/usr
 
