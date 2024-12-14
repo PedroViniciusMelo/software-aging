@@ -6,6 +6,10 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from pymannkendall import original_test  # Certifique-se de que este módulo está instalado
+
+plt.rcParams.update({'font.size': 20})  # Aumenta o tamanho da fonte globalmente
+
 
 
 
@@ -59,7 +63,8 @@ def plot(
         decimal_separator=",",
         division=1,
         includeColYlabel=False,
-        cols_to_divide=None
+        cols_to_divide=None,
+        apply_mann_kendall=True  # Variável para ativar/desativar Mann-Kendall e regressão
 ):
     if cols_to_divide is None:
         cols_to_divide = []
@@ -81,29 +86,65 @@ def plot(
 
         df[col] = df[col].fillna(0)
 
-        x = df.index.to_numpy().reshape((-1, 1))
-        y = df[col].to_numpy().reshape((-1, 1))
+        if col == "swap":
+            df[col] = (df[col] - 8192) * -1
 
-        model = LinearRegression()
-        model.fit(x, y)
-
-        Y_pred = model.predict(x)
-
+        # Configurar o gráfico
         ax = df.plot(
             y=col,
             legend=0,
             xlabel='Time(h)',
             ylabel=col_mix if type(ylabel) is str else ylabel[col] if type(
                 ylabel) is dict and col in ylabel else col,
-            title=title if type(title) is str else title[col] if type(title) is dict and col in title else col,
-            figsize=(10, 5),
+            #title=title if type(title) is str else title[col] if type(title) is dict and col in title else col,
+            figsize=(10, 10),
             style='k',
+            linewidth=3
         )
 
-        # Adicionar a linha da regressão
-        ax.plot(x, Y_pred, color='red')
+        ax.set_xlabel('Time(h)', labelpad=15)
+        # ax.set_title(
+        #     title if isinstance(title, str) else title[col],
+        #     pad=20
+        # )
+        #ax.grid(True)
+
+        # Análise Mann-Kendall e regressão
+        if apply_mann_kendall:
+            # Regressão linear
+            x = df.index.to_numpy().reshape((-1, 1))
+            y = df[col].to_numpy().reshape((-1, 1))
+            model = LinearRegression()
+            model.fit(x, y)
+            Y_pred = model.predict(x)
+            ax.plot(x, Y_pred, color='red', linewidth=3)
+
+            # Teste de Mann-Kendall
+            test_result = original_test(df[col])
+            trend_text = (
+                f"trend: {test_result.trend}\n"
+                f"p-value: {test_result.p:.4f}\n"
+                f"z: {test_result.z:.4f}"
+            )
+
+            # Adicionar o texto da análise Mann-Kendall no gráfico
+            ax.text(
+                0.95, 0.05, trend_text,
+                transform=ax.transAxes,
+                fontsize=18,
+                verticalalignment='bottom',  # Alinhamento vertical
+                horizontalalignment='right',# Alinhamento horizontal
+                bbox=dict(boxstyle="round", alpha=0.8, color='white')
+            )
+
+        # Ajustar a espessura da borda
+        for spine in ax.spines.values():
+            spine.set_linewidth(1.5)
+
+        # Salvar o gráfico
         fig = ax.get_figure()
-        fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.png"))
+        fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.svg"), bbox_inches='tight', dpi=300, format="svg")
+        #fig.show()
         plt.close('all')
     return 1
 
@@ -228,13 +269,26 @@ def calcular_metricas(df):
 
 
 def plot_fragmentation(folder, merge_equals=True, process_per_plot=20, relevant_maximum=200,
-                       time_threshold=None, name_filter=None, adjust_x_limits=False):
-    # Processar todos os arquivos sem ignorar partes do processo
-    final_dataset = process_all_files(folder)
+                       time_threshold=None, name_filter=None, adjust_x_limits=False, highlight_processes=None,
+                       top_n_processes=None, cache_file='processed_data_cache.csv'):
+    cache_path = folder.joinpath(cache_file)
 
-    # Converter 'process_occurrences' para numérico
-    final_dataset['process_occurrences'] = pd.to_numeric(final_dataset['process_occurrences'], errors='coerce').fillna(0).astype(int)
+    # Verificar se o arquivo de cache existe
+    if os.path.exists(cache_path):
+        print("Carregando dados do cache...")
+        final_dataset = pd.read_csv(cache_path, parse_dates=['datetime'])
+    else:
+        print("Processando os arquivos e salvando o cache...")
+        # Processar todos os arquivos sem ignorar partes do processo
+        final_dataset = process_all_files(folder)
 
+        # Converter 'process_occurrences' para numérico
+        final_dataset['process_occurrences'] = pd.to_numeric(final_dataset['process_occurrences'], errors='coerce').fillna(0).astype(int)
+
+        # Salvar o dataset processado no arquivo de cache
+        final_dataset.to_csv(cache_path, index=False)
+
+    print("Final dataset procesed")
     if merge_equals:
         lastFounds = {}
         for index, row in final_dataset.iterrows():
@@ -277,13 +331,48 @@ def plot_fragmentation(folder, merge_equals=True, process_per_plot=20, relevant_
             if any(f in process for f in name_filter)
         }
 
-    # 4. Ordenar os subdatasets filtrados pelo último valor de 'process_occurrences' (do menor para o maior)
+    # Separar os processos destacados
+    highlighted_subdatasets = {}
+    if highlight_processes:
+        highlighted_subdatasets = {process: subdatasets_filtrados.pop(process) for process in highlight_processes if process in subdatasets_filtrados}
+
+    # Plotar gráficos para os processos destacados (em um único gráfico)
+    if highlighted_subdatasets:
+        fig, ax = plt.subplots(figsize=(10, 10))
+        for process, subset in highlighted_subdatasets.items():
+            subset['time_in_hours'] = (subset['datetime'] - subset['datetime'].min()).dt.total_seconds() / 3600
+            ax.step(subset['time_in_hours'], subset['process_occurrences'], where='post', label=f'{process}')
+
+        ax.legend(loc='best', fontsize='small', title='Process')
+        ax.set_xlabel('Time (hours)')
+        ax.set_ylabel('Process occurrences', labelpad=15)
+
+        if adjust_x_limits:
+            max_time = max(
+                (subset['datetime'].max() - subset['datetime'].min()).total_seconds() / 3600
+                for subset in highlighted_subdatasets.values()
+            )
+            ax.set_xlim([0, max_time])
+
+        for spine in ax.spines.values():
+            spine.set_linewidth(1.5)
+
+        plt.tight_layout()
+        plt.savefig(folder.joinpath('plots_img').joinpath("Time Series of memory fragmentation - Highlighted Processes.svg"), bbox_inches='tight', dpi=300, format="svg")
+        plt.close(fig)
+
+    # 4. Ordenar os subdatasets filtrados pelo último valor de 'process_occurrences' (do maior para o menor)
     subdatasets_ordenados = dict(
         sorted(
             subdatasets_filtrados.items(),
             key=lambda item: item[1]['process_occurrences'].iloc[-1],
+            reverse=True  # Agora em ordem decrescente
         )
     )
+
+    # Se 'top_n_processes' for especificado, limitar aos N processos com mais ocorrências
+    if top_n_processes is not None:
+        subdatasets_ordenados = dict(list(subdatasets_ordenados.items())[:top_n_processes])
 
     # 5. Definir o tempo máximo entre todos os subdatasets filtrados, se o ajuste do eixo X estiver ativado
     if adjust_x_limits:
@@ -297,37 +386,29 @@ def plot_fragmentation(folder, merge_equals=True, process_per_plot=20, relevant_
     num_plots = len(process_list) // process_per_plot + 1
 
     for i in range(num_plots):
-        fig, ax = plt.subplots(figsize=(12, 8))
+        fig, ax = plt.subplots(figsize=(10, 10))
         processes_to_plot = process_list[i * process_per_plot:(i + 1) * process_per_plot]
 
         for process in processes_to_plot:
             subset = subdatasets_ordenados[process]
-            # Calcular o tempo decorrido em horas a partir do primeiro timestamp
             subset['time_in_hours'] = (subset['datetime'] - subset['datetime'].min()).dt.total_seconds() / 3600
-            # Plotando o gráfico com linhas retas entre os pontos, sem suavização
             ax.step(subset['time_in_hours'], subset['process_occurrences'], where='post', label=f'{process}')
 
-        ax.legend(loc='best', fontsize='small', title='Process')
-        ax.set_title(
-            f'Time Series of memory fragmentation - Proccess {i * process_per_plot + 1} a {(i + 1) * process_per_plot}')
+        ax.legend(loc='best', fontsize='small', title='Process', ncol=2)
         ax.set_xlabel('Time (hours)')
-        ax.set_ylabel('Process occurences')
+        ax.set_ylabel('Process occurrences', labelpad=15)
 
-        # Ajustar o intervalo de tempo no eixo X de 0 até o tempo máximo encontrado, se a opção estiver ativada
         if adjust_x_limits:
             ax.set_xlim([0, max_time])
 
-        # Aumentar a densidade de rótulos no eixo X e Y
-        ax.locator_params(axis='x', nbins=20)  # Dobrar a quantidade de labels no eixo X
-        ax.locator_params(axis='y', nbins=20)  # Dobrar a quantidade de labels no eixo Y
+        for spine in ax.spines.values():
+            spine.set_linewidth(1.5)
 
-        plt.xticks(rotation=45)
         plt.tight_layout()
-        plt.grid(True)
-        plt.savefig(folder.joinpath('plots_img').joinpath(f"Time Series of memory fragmentation - Proccess {i * process_per_plot + 1} a {(i + 1) * process_per_plot}.png"))
-        #plt.show()
-    return 1
+        plt.savefig(folder.joinpath('plots_img').joinpath(f"Time Series of memory fragmentation - Process {i * process_per_plot + 1} to {(i + 1) * process_per_plot}.svg"), bbox_inches='tight', dpi=300, format="svg")
+        plt.close(fig)
 
+    return 1
 
 def extract_name_pid(process_str):
     """Extrai o nome do processo e o PID da string 'nome_do_processo(pid)'."""

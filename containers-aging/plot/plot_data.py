@@ -1,38 +1,39 @@
 from pathlib import Path
 import shutil
-import matplotlib.pyplot as plt
+
+from concurrent.futures import ProcessPoolExecutor
 
 from plot_utils import plot, plot_jmeter, plot_fragmentation, plot_time_series
 
-base_dir = "D:/Downloads/logs_final"
+base_dir = "D:/final"
 
 
 def start(base_folder, qtd_item):
     plots_folder = base_folder.joinpath('plots_img')
-    #
-    # if plots_folder.exists():
-    #     shutil.rmtree(plots_folder)
-    #     plots_folder.mkdir()
-    # else:
-    #     plots_folder.mkdir()
-    #
-    # fragmentation_folder = base_folder.joinpath('plots_img/fragmentation')
-    # fragmentation_folder.mkdir()
-    #
-    # jmeter_folder = base_folder.joinpath('plots_img/jmeter')
-    # jmeter_folder.mkdir()
-    #
+
+    if plots_folder.exists():
+        shutil.rmtree(plots_folder)
+        plots_folder.mkdir()
+    else:
+        plots_folder.mkdir()
+
+    fragmentation_folder = base_folder.joinpath('plots_img/fragmentation')
+    fragmentation_folder.mkdir()
+
+    jmeter_folder = base_folder.joinpath('plots_img/jmeter')
+    jmeter_folder.mkdir()
+
     ploted = 0
-    #
-    #
-    # ploted += plot(
-    #     title="CPU",
-    #     folder=base_folder,
-    #     filename='cpu.csv',
-    #     ylabel='(percentage)',
-    #     includeColYlabel=True
-    # )
-    #
+
+
+    ploted += plot(
+        title="CPU",
+        folder=base_folder,
+        filename='cpu.csv',
+        ylabel='(percentage)',
+        includeColYlabel=True
+    )
+
     # ploted += plot(
     #     title="Disk",
     #     folder=base_folder,
@@ -47,28 +48,28 @@ def start(base_folder, qtd_item):
     #     filename='process.csv',
     #     ylabel='Zumbis processes(qtt)'
     # )
-    #
+
+    ploted += plot(
+        title="Memory",
+        folder=base_folder,
+        filename='memory.csv',
+        ylabel={
+            "used": "Memory used(MB)",
+            "cached": "Memory cached(MB)",
+            "buffers": "Memory buffers(MB)",
+            "swap": "Swap used(MB)"
+        },
+        division=1024,
+        includeColYlabel=True
+    )
+
     # ploted += plot(
-    #     title="Memory",
+    #     title="Server response time",
     #     folder=base_folder,
-    #     filename='memory.csv',
-    #     ylabel={
-    #         "used": "Memory used(MB)",
-    #         "cached": "Memory cached(MB)",
-    #         "buffers": "Memory buffers(MB)",
-    #         "swap": "Swap free(MB)"
-    #     },
-    #     division=1024,
-    #     includeColYlabel=True
+    #     filename=base_folder.name + '.csv',
+    #     ylabel='Response time(s)',
     # )
-    #
-    # # ploted += plot(
-    # #     title="Server response time",
-    # #     folder=base_folder,
-    # #     filename=base_folder.name + '.csv',
-    # #     ylabel='Response time(s)',
-    # # )
-    #
+
     # ploted += plot(
     #     title="Read and Write",
     #     folder=base_folder,
@@ -231,7 +232,7 @@ def start(base_folder, qtd_item):
     #     cols_to_divide=['rss', 'vsz', 'swap'],
     #     division=1024
     # )
-    #
+
     # # --------------------------------------------- Container Metrics --------------------------------------------
     #
     # ploted += plot_time_series(
@@ -265,38 +266,51 @@ def start(base_folder, qtd_item):
     #     x_label='Time (hours)',
     #     y_label='Time taken (seconds)',
     # )
-
-    # ------------------------------------------------- Machine Metrics --------------------------------------------
     #
-    # ploted += plot_event_counts_per_hour(
-    #     save_folder=base_folder.joinpath('plots_img'),
-    #     title="Erros",
-    #     file_path=base_folder.joinpath('errors.csv'),
-    #     x_label='Time (hours)',
-    #     y_label='Occurrences(qtt)',
-    # )
+    # # ------------------------------------------------- Machine Metrics --------------------------------------------
+    #
+    # # ploted += plot_event_counts_per_hour(
+    # #     save_folder=base_folder.joinpath('plots_img'),
+    # #     title="Erros",
+    # #     file_path=base_folder.joinpath('errors.csv'),
+    # #     x_label='Time (hours)',
+    # #     y_label='Occurrences(qtt)',
+    # # )
+    #
+    # # ------------------------------------------------- PODMAN --------------------------------------------
+    #
+    #
+    # ploted += plot_fragmentation(base_folder,
+    #                    merge_equals=True,
+    #                    adjust_x_limits=False,
+    #                    process_per_plot=21,
+    #                    top_n_processes=10,
+    #                    name_filter=["mysqld", "http-nio", "nginx", "redis-server", "beam.smp", "rabbitmq-server", "python3", "systemd", "dockerd", "containerd", "containerd-shim", "docker-proxy", "runc", "conmon", "podman", "crun", "java", "postgres", "netavark"],
+    #                    highlight_processes=["dockerd", "http-nio-8080-e", "podman"]
+    #                    )  # name_filter=["dockerd", "containerd", "containerd-shim", "docker-proxy", "runc"])
 
-    # ------------------------------------------------- PODMAN --------------------------------------------
-
-
-    ploted += plot_fragmentation(base_folder,
-                       merge_equals=True,
-                       adjust_x_limits=False
-                       )  # name_filter=["dockerd", "containerd", "containerd-shim", "docker-proxy", "runc"])
-
-    ploted += plot_jmeter(base_folder, file_name="jmeter_" + base_folder.name + ".csv", ignore_chunck=False)
-
-    plt.close('all')
-
+    #ploted += plot_jmeter(base_folder, file_name="jmeter_" + base_folder.name + ".csv", ignore_chunck=False)
+    #
+    # plt.close('all')
+    #
     # print(f"Ploted {ploted}/{qtd_item -4} ")
 
 
 if __name__ == "__main__":
+    # Obter todas as pastas no diretório base
+    folders = [item for item in Path(base_dir).iterdir() if item.is_dir()]
 
-    for item in Path(base_dir).iterdir():
-        if item.is_dir():
-            csv_files = [file for file in item.iterdir() if file.suffix == '.csv']
-            qtd_item = len(csv_files)
+    # Criar um pool de processos para executar as tarefas
+    with ProcessPoolExecutor() as executor:
+        # Submeter as tarefas para execução paralela
+        futures = [
+            executor.submit(start, folder, len([file for file in folder.iterdir() if file.suffix == '.csv']))
+            for folder in folders
+        ]
 
-            print(f"Entering folder {item.name}")
-            start(item, qtd_item)
+        # Aguardar a conclusão de todas as tarefas
+        for future in futures:
+            try:
+                future.result()  # Captura possíveis exceções
+            except Exception as e:
+                print(f"Erro ao processar: {e}")
