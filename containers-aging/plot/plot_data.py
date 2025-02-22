@@ -5,8 +5,14 @@ from concurrent.futures import ProcessPoolExecutor
 
 from plot_utils import plot, plot_jmeter, plot_fragmentation, plot_time_series
 
-base_dir = "D:/final"
+base_dir = "../logs/"
 
+intervals = [
+    (0, 12, "green", 0.3),
+    (84, 96, "green", 0.3),
+    (168, 180, "green", 0.3),
+    (252, 264, "green", 0.3)
+]
 
 def start(base_folder, qtd_item):
     plots_folder = base_folder.joinpath('plots_img')
@@ -31,7 +37,8 @@ def start(base_folder, qtd_item):
         folder=base_folder,
         filename='cpu.csv',
         ylabel='(percentage)',
-        includeColYlabel=True
+        includeColYlabel=True,
+        highlight_intervals=intervals
     )
 
     # ploted += plot(
@@ -60,7 +67,8 @@ def start(base_folder, qtd_item):
             "swap": "Swap used(MB)"
         },
         division=1024,
-        includeColYlabel=True
+        includeColYlabel=True,
+        highlight_intervals = intervals
     )
 
     # ploted += plot(

@@ -64,7 +64,8 @@ def plot(
         division=1,
         includeColYlabel=False,
         cols_to_divide=None,
-        apply_mann_kendall=True  # Variável para ativar/desativar Mann-Kendall e regressão
+        apply_mann_kendall=True,  # Variável para ativar/desativar Mann-Kendall e regressão
+        highlight_intervals=None  # Parâmetro opcional para intervalos a destacar [(hora_inicial, hora_final, cor, alpha), ...]
 ):
     if cols_to_divide is None:
         cols_to_divide = []
@@ -74,7 +75,8 @@ def plot(
         sep=separator,
         decimal=decimal_separator,
         dayfirst=False,
-        parse_dates=[datetime]).rename(columns={datetime: 'seconds'})
+        parse_dates=[datetime]
+    ).rename(columns={datetime: 'seconds'})
 
     df['seconds'] = (df['seconds'] - df['seconds'][0]).dt.total_seconds() / 3600
     df = df.set_index('seconds').replace(',', '.', regex=True).apply(lambda x: pd.to_numeric(x))
@@ -82,7 +84,7 @@ def plot(
     df[cols_to_divide] = df[cols_to_divide].div(division)
 
     for col in df.columns:
-        col_mix = col + " " + ylabel if type(ylabel) is str and includeColYlabel else ylabel
+        col_mix = col + " " + ylabel if isinstance(ylabel, str) and includeColYlabel else ylabel
 
         df[col] = df[col].fillna(0)
 
@@ -94,20 +96,20 @@ def plot(
             y=col,
             legend=0,
             xlabel='Time(h)',
-            ylabel=col_mix if type(ylabel) is str else ylabel[col] if type(
-                ylabel) is dict and col in ylabel else col,
-            #title=title if type(title) is str else title[col] if type(title) is dict and col in title else col,
+            ylabel=col_mix if isinstance(ylabel, str) else ylabel[col] if isinstance(ylabel, dict) and col in ylabel else col,
             figsize=(10, 10),
             style='k',
             linewidth=3
         )
 
         ax.set_xlabel('Time(h)', labelpad=15)
-        # ax.set_title(
-        #     title if isinstance(title, str) else title[col],
-        #     pad=20
-        # )
-        #ax.grid(True)
+
+        # Destacar intervalos, se especificados (agora com alpha)
+        if highlight_intervals is not None:
+            for interval in highlight_intervals:
+                start, end, color, alpha = interval
+                # ax.axvspan cria uma faixa vertical de start a end com a cor e transparência (alpha) especificados
+                ax.axvspan(start, end, color=color, alpha=alpha)
 
         # Análise Mann-Kendall e regressão
         if apply_mann_kendall:
@@ -132,8 +134,8 @@ def plot(
                 0.95, 0.05, trend_text,
                 transform=ax.transAxes,
                 fontsize=18,
-                verticalalignment='bottom',  # Alinhamento vertical
-                horizontalalignment='right',# Alinhamento horizontal
+                verticalalignment='bottom',
+                horizontalalignment='right',
                 bbox=dict(boxstyle="round", alpha=0.8, color='white')
             )
 
@@ -144,9 +146,9 @@ def plot(
         # Salvar o gráfico
         fig = ax.get_figure()
         fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.svg"), bbox_inches='tight', dpi=300, format="svg")
-        #fig.show()
         plt.close('all')
     return 1
+
 
 
 
