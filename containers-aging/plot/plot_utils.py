@@ -53,19 +53,22 @@ def plot_time_series(save_folder, file_path, title, x_label, y_label, max_labels
     return 1
 
 
-
 def plot(
         folder,
         filename,
         ylabel,
         datetime="date_time",
-        title=None, separator=';',
+        title=None,
+        separator=';',
         decimal_separator=",",
         division=1,
         includeColYlabel=False,
         cols_to_divide=None,
         apply_mann_kendall=True,  # Variável para ativar/desativar Mann-Kendall e regressão
-        highlight_intervals=None  # Parâmetro opcional para intervalos a destacar [(hora_inicial, hora_final, cor, alpha), ...]
+        highlight_intervals=None,
+        # Parâmetro opcional para intervalos a destacar [(hora_inicial, hora_final, cor, alpha), ...]
+        x_lim=None,  # Novo parâmetro opcional para limitar o eixo x (limite superior)
+        y_lim=None  # Novo parâmetro opcional para limitar o eixo y (limite superior)
 ):
     if cols_to_divide is None:
         cols_to_divide = []
@@ -96,7 +99,8 @@ def plot(
             y=col,
             legend=0,
             xlabel='Time(h)',
-            ylabel=col_mix if isinstance(ylabel, str) else ylabel[col] if isinstance(ylabel, dict) and col in ylabel else col,
+            ylabel=col_mix if isinstance(ylabel, str) else ylabel[col] if isinstance(ylabel,
+                                                                                     dict) and col in ylabel else col,
             figsize=(10, 10),
             style='k',
             linewidth=3
@@ -104,11 +108,16 @@ def plot(
 
         ax.set_xlabel('Time(h)', labelpad=15)
 
+        # Aplicar limites, se especificados
+        if x_lim is not None:
+            ax.set_xlim(right=x_lim)
+        if y_lim is not None:
+            ax.set_ylim(top=y_lim)
+
         # Destacar intervalos, se especificados (agora com alpha)
         if highlight_intervals is not None:
             for interval in highlight_intervals:
                 start, end, color, alpha = interval
-                # ax.axvspan cria uma faixa vertical de start a end com a cor e transparência (alpha) especificados
                 ax.axvspan(start, end, color=color, alpha=alpha)
 
         # Análise Mann-Kendall e regressão
@@ -145,11 +154,10 @@ def plot(
 
         # Salvar o gráfico
         fig = ax.get_figure()
-        fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.svg"), bbox_inches='tight', dpi=300, format="svg")
+        fig.savefig(folder.joinpath('plots_img').joinpath(f"{title}-{col}.svg"), bbox_inches='tight', dpi=300,
+                    format="svg")
         plt.close('all')
     return 1
-
-
 
 
 def plot_jmeter(folder, file_name, ignore_chunck=False, chunk_size=10000000, throughput_interval=60):
