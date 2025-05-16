@@ -1,6 +1,7 @@
 general:
     runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     scripts_folder: "/root/software-aging/containers-aging"
+    apply_rejuvenation: false
 
 setup:
   rebuild_images: true # If true, the images will be rebuilt before the experiments

@@ -42,7 +42,8 @@ class Environment:
             sleep_time_container_metrics: int,
             stressload_first: bool,
             using_containers_app_time: bool,
-            monitoring_environment: MonitoringEnvironment
+            monitoring_environment: MonitoringEnvironment,
+            apply_rejuvenation: bool,
     ):
         self.logs_dir = "logs"
         self.containers = containers
@@ -60,6 +61,7 @@ class Environment:
         self.monitoring_environment = monitoring_environment
         self.stressload_first = stressload_first
         self.using_containers_app_time = using_containers_app_time
+        self.apply_rejuvenation = apply_rejuvenation
 
     def clear(self):
         print("Cleaning old logs and containers")
@@ -71,7 +73,17 @@ class Environment:
         execute_command(f"{self.software} stop $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
         execute_command(f"{self.software} rm $({self.software} ps -aq)", continue_if_error=True, error_informative=False)
         execute_command(f"{self.software} rmi $({self.software} image ls -aq)", continue_if_error=True, error_informative=False)
-        execute_command(f"{self.software} system prune -a -f)", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} container prune -f", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} image prune -f", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} volume prune -f", continue_if_error=True, error_informative=False)
+        execute_command(f"{self.software} system prune -a -f --volumes", continue_if_error=True, error_informative=False)
+
+    def rejuvenation_method(self):
+        print("Applying rejuvenation")
+        self.clear_containers_and_images()
+        time.sleep(5)
+        self.start_teastore()
+
 
     def run(self):
         self.clear()
@@ -101,6 +113,9 @@ class Environment:
                 f"stress;{current_time()}"
             )
             self.init_containers_threads(self.max_stress_time)
+
+            if self.apply_rejuvenation:
+                self.rejuvenation_method()
 
             if self.stressload_first:
                 write_to_file(
