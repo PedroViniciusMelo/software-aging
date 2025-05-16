@@ -250,6 +250,7 @@ class MonitoringEnvironment:
             self.memory_monitoring(date_time)
             self.process_monitoring(date_time)
             self.disk_write_and_read_monitoring(date_time)
+            self.kernel_killed_process_monitoring(date_time)
             time.sleep(self.sleep_time)
 
     def container_metrics(self):
@@ -326,4 +327,20 @@ class MonitoringEnvironment:
             f"{self.path}/{self.log_dir}/process.csv",
             "zombies;date_time",
             f"{zombies};{date_time}"
+        )
+
+    def kernel_killed_process_monitoring(self, date_time):
+        killed = execute_command("dmesg | egrep -i 'killed process'")
+        omm = execute_command("dmesg | grep -i 'oom'")
+
+        write_to_file(
+            f"{self.path}/{self.log_dir}/killed.csv",
+            "log;date_time",
+            f"{killed};{date_time}"
+        )
+
+        write_to_file(
+            f"{self.path}/{self.log_dir}/omm.csv",
+            "log;date_time",
+            f"{omm};{date_time}"
         )
