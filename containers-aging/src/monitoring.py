@@ -1,5 +1,6 @@
 import threading
 import time
+import psutil
 
 from src.utils import (
     execute_command,
@@ -46,6 +47,7 @@ class MonitoringEnvironment:
         elif self.software == "podman":
             self.start_podman_process_monitoring()
         self.start_machine_resources_monitoring()
+        self.track_monitoring_cost()
 
     def start_systemtap(self):
         def systemtap():
@@ -89,14 +91,17 @@ class MonitoringEnvironment:
             process_thread.daemon = True
             process_thread.start()
 
-    def get_process_data(self, process_name: str):
+    def get_process_data(self, process_name: str, custom_pid: int = ''):
         date_time = current_time()
 
         data = []
 
         while len(data) == 0:
             try:
-                pid = execute_command(f'pgrep -f {process_name} | head -n 1')
+                if custom_pid != '':
+                    pid = custom_pid
+                else:
+                    pid = execute_command(f'pgrep -f {process_name} | head -n 1')
 
                 data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
 
@@ -344,3 +349,23 @@ class MonitoringEnvironment:
             "log;date_time",
             f"{omm};{date_time}"
         )
+
+    def track_monitoring_cost(self):
+        def monitoring_cost():
+            while True:
+                try:
+                    for thread in threading.enumerate():
+                        if thread.name.startswith(('systemtap', 'container_metrics', 'docker_processes',
+                                                   'podman_processes', 'monitoring')):
+                            tid = thread.native_id
+
+                            self.get_process_data(process_name="process_" + thread.name, custom_pid=tid)
+                    time.sleep(self.sleep_time)
+                except Exception as e:
+                    print(f"Erro no monitoramento de custo: {e}")
+                    time.sleep(self.sleep_time)
+
+        monitoring_thread = threading.Thread(target=monitoring_cost, name="monitoring_cost")
+        monitoring_thread.daemon = True
+        monitoring_thread.start()
+
