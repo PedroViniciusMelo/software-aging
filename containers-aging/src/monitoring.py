@@ -1,6 +1,5 @@
 import threading
 import time
-import psutil
 
 from src.utils import (
     execute_command,
