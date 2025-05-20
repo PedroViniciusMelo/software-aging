@@ -334,8 +334,8 @@ class MonitoringEnvironment:
         )
 
     def kernel_killed_process_monitoring(self, date_time):
-        killed = execute_command("dmesg | egrep -i 'killed process'")
-        omm = execute_command("dmesg | grep -i 'oom'")
+        killed = execute_command("dmesg | egrep -i 'killed process'  || true")
+        omm = execute_command("dmesg | grep -i 'oom' || true")
 
         write_to_file(
             f"{self.path}/{self.log_dir}/killed.csv",
