@@ -5,7 +5,7 @@ from concurrent.futures import ProcessPoolExecutor
 
 from plot_utils import plot, plot_jmeter, plot_fragmentation, plot_time_series
 
-base_dir = "../logs/"
+base_dir = "./logs/"
 
 intervals = [
     (0, 12, "green", 0.3),
@@ -288,14 +288,14 @@ def start(base_folder, qtd_item):
     # # ------------------------------------------------- PODMAN --------------------------------------------
     #
     #
-    # ploted += plot_fragmentation(base_folder,
-    #                    merge_equals=True,
-    #                    adjust_x_limits=False,
-    #                    process_per_plot=21,
-    #                    top_n_processes=10,
-    #                    name_filter=["mysqld", "http-nio", "nginx", "redis-server", "beam.smp", "rabbitmq-server", "python3", "systemd", "dockerd", "containerd", "containerd-shim", "docker-proxy", "runc", "conmon", "podman", "crun", "java", "postgres", "netavark"],
-    #                    highlight_processes=["dockerd", "http-nio-8080-e", "podman"]
-    #                    )  # name_filter=["dockerd", "containerd", "containerd-shim", "docker-proxy", "runc"])
+    ploted += plot_fragmentation(base_folder,
+                       merge_equals=True,
+                       adjust_x_limits=False,
+                       process_per_plot=21,
+                       top_n_processes=10,
+                       name_filter=["mysqld", "http-nio", "nginx", "redis-server", "beam.smp", "rabbitmq-server", "python3", "systemd", "dockerd", "containerd", "containerd-shim", "docker-proxy", "runc", "conmon", "podman", "crun", "java", "postgres", "netavark"],
+                       highlight_processes=["dockerd", "http-nio-8080-e", "podman"]
+                       )  # name_filter=["dockerd", "containerd", "containerd-shim", "docker-proxy", "runc"])
 
     #ploted += plot_jmeter(base_folder, file_name="jmeter_" + base_folder.name + ".csv", ignore_chunck=False)
     #
@@ -308,17 +308,5 @@ if __name__ == "__main__":
     # Obter todas as pastas no diretório base
     folders = [item for item in Path(base_dir).iterdir() if item.is_dir()]
 
-    # Criar um pool de processos para executar as tarefas
-    with ProcessPoolExecutor() as executor:
-        # Submeter as tarefas para execução paralela
-        futures = [
-            executor.submit(start, folder, len([file for file in folder.iterdir() if file.suffix == '.csv']))
-            for folder in folders
-        ]
-
-        # Aguardar a conclusão de todas as tarefas
-        for future in futures:
-            try:
-                future.result()  # Captura possíveis exceções
-            except Exception as e:
-                print(f"Erro ao processar: {e}")
+    for folder in folders:
+        start(base_folder=folder, qtd_item=len([file for file in folder.iterdir() if file.suffix == '.csv']))
