@@ -11,6 +11,17 @@ monitoring:
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
     using_containers_app_time: false  # If true, the app time will be collected from the containers
 
+energy:
+    enable_rapl: true  # Intel RAPL (CPU/DRAM power). Needs an Intel CPU with RAPL support and the script running as root
+    sleep_time_rapl: 1  # Interval (seconds) between RAPL power samples
+    rapl_zones: ["package", "core", "uncore", "dram"]  # Which RAPL domains to monitor (matched by name substring). Remove entries you don't need.
+
+    enable_tomada: false  # TP-Link Kasa/Tapo smart plug. Needs the "python-kasa" package (pip install python-kasa)
+    sleep_time_tomada: 300  # Interval (seconds) between smart plug power samples
+    tomada_ip: "192.168.0.1"  # Smart plug IP address on the local network
+    tomada_username: "exemplo@email.com"  # Account e-mail registered on the plug
+    tomada_password: "changeme"  # Account password registered on the plug
+
 stressload:
     stressload_first: false # If true, the stressload will be executed before the sleep time
     max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)

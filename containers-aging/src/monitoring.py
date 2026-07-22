@@ -1,12 +1,19 @@
+import asyncio
 import threading
 import time
 
+from src.energy import RaplReader, find_pkg_temp_path, sample_power, run_tomada_monitor
 from src.utils import (
     execute_command,
     write_to_file,
     get_time,
     current_time,
 )
+
+
+def _fmt(value, ndigits=4):
+    """Formats an optional numeric reading for CSV output (blank when unavailable)."""
+    return "" if value is None else round(value, ndigits)
 
 
 class MonitoringEnvironment:
@@ -18,7 +25,15 @@ class MonitoringEnvironment:
             containers: list,
             sleep_time_container_metrics: int,
             environment_description: str,
-            using_containers_app_time: bool
+            using_containers_app_time: bool,
+            enable_rapl: bool = True,
+            sleep_time_rapl: int = 1,
+            rapl_zones: list = None,
+            enable_tomada: bool = False,
+            sleep_time_tomada: int = 300,
+            tomada_ip: str = "",
+            tomada_username: str = "",
+            tomada_password: str = "",
     ):
         self.path = path
         self.log_dir = "logs"
@@ -28,6 +43,14 @@ class MonitoringEnvironment:
         self.sleep_time_container_metrics = sleep_time_container_metrics
         self.environment_description = environment_description
         self.using_containers_app_time = using_containers_app_time
+        self.enable_rapl = enable_rapl
+        self.sleep_time_rapl = sleep_time_rapl
+        self.rapl_zones = rapl_zones
+        self.enable_tomada = enable_tomada
+        self.sleep_time_tomada = sleep_time_tomada
+        self.tomada_ip = tomada_ip
+        self.tomada_username = tomada_username
+        self.tomada_password = tomada_password
 
     def start(self):
         print("Environment:")
@@ -46,6 +69,7 @@ class MonitoringEnvironment:
         elif self.software == "podman":
             self.start_podman_process_monitoring()
         self.start_machine_resources_monitoring()
+        self.start_energy_monitoring()
         self.track_monitoring_cost()
 
     def start_systemtap(self):
@@ -149,6 +173,75 @@ class MonitoringEnvironment:
         monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
         monitoring_thread.daemon = True
         monitoring_thread.start()
+
+    def start_energy_monitoring(self):
+        if self.enable_rapl:
+            rapl_thread = threading.Thread(target=self.rapl_monitoring, name="monitoring_rapl")
+            rapl_thread.daemon = True
+            rapl_thread.start()
+
+        if self.enable_tomada:
+            tomada_thread = threading.Thread(target=self.tomada_monitoring, name="monitoring_tomada")
+            tomada_thread.daemon = True
+            tomada_thread.start()
+
+    def rapl_monitoring(self):
+        reader = RaplReader(zone_filters=self.rapl_zones)
+        temp_path = find_pkg_temp_path()
+
+        if not reader.available:
+            print(f"Nenhuma das zonas RAPL configuradas ({reader.zone_filters}) foi encontrada, "
+                  "ou o processo nao tem permissao de leitura (rode como root). "
+                  "Monitoramento de energia da CPU desativado.")
+            return
+
+        columns = [f"{keyword}_j" for keyword in reader.selected_zones]
+        if "package_j" in columns or "dram_j" in columns:
+            columns.append("total_j")
+        columns.append("cpu_temp_c")
+        header = ";".join(columns) + ";date_time"
+
+        while True:
+            sample = sample_power(reader, temp_path, self.sleep_time_rapl)
+
+            values = [
+                _fmt(sample.get(column), 1) if column == "cpu_temp_c" else _fmt(sample.get(column))
+                for column in columns
+            ]
+
+            write_to_file(
+                f"{self.path}/{self.log_dir}/energy_rapl.csv",
+                header,
+                ";".join(str(value) for value in values) + f";{current_time()}"
+            )
+
+    def tomada_monitoring(self):
+        def on_sample(sample):
+            write_to_file(
+                f"{self.path}/{self.log_dir}/energy_tomada.csv",
+                "power_w;kwh_interval;kwh_total;state;date_time",
+                f"{sample['power_w']};{sample['kwh_interval']};"
+                f"{sample['kwh_total']};{sample['state']};{current_time()}"
+            )
+
+        def on_error(message):
+            write_to_file(
+                f"{self.path}/{self.log_dir}/errors.csv",
+                "event;container;date_time",
+                f"tomada;{message};{current_time()}"
+            )
+
+        try:
+            asyncio.run(run_tomada_monitor(
+                ip=self.tomada_ip,
+                username=self.tomada_username,
+                password=self.tomada_password,
+                interval=self.sleep_time_tomada,
+                on_sample=on_sample,
+                on_error=on_error,
+            ))
+        except ImportError:
+            print("Pacote 'python-kasa' nao instalado.")
 
     def container_lifecycle(self):
         for container in self.containers:
@@ -355,7 +448,7 @@ class MonitoringEnvironment:
                 try:
                     for thread in threading.enumerate():
                         if thread.name.startswith(('systemtap', 'container_metrics', 'docker_processes',
-                                                   'podman_processes', 'monitoring')):
+                                                   'podman_processes', 'monitoring', 'monitoring_tomada', 'monitoring_rapl')):
                             tid = thread.native_id
 
                             self.get_process_data(process_name="process_" + thread.name, custom_pid=tid)
@@ -367,4 +460,3 @@ class MonitoringEnvironment:
         monitoring_thread = threading.Thread(target=monitoring_cost, name="monitoring_cost")
         monitoring_thread.daemon = True
         monitoring_thread.start()
-

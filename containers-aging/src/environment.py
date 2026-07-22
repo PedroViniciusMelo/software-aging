@@ -303,6 +303,7 @@ class EnvironmentConfig:
         general_config = config["general"]
         monitoring_config = config["monitoring"]
         setup_config = config["setup"]
+        energy_config = config.get("energy", {})
 
         setup = Setup(
             containers=config["containers"],
@@ -320,7 +321,15 @@ class EnvironmentConfig:
             sleep_time_container_metrics=monitoring_config["sleep_time_container_metrics"],
             software=detect_used_software(),
             using_containers_app_time=monitoring_config["using_containers_app_time"],
-            environment_description=check_environment()
+            environment_description=check_environment(),
+            enable_rapl=energy_config.get("enable_rapl", False),
+            sleep_time_rapl=energy_config.get("sleep_time_rapl", 1),
+            rapl_zones=energy_config.get("rapl_zones"),
+            enable_tomada=energy_config.get("enable_tomada", False),
+            sleep_time_tomada=energy_config.get("sleep_time_tomada", 300),
+            tomada_ip=energy_config.get("tomada_ip", ""),
+            tomada_username=energy_config.get("tomada_username", ""),
+            tomada_password=energy_config.get("tomada_password", ""),
         )
 
         framework = Environment(
