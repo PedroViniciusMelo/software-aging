@@ -13,17 +13,14 @@ import pandas as pd
 DEFAULT_FOLDER = "D:/final"
 
 
-# Simplify labels for the x-axis
 def simplify_labels(system, software, version):
-    system = system.replace("Ubuntu 22.04", "Ubuntu 22").replace("Ubuntu 24.04", "Ubuntu 24")
-    software = software.replace("Podman 5.1.3", "Podman")
-    version = version.replace("27.2", "27").replace("5.1.3", "")
+    """Rotulo do eixo x: sistema na primeira linha, runtime e versao na segunda."""
     return f"{system}\n{software} {version}"
 
 
 def main(folder=DEFAULT_FOLDER):
     # Load the dataset
-    # versao como texto: so com cenarios docker o pandas leria "27.2"/"23" como numero
+    # versao como texto: com versoes como "27" o pandas leria a coluna como numero
     df = pd.read_csv(f"{folder}/mann_kendall_results.csv", dtype={"Software Version": str})
 
     # Filter for "Full" interval

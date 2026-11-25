@@ -1,6 +1,6 @@
 """
 Gera os graficos de cada cenario: uma subpasta de <logs_dir> por cenario (ex.:
-logs/debian12_docker_novo), com as imagens salvas em <cenario>/plots_img.
+logs/debian12_docker_27.2.0, ver scenario.py), com as imagens salvas em <cenario>/plots_img.
 
     python3 plot/plot_data.py [logs_dir]      # padrao: ./logs/
 """

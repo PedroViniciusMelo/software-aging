@@ -1,30 +1,32 @@
-"""Informacoes do cenario a partir do nome da pasta de logs (ex.: debian12_docker_novo)."""
+"""
+Informacoes do cenario a partir do nome da pasta de logs, no formato
+
+    <sistema><versao>_<runtime>_<versao do runtime>[_<sufixo livre>]
+
+por exemplo: debian12_docker_27.2.0, ubuntu24.04_podman_5.1.2, fedora45_docker_27.2.0.
+Nada e' deduzido alem do que esta' no nome: um nome fora do formato e' "desconhecido".
+"""
+import re
+
+SYSTEM_NAMES = {"debian": "Debian", "ubuntu": "Ubuntu", "fedora": "Fedora"}
+RUNTIME_NAMES = {"docker": "Docker", "podman": "Podman"}
+
+_FOLDER = re.compile(
+    r"^(?P<system>[a-z]+?)(?P<system_version>\d+(?:\.\d+)*)?"
+    r"_(?P<runtime>" + "|".join(RUNTIME_NAMES) + r")_v?(?P<version>\d+(?:\.\d+)*)(?:_|$)"
+)
 
 
 def extract_categorical_info(folder_name, unknown=(None, None, None)):
     """
-    Devolve (sistema, software, versao). `unknown` define o valor usado para cada campo
-    quando o nome da pasta nao identifica o sistema / o software (versao acompanha o software).
+    Devolve (sistema, software, versao), ex.: ("Debian 12", "Docker", "27.2.0").
+    `unknown` e' devolvido quando o nome nao segue o formato.
     """
-    name = folder_name.lower()
-    unknown_system, unknown_software, unknown_version = unknown
+    match = _FOLDER.match(folder_name.lower())
+    if not match:
+        return unknown
 
-    if "debian" in name:
-        system = "Debian 12"
-    elif "ubuntu22" in name:
-        system = "Ubuntu 22.04"
-    elif "ubuntu24" in name:
-        system = "Ubuntu 24.04"
-    else:
-        system = unknown_system
-
-    if "docker" in name:
-        software = "Docker"
-        version = "27.2" if "novo" in name else "23"
-    elif "podman" in name:
-        software = "Podman"
-        version = "5.1.3"
-    else:
-        software, version = unknown_software, unknown_version
-
-    return system, software, version
+    system = SYSTEM_NAMES.get(match["system"], match["system"].capitalize())
+    if match["system_version"]:
+        system = f"{system} {match['system_version']}"
+    return system, RUNTIME_NAMES[match["runtime"]], match["version"]

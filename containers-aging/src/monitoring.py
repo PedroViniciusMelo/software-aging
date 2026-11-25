@@ -1,5 +1,7 @@
 """Threads de coleta: recursos da maquina, processos, ciclo de vida, fragmentacao, energia e custo."""
 import asyncio
+import os
+import shutil
 import threading
 import time
 
@@ -26,6 +28,9 @@ MONITORING_THREAD_PREFIXES = ('systemtap', 'container_metrics', 'docker_processe
 PROCESS_HEADER = 'cpu;mem;rss;vsz;threads;swap;date_time'
 # postgres.csv ja e' usado pelo monitor de ciclo de vida do container postgres.
 PROCESS_FILE_NAMES = {'postgres': 'postgres_process'}
+
+# Gerado por install/install.sh: versoes/commits exatos do runtime e do systemtap compilados.
+BUILD_MANIFEST = "/etc/containers-aging/build-manifest.txt"
 
 STAP_MAX_ATTEMPTS = 11
 STAP_RETRY_DELAY = 120
@@ -63,6 +68,8 @@ class MonitoringEnvironment:
         print("Starting monitoring scripts")
 
         write_to_file(f"{self.logs_path}/environment.txt", "Environment", self.environment_description)
+        if os.path.exists(BUILD_MANIFEST):
+            shutil.copy(BUILD_MANIFEST, f"{self.logs_path}/build-manifest.txt")
         self.disk_device = self.monitoring.disk_device or detect_root_disk()
 
         self._start_thread("systemtap", self.systemtap_loop)

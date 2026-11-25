@@ -24,7 +24,7 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[2]
 PLOT = REPO / "plot"
-SCENARIOS = ["debian12_docker_novo", "ubuntu22_podman"]
+SCENARIOS = ["debian12_docker_27.2.0", "ubuntu22.04_podman_5.1.2"]
 START = datetime(2024, 1, 1, 0, 0, 0)
 
 # (comando, diretorio de trabalho relativo) -- os scripts antigos tinham caminhos fixos:

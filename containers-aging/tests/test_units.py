@@ -137,6 +137,17 @@ class KernelLogTest(unittest.TestCase):
         detect.assert_not_called()
         self.assertEqual(env.disk_device, "nvme0n1")
 
+    def test_build_manifest_is_copied_to_logs(self):
+        from src import monitoring
+        with tempfile.TemporaryDirectory() as tmp:
+            manifest = Path(tmp, "manifest.txt")
+            manifest.write_text("docker=27.2.0\n")
+            env = self._monitoring(tmp, disk_device="vda")
+            with mock.patch.object(monitoring, "BUILD_MANIFEST", str(manifest)), \
+                    mock.patch.object(env, "_start_thread"), mock.patch("builtins.print"):
+                env.start()
+            self.assertEqual(Path(tmp, "build-manifest.txt").read_text(), "docker=27.2.0\n")
+
     def test_root_disk_falls_back_to_vda(self):
         from src import runtime
         with mock.patch.object(runtime, "execute_command", return_value=None), mock.patch("builtins.print"):
