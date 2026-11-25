@@ -445,8 +445,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -455,8 +455,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -465,8 +465,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -475,8 +475,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -485,8 +485,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -495,8 +495,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -505,8 +505,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -515,8 +515,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -525,8 +525,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -535,8 +535,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -545,8 +545,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -555,8 +555,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -565,8 +565,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -575,8 +575,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -585,8 +585,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -595,8 +595,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -605,8 +605,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -615,8 +615,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -625,8 +625,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true",
     "mpstat | grep all",
     "df | grep '/$' | awk '{print $3}'",
@@ -635,8 +635,8 @@
     "cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'",
     "cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'",
     "ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l",
-    "iostat -d | grep vda",
-    "dmesg | egrep -i 'killed process'  || true",
+    "iostat -d | awk '$1 == \"vda\"'",
+    "dmesg | grep -i 'killed process' || true",
     "dmesg | grep -i 'oom' || true"
    ],
    "stdout": "",
@@ -1476,9 +1476,9 @@
   "17/0": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1486,9 +1486,9 @@
   "17/1": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1496,9 +1496,9 @@
   "17/2": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1506,9 +1506,9 @@
   "17/3": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1516,9 +1516,9 @@
   "17/4": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1534,23 +1534,23 @@
   "18/0": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker container inspect temp_temp_redis-0-0 > /dev/null 2>&1 && echo true",
-    "docker rm -v -f temp_temp_redis-0-0",
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker container inspect temp_temp_redis-0-0 > /dev/null 2>&1 && echo true",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker container inspect temp_redis-0-0 > /dev/null 2>&1 && echo true",
+    "docker rm -v -f temp_redis-0-0",
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker container inspect temp_redis-0-0 > /dev/null 2>&1 && echo true",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
-   "stdout": "\nERROR 2024-01-01 00:01:52: simulated failure\nCOMMAND: $docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis\nCould not start container, executing fallback method\n",
+   "stdout": "\nERROR 2024-01-01 00:01:52: simulated failure\nCOMMAND: $docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis\nCould not start container, executing fallback method\n",
    "died_with": null
   },
   "18/1": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1558,9 +1558,9 @@
   "18/2": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1568,9 +1568,9 @@
   "18/3": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1578,9 +1578,9 @@
   "18/4": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1596,10 +1596,10 @@
   "19/0": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1607,10 +1607,10 @@
   "19/1": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1618,10 +1618,10 @@
   "19/2": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1629,10 +1629,10 @@
   "19/3": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1640,10 +1640,10 @@
   "19/4": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1750,10 +1750,10 @@
   "20/0": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -1761,10 +1761,10 @@
   "20/1": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -1772,10 +1772,10 @@
   "20/2": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -1783,10 +1783,10 @@
   "20/3": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -1794,10 +1794,10 @@
   "20/4": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -1813,9 +1813,9 @@
   "21/0": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1823,9 +1823,9 @@
   "21/1": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1833,9 +1833,9 @@
   "21/2": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1843,9 +1843,9 @@
   "21/3": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1853,9 +1853,9 @@
   "21/4": {
    "name": "stressload_postgres_0",
    "commands": [
-    "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
-    "docker stop temp_temp_postgres-0-0",
-    "docker rm -v temp_temp_postgres-0-0"
+    "docker run --name temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
+    "docker stop temp_postgres-0-0",
+    "docker rm -v temp_postgres-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1871,9 +1871,9 @@
   "22/0": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1881,9 +1881,9 @@
   "22/1": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1891,9 +1891,9 @@
   "22/2": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1901,9 +1901,9 @@
   "22/3": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1911,9 +1911,9 @@
   "22/4": {
    "name": "stressload_redis_0",
    "commands": [
-    "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
-    "docker stop temp_temp_redis-0-0",
-    "docker rm -v temp_temp_redis-0-0"
+    "docker run --name temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
+    "docker stop temp_redis-0-0",
+    "docker rm -v temp_redis-0-0"
    ],
    "stdout": "",
    "died_with": null
@@ -1929,10 +1929,10 @@
   "23/0": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1940,10 +1940,10 @@
   "23/1": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1951,10 +1951,10 @@
   "23/2": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1962,10 +1962,10 @@
   "23/3": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1973,10 +1973,10 @@
   "23/4": {
    "name": "stressload_rabbitmq_0",
    "commands": [
-    "docker run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
-    "docker stop temp_temp_rabbitmq-0-0",
-    "docker kill temp_temp_rabbitmq-0-0",
-    "docker rm -v temp_temp_rabbitmq-0-0"
+    "docker run --name temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
+    "docker stop temp_rabbitmq-0-0",
+    "docker kill temp_rabbitmq-0-0",
+    "docker rm -v temp_rabbitmq-0-0"
    ],
    "stdout": "Killing container\n",
    "died_with": null
@@ -1992,10 +1992,10 @@
   "24/0": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -2003,10 +2003,10 @@
   "24/1": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -2014,10 +2014,10 @@
   "24/2": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -2025,10 +2025,10 @@
   "24/3": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -2036,10 +2036,10 @@
   "24/4": {
    "name": "stressload_nginx_0",
    "commands": [
-    "docker run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
-    "docker stop temp_temp_nginx-0-0",
-    "docker rm -v temp_temp_nginx-0-0",
-    "docker rm -v -f temp_temp_nginx-0-0"
+    "docker run --name temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
+    "docker stop temp_nginx-0-0",
+    "docker rm -v temp_nginx-0-0",
+    "docker rm -v -f temp_nginx-0-0"
    ],
    "stdout": "Forced container removal\n",
    "died_with": null
@@ -2730,7 +2730,8 @@
     "docker image prune -f",
     "docker volume prune -f",
     "docker system prune -a -f --volumes",
-    "<TMP>/work/start_teastore.sh docker"
+    "<TMP>/work/start_teastore.sh docker",
+    "lsblk -nrso NAME,TYPE \"$(findmnt -nvo SOURCE /)\" | awk '$2 == \"disk\" {print $1; exit}'"
    ],
    "stdout": "Building image postgres:16.4-bookworm\nDone!\nBuilding image redis:7.4.0-bookworm\nDone!\nBuilding image rabbitmq:4.0-rc-management\nDone!\nBuilding image nginx:1.27.1-bookworm\nDone!\nCleaning old logs and containers\nStarting teastore\n\nEnvironment:\n\"\nSoftware=docker\nSoftware Version=docker version 1.2.3, build abc\nOS=Debian\nOS Version=12\n    \nStarting monitoring scripts\n2024-01-01 00:00:01 - Script should end at around 2024-01-01 00:03:34\n\rProgress: [                                                  ] 0.0%\rProgress: [=========================                         ] 50.0%\rProgress: [==================================================] 100.0%\nEnded at 2024-01-01 00:03:27\n",
    "died_with": null
@@ -3139,26 +3140,8 @@
    "first_line": "log;date_time",
    "lines": [
     "",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:00:01",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:01:02",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:02:03",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:03:04",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:04:05",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:05:06",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:06:07",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:07:08",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:08:09",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:09:10",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:10:11",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:11:12",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:12:13",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:13:14",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:14:15",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:15:16",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:16:17",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:17:18",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:18:19",
-    "[1.0] Killed process 11[2.0] Killed process 22;2024-01-01 00:19:20"
+    "[1.0] Killed process 11;2024-01-01 00:00:01",
+    "[2.0] Killed process 22;2024-01-01 00:00:01"
    ]
   },
   "memory.csv": {
@@ -3230,26 +3213,7 @@
    "first_line": "log;date_time",
    "lines": [
     "",
-    "[3.0] oom-kill:constraint;2024-01-01 00:00:01",
-    "[3.0] oom-kill:constraint;2024-01-01 00:01:02",
-    "[3.0] oom-kill:constraint;2024-01-01 00:02:03",
-    "[3.0] oom-kill:constraint;2024-01-01 00:03:04",
-    "[3.0] oom-kill:constraint;2024-01-01 00:04:05",
-    "[3.0] oom-kill:constraint;2024-01-01 00:05:06",
-    "[3.0] oom-kill:constraint;2024-01-01 00:06:07",
-    "[3.0] oom-kill:constraint;2024-01-01 00:07:08",
-    "[3.0] oom-kill:constraint;2024-01-01 00:08:09",
-    "[3.0] oom-kill:constraint;2024-01-01 00:09:10",
-    "[3.0] oom-kill:constraint;2024-01-01 00:10:11",
-    "[3.0] oom-kill:constraint;2024-01-01 00:11:12",
-    "[3.0] oom-kill:constraint;2024-01-01 00:12:13",
-    "[3.0] oom-kill:constraint;2024-01-01 00:13:14",
-    "[3.0] oom-kill:constraint;2024-01-01 00:14:15",
-    "[3.0] oom-kill:constraint;2024-01-01 00:15:16",
-    "[3.0] oom-kill:constraint;2024-01-01 00:16:17",
-    "[3.0] oom-kill:constraint;2024-01-01 00:17:18",
-    "[3.0] oom-kill:constraint;2024-01-01 00:18:19",
-    "[3.0] oom-kill:constraint;2024-01-01 00:19:20"
+    "[3.0] oom-kill:constraint;2024-01-01 00:00:01"
    ]
   },
   "postgres.csv": {

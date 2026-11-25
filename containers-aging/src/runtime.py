@@ -85,6 +85,20 @@ def detect_runtime() -> ContainerRuntime:
     return ContainerRuntime("podman" if podman is not None else "docker")
 
 
+DEFAULT_DISK_DEVICE = "vda"
+
+
+def detect_root_disk() -> str:
+    """Nome do disco fisico (ex.: vda, sda, nvme0n1) que contem "/", atravessando LVM/particoes."""
+    disk = execute_command(
+        'lsblk -nrso NAME,TYPE "$(findmnt -nvo SOURCE /)" | awk \'$2 == "disk" {print $1; exit}\'',
+        continue_if_error=True, error_informative=False)
+    if not disk:
+        print(f"Could not detect the root disk, using {DEFAULT_DISK_DEVICE}")
+        return DEFAULT_DISK_DEVICE
+    return disk
+
+
 def _lsb_release(flag: str, label: str) -> str:
     output = execute_command(f"lsb_release {flag}", continue_if_error=True, error_informative=False) or ""
     return output.replace("No LSB modules are available.", "").replace(label, "").strip()

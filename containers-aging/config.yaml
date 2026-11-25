@@ -10,6 +10,7 @@ monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
     using_containers_app_time: false  # If true, the app time will be collected from the containers
+    # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
 
 energy:
     enable_rapl: true  # Intel RAPL (CPU/DRAM power). Needs an Intel CPU with RAPL support and the script running as root

@@ -6,11 +6,12 @@ import time
 from src.config import Config
 from src.energy import RaplReader, find_pkg_temp_path, run_tomada_monitor, sample_power
 from src.lifecycle import ContainerLifecycle
-from src.runtime import ContainerRuntime
+from src.runtime import ContainerRuntime, detect_root_disk
 from src.utils import (
     CommandError,
     current_time,
     execute_command,
+    execute_command_lines,
     get_time,
     log_error,
     write_csv_row,
@@ -46,6 +47,8 @@ class MonitoringEnvironment:
         self.runtime = runtime
         self.environment_description = environment_description
         self.lifecycle = ContainerLifecycle(runtime)
+        self.disk_device = None
+        self._seen_kernel_logs = {"killed.csv": set(), "omm.csv": set()}
 
     def _log(self, filename: str, header: str, *values) -> None:
         write_csv_row(f"{self.logs_path}/{filename}", header, *values)
@@ -60,6 +63,7 @@ class MonitoringEnvironment:
         print("Starting monitoring scripts")
 
         write_to_file(f"{self.logs_path}/environment.txt", "Environment", self.environment_description)
+        self.disk_device = self.monitoring.disk_device or detect_root_disk()
 
         self._start_thread("systemtap", self.systemtap_loop)
         self._start_thread("container_metrics", self.container_metrics_loop)
@@ -186,16 +190,22 @@ class MonitoringEnvironment:
         self._log("process.csv", "zombies;date_time", zombies, date_time)
 
     def disk_write_and_read_monitoring(self, date_time):
-        data = execute_command("iostat -d | grep vda").split()
+        data = execute_command(f"iostat -d | awk '$1 == \"{self.disk_device}\"'").split()
         tps, read, write, dscd = data[1], data[2], data[3], data[4]
         self._log("disk_write_read.csv", "tps;kB_reads;kB_wrtns;kB_dscds;date_time", tps, read, write, dscd,
                   date_time)
 
     def kernel_killed_process_monitoring(self, date_time):
-        killed = execute_command("dmesg | egrep -i 'killed process'  || true")
-        oom = execute_command("dmesg | grep -i 'oom' || true")
-        self._log("killed.csv", "log;date_time", killed, date_time)
-        self._log("omm.csv", "log;date_time", oom, date_time)
+        """Grava uma linha por mensagem nova do kernel (processos mortos / OOM) desde a ultima coleta."""
+        self._log_new_kernel_lines("killed.csv", "dmesg | grep -i 'killed process' || true", date_time)
+        self._log_new_kernel_lines("omm.csv", "dmesg | grep -i 'oom' || true", date_time)
+
+    def _log_new_kernel_lines(self, filename, command, date_time):
+        seen = self._seen_kernel_logs[filename]
+        for line in execute_command_lines(command):
+            if line not in seen:
+                seen.add(line)
+                self._log(filename, "log;date_time", line, date_time)
 
     # ---- energia -----------------------------------------------------------------------
     def rapl_loop(self):

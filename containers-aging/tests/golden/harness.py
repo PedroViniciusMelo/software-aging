@@ -231,6 +231,7 @@ class Sim:
             (r"^lsb_release -i$", lambda m: (0, "No LSB modules are available.\nDistributor ID:\tDebian")),
             (r"^lsb_release -r$", lambda m: (0, "No LSB modules are available.\nRelease:\t12")),
             (r"^(docker|podman) -v$", lambda m: (0, f"{m.group(1)} version 1.2.3, build abc")),
+            (r"^lsblk ", lambda m: (0, "vda")),
             (r"^pgrep -f ", lambda m: (0, "1234")),
             (r"^pidstat ", lambda m: (0, "1700000000 0 1234 1.00 2.00 0.00 0.00 3.00 1 10.00 0.00 20000 10000 0.50 cmd")),
             (r"grep Threads", lambda m: (0, "12")),

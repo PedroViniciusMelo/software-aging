@@ -24,6 +24,7 @@ class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
     using_containers_app_time: bool
+    disk_device: Optional[str] = None  # disco do iostat; None = detecta o disco que contem a raiz "/"
 
 
 @dataclass

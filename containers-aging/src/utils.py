@@ -54,6 +54,21 @@ def execute_command(command: str, informative=False, continue_if_error=False, er
     :param continue_if_error: se False, uma falha levanta CommandError; se True, devolve None.
     :param error_informative: imprime a mensagem de erro quando o comando falha.
     """
+    output = _run(command, continue_if_error, error_informative)
+    if output is None:
+        return None
+    if informative:
+        print(output)
+    return output.replace("\n", "")
+
+
+def execute_command_lines(command: str, continue_if_error=False, error_informative=True) -> Optional[list]:
+    """Como execute_command, mas devolve a saida como lista de linhas nao vazias."""
+    output = _run(command, continue_if_error, error_informative)
+    return None if output is None else [line for line in output.splitlines() if line.strip()]
+
+
+def _run(command: str, continue_if_error: bool, error_informative: bool) -> Optional[str]:
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output, error = process.communicate()
     return_code = process.wait()
@@ -64,10 +79,7 @@ def execute_command(command: str, informative=False, continue_if_error=False, er
         if not continue_if_error:
             raise CommandError(command, return_code)
         return None
-
-    if informative:
-        print(output.decode("utf-8").strip())
-    return output.decode("utf-8").strip().replace("\n", "")
+    return output.decode("utf-8").strip()
 
 
 def get_time(command: str, informative=False, continue_if_error=False, error_informative=True) -> int:

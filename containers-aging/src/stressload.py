@@ -81,7 +81,7 @@ class StressLoad:
 
         errors = 0
         for i in range(qtt_containers):
-            container_name = f"temp_{image_name}-{run}-{i}"
+            container_name = f"{image_name}-{run}-{i}"
 
             if self.lifecycle.start(container_name, image_name, host_port, container.port) is None:
                 print(f"Could not start container, exiting {image_name} lifecycle")

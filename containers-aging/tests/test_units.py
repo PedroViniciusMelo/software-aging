@@ -98,11 +98,49 @@ class StressloadGiveUpTest(unittest.TestCase):
             errors = Path(tmp, "errors.csv").read_text().splitlines()
 
         self.assertEqual(done, 2)
-        execute.assert_called_once_with("docker rm -v -f temp_temp_nginx-0-0", continue_if_error=False,
+        execute.assert_called_once_with("docker rm -v -f temp_nginx-0-0", continue_if_error=False,
                                         error_informative=False)
         self.assertEqual(load.lifecycle.stop.call_count, 2)
         self.assertEqual(errors[0], "event;container;date_time")
         self.assertTrue(errors[1].startswith("start;temp_nginx;"))
+
+
+class KernelLogTest(unittest.TestCase):
+    def _monitoring(self, tmp, disk_device=None):
+        from src.monitoring import MonitoringEnvironment
+        config = mock.Mock(logs_path=tmp, containers=[], energy=mock.Mock())
+        config.general.scripts_folder = tmp
+        config.monitoring.disk_device = disk_device
+        return MonitoringEnvironment(config, ContainerRuntime("docker"), "env")
+
+    def test_only_new_dmesg_lines_are_logged(self):
+        from src import monitoring
+        outputs = iter([["[1] Killed process 1"], [],
+                        ["[1] Killed process 1", "[2] Killed process 2"], ["[5] oom"]])
+        with tempfile.TemporaryDirectory() as tmp:
+            env = self._monitoring(tmp)
+            with mock.patch.object(monitoring, "execute_command_lines", lambda command: next(outputs)):
+                env.kernel_killed_process_monitoring("t1")
+                env.kernel_killed_process_monitoring("t2")
+            killed = Path(tmp, "killed.csv").read_text().splitlines()
+            oom = Path(tmp, "omm.csv").read_text().splitlines()
+        self.assertEqual(killed, ["log;date_time", "[1] Killed process 1;t1", "[2] Killed process 2;t2"])
+        self.assertEqual(oom, ["log;date_time", "[5] oom;t2"])
+
+    def test_configured_disk_skips_detection(self):
+        from src import monitoring
+        with tempfile.TemporaryDirectory() as tmp:
+            env = self._monitoring(tmp, disk_device="nvme0n1")
+            with mock.patch.object(monitoring, "detect_root_disk") as detect, \
+                    mock.patch.object(env, "_start_thread"), mock.patch("builtins.print"):
+                env.start()
+        detect.assert_not_called()
+        self.assertEqual(env.disk_device, "nvme0n1")
+
+    def test_root_disk_falls_back_to_vda(self):
+        from src import runtime
+        with mock.patch.object(runtime, "execute_command", return_value=None), mock.patch("builtins.print"):
+            self.assertEqual(runtime.detect_root_disk(), "vda")
 
 
 if __name__ == "__main__":
