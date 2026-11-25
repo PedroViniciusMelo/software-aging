@@ -1,0 +1,7 @@
+# Analise e graficos (plot/)
+pandas
+matplotlib
+numpy
+scipy
+scikit-learn
+pymannkendall

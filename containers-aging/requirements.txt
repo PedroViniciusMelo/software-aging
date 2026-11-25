@@ -1,0 +1,3 @@
+# Coleta (main.py / src)
+PyYAML
+python-kasa  # opcional: so' usado com energy.enable_tomada: true

@@ -9,3 +9,8 @@ temp_rabbitmq.tar
 temp_redis.tar
 .venv
 plot/data/*
+__pycache__/
+*.pyc
+env/
+logs/
+fake_sysfs/
