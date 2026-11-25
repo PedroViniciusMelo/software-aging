@@ -1312,7 +1312,7 @@
    "died_with": null
   },
   "16": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres",
    "commands": [
     "docker load -i <TMP>/work/temp_postgres.tar -q"
    ],
@@ -1320,7 +1320,7 @@
    "died_with": null
   },
   "16/0": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1330,7 +1330,7 @@
    "died_with": null
   },
   "16/1": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1340,7 +1340,7 @@
    "died_with": null
   },
   "16/2": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1350,7 +1350,7 @@
    "died_with": null
   },
   "16/3": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1360,7 +1360,7 @@
    "died_with": null
   },
   "16/4": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -2102,15 +2102,9 @@
    "commands": [
     "which docker",
     "which podman",
-    "which docker",
-    "which podman",
     "lsb_release -i",
     "lsb_release -r",
-    "which docker",
-    "which podman",
     "docker -v",
-    "which docker",
-    "which podman",
     "rm -rf <TMP>/work/logs",
     "mkdir <TMP>/work/logs",
     "docker stop $(docker ps -aq)",

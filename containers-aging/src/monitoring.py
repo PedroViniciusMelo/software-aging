@@ -1,192 +1,205 @@
+"""Threads de coleta: recursos da maquina, processos, ciclo de vida, fragmentacao, energia e custo."""
 import asyncio
 import threading
 import time
 
-from src.energy import RaplReader, find_pkg_temp_path, sample_power, run_tomada_monitor
+from src.config import Config
+from src.energy import RaplReader, find_pkg_temp_path, run_tomada_monitor, sample_power
+from src.lifecycle import ContainerLifecycle
+from src.runtime import ContainerRuntime
 from src.utils import (
-    execute_command,
-    write_to_file,
-    get_time,
+    CommandError,
     current_time,
+    execute_command,
+    get_time,
+    log_error,
+    write_csv_row,
+    write_to_file,
 )
+
+# Os nomes das threads fazem parte da saida: o monitor de custo grava process_<thread>.csv
+# para cada thread cujo nome comeca com um destes prefixos.
+MONITORING_THREAD_PREFIXES = ('systemtap', 'container_metrics', 'docker_processes', 'podman_processes',
+                              'monitoring', 'monitoring_tomada', 'monitoring_rapl')
+
+PROCESS_HEADER = 'cpu;mem;rss;vsz;threads;swap;date_time'
+# postgres.csv ja e' usado pelo monitor de ciclo de vida do container postgres.
+PROCESS_FILE_NAMES = {'postgres': 'postgres_process'}
+
+STAP_MAX_ATTEMPTS = 11
+STAP_RETRY_DELAY = 120
+PIDSTAT_DURATION = 1  # "pidstat ... 1 1" ja leva 1 s, descontado do intervalo de coleta
 
 
 def _fmt(value, ndigits=4):
-    """Formats an optional numeric reading for CSV output (blank when unavailable)."""
+    """Formata uma leitura numerica opcional para o CSV (vazio quando indisponivel)."""
     return "" if value is None else round(value, ndigits)
 
 
 class MonitoringEnvironment:
-    def __init__(
-            self,
-            path: str,
-            sleep_time: int,
-            software: str,
-            containers: list,
-            sleep_time_container_metrics: int,
-            environment_description: str,
-            using_containers_app_time: bool,
-            enable_rapl: bool = True,
-            sleep_time_rapl: int = 1,
-            rapl_zones: list = None,
-            enable_tomada: bool = False,
-            sleep_time_tomada: int = 300,
-            tomada_ip: str = "",
-            tomada_username: str = "",
-            tomada_password: str = "",
-    ):
-        self.path = path
-        self.log_dir = "logs"
-        self.sleep_time = sleep_time
-        self.software = software
-        self.containers = containers
-        self.sleep_time_container_metrics = sleep_time_container_metrics
+    def __init__(self, config: Config, runtime: ContainerRuntime, environment_description: str):
+        self.path = config.general.scripts_folder
+        self.logs_path = config.logs_path
+        self.containers = config.containers
+        self.monitoring = config.monitoring
+        self.energy = config.energy
+        self.runtime = runtime
         self.environment_description = environment_description
-        self.using_containers_app_time = using_containers_app_time
-        self.enable_rapl = enable_rapl
-        self.sleep_time_rapl = sleep_time_rapl
-        self.rapl_zones = rapl_zones
-        self.enable_tomada = enable_tomada
-        self.sleep_time_tomada = sleep_time_tomada
-        self.tomada_ip = tomada_ip
-        self.tomada_username = tomada_username
-        self.tomada_password = tomada_password
+        self.lifecycle = ContainerLifecycle(runtime)
+
+    def _log(self, filename: str, header: str, *values) -> None:
+        write_csv_row(f"{self.logs_path}/{filename}", header, *values)
+
+    @staticmethod
+    def _start_thread(name: str, target, *args) -> None:
+        threading.Thread(target=target, name=name, args=args, daemon=True).start()
 
     def start(self):
         print("Environment:")
         print(self.environment_description)
         print("Starting monitoring scripts")
 
-        write_to_file(
-            f"{self.path}/{self.log_dir}/environment.txt",
-            "Environment",
-            self.environment_description
-        )
-        self.start_systemtap()
-        self.start_container_lifecycle_monitoring()
-        if self.software == "docker":
-            self.start_docker_process_monitoring()
-        elif self.software == "podman":
-            self.start_podman_process_monitoring()
-        self.start_machine_resources_monitoring()
-        self.start_energy_monitoring()
-        self.track_monitoring_cost()
+        write_to_file(f"{self.logs_path}/environment.txt", "Environment", self.environment_description)
 
-    def start_systemtap(self):
-        def systemtap():
-            retry_count = 0
-            while True:
-                log_file = f"{self.path}/{self.log_dir}/fragmentation_{retry_count}.csv"
-                if retry_count > 10:
-                    print("Tried to start systemtap more than 10 times, skipping....")
-                    break
+        self._start_thread("systemtap", self.systemtap_loop)
+        self._start_thread("container_metrics", self.container_metrics_loop)
+        for process in self.runtime.monitored_processes:
+            self._start_thread(f"{self.runtime.name}_processes{process}", self.process_loop, process)
+        self._start_thread("monitoring", self.machine_resources_loop)
+        if self.energy.enable_rapl:
+            self._start_thread("monitoring_rapl", self.rapl_loop)
+        if self.energy.enable_tomada:
+            self._start_thread("monitoring_tomada", self.tomada_loop)
+        self._start_thread("monitoring_cost", self.monitoring_cost_loop)
 
-                command = (
-                    f"stap -o {log_file} "
-                    "-D STP_OVERLOAD_THRESHOLD=650000000LL "
-                    "-D STP_OVERLOAD_INTERVAL=1000000000LL "
-                    f"{self.path}/fragmentation.stp"
-                )
+    # ---- fragmentacao de memoria (systemtap) -----------------------------------------
+    def systemtap_loop(self):
+        for attempt in range(STAP_MAX_ATTEMPTS):
+            execute_command(
+                f"stap -o {self.logs_path}/fragmentation_{attempt}.csv "
+                "-D STP_OVERLOAD_THRESHOLD=650000000LL "
+                "-D STP_OVERLOAD_INTERVAL=1000000000LL "
+                f"{self.path}/fragmentation.stp",
+                continue_if_error=True, error_informative=False)
+            time.sleep(STAP_RETRY_DELAY)
+        print("Tried to start systemtap more than 10 times, skipping....")
 
-                execute_command(command, continue_if_error=True, error_informative=False)
+    # ---- processos -------------------------------------------------------------------
+    def process_loop(self, process: str):
+        while True:
+            self.get_process_data(process)
+            time.sleep(self.monitoring.sleep_time - PIDSTAT_DURATION)
 
-                retry_count += 1
-                time.sleep(120)
-
-        monitoring_thread = threading.Thread(target=systemtap, name="systemtap")
-        monitoring_thread.daemon = True
-        monitoring_thread.start()
-
-    def start_container_lifecycle_monitoring(self):
-        container_metrics_thread = threading.Thread(target=self.container_metrics, name="container_metrics")
-        container_metrics_thread.daemon = True
-        container_metrics_thread.start()
-
-    # process priority:
-    #   ['docker', 'dockerd', 'containerd', 'containerd-shim', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
-    def start_docker_process_monitoring(self):
-        processes = ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy', 'java', 'postgres',
-                     'beam.smp', 'initdb', 'mysqld']
-
-        for process in processes:
-            process_thread = threading.Thread(target=self.process_monitoring_thread,
-                                              name="docker_processes" + process, args=(process,))
-            process_thread.daemon = True
-            process_thread.start()
-
-    def get_process_data(self, process_name: str, custom_pid: int = ''):
+    def get_process_data(self, process_name: str, custom_pid=None):
+        """Coleta cpu/mem/rss/vsz/threads/swap do processo, tentando ate conseguir."""
         date_time = current_time()
-
         data = []
 
         while len(data) == 0:
             try:
-                if custom_pid != '':
+                if custom_pid is not None:
                     pid = custom_pid
                 else:
                     pid = execute_command(f'pgrep -f {process_name} | head -n 1')
 
                 data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
-
                 threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
                                           continue_if_error=True)
                 swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
                                        continue_if_error=True)
+                cpu, vsz, rss, mem = data[7], data[11], data[12], data[13]
 
-                cpu = data[7]
-                mem = data[13]
-                rss = data[12]
-                vsz = data[11]
-
-                if process_name == 'postgres':
-                    write_to_file(
-                        f'{self.path}/{self.log_dir}/postgres_process.csv',
-                        'cpu;mem;rss;vsz;threads;swap;date_time',
-                        f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
-                    )
-                else:
-                    write_to_file(
-                        f'{self.path}/{self.log_dir}/{process_name}.csv',
-                        'cpu;mem;rss;vsz;threads;swap;date_time',
-                        f'{cpu};{mem};{rss};{vsz};{threads};{swap};{date_time}'
-                    )
-            except:
+                filename = PROCESS_FILE_NAMES.get(process_name, process_name)
+                self._log(f"{filename}.csv", PROCESS_HEADER, cpu, mem, rss, vsz, threads, swap, date_time)
+            except (CommandError, Exception):
                 continue
 
-    def process_monitoring_thread(self, process: str):
+    # ---- ciclo de vida dos containers ---------------------------------------------------
+    def container_metrics_loop(self):
         while True:
-            self.get_process_data(process)
-            time.sleep(self.sleep_time - 1)
+            started = time.time()
+            self.container_lifecycle()
+            remaining = self.monitoring.sleep_time_container_metrics - (time.time() - started)
+            if remaining > 0:
+                time.sleep(remaining)
 
-    # process priority:
-    #   ['podman', 'conmon', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
-    def start_podman_process_monitoring(self):
-        processes = ['podman', 'conmon', 'cron', 'crun', 'systemd', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld']
+    def container_lifecycle(self):
+        """Mede o tempo de cada etapa do ciclo de vida de cada container configurado."""
+        for container in self.containers:
+            date_time = current_time()
+            name = container.name
 
-        for process in processes:
-            process_thread = threading.Thread(target=self.process_monitoring_thread,
-                                              name="podman_processes" + process, args=(process,))
-            process_thread.daemon = True
-            process_thread.start()
+            load_image_time = get_time(self.runtime.load_image(f"{self.path}/{name}.tar"))
 
-    def start_machine_resources_monitoring(self):
-        monitoring_thread = threading.Thread(target=self.machine_resources, name="monitoring")
-        monitoring_thread.daemon = True
-        monitoring_thread.start()
+            start_time = self.lifecycle.start(name, name, container.host_port, container.port)
+            if start_time is None:
+                log_error(self.logs_path, "start", name, date_time)
+                print(f"Could not start container, exiting {name} lifecycle")
+                execute_command(self.runtime.force_remove(name), continue_if_error=False, error_informative=False)
+                return
 
-    def start_energy_monitoring(self):
-        if self.enable_rapl:
-            rapl_thread = threading.Thread(target=self.rapl_monitoring, name="monitoring_rapl")
-            rapl_thread.daemon = True
-            rapl_thread.start()
+            up_time = self.lifecycle.wait_app_time(name) if self.monitoring.using_containers_app_time else ""
+            stop_time = self.lifecycle.stop(name, on_kill=lambda: log_error(self.logs_path, "kill", name, date_time))
+            remove_container_time = self.lifecycle.remove(
+                name, on_force=lambda: log_error(self.logs_path, "force-remove", name, date_time))
+            remove_image_time = get_time(self.runtime.remove_image(name))
 
-        if self.enable_tomada:
-            tomada_thread = threading.Thread(target=self.tomada_monitoring, name="monitoring_tomada")
-            tomada_thread.daemon = True
-            tomada_thread.start()
+            if self.monitoring.using_containers_app_time:
+                self._log(f"{name}.csv", "load_image;start;up_time;stop;remove_container;remove_image;date_time",
+                          load_image_time, start_time, up_time, stop_time, remove_container_time,
+                          remove_image_time, date_time)
+            else:
+                self._log(f"{name}.csv", "load_image;start;stop;remove_container;remove_image;date_time",
+                          load_image_time, start_time, stop_time, remove_container_time, remove_image_time,
+                          date_time)
 
-    def rapl_monitoring(self):
-        reader = RaplReader(zone_filters=self.rapl_zones)
+    # ---- recursos da maquina ---------------------------------------------------------
+    def machine_resources_loop(self):
+        while True:
+            date_time = current_time()
+            self.cpu_monitoring(date_time)
+            self.disk_monitoring(date_time)
+            self.memory_monitoring(date_time)
+            self.process_monitoring(date_time)
+            self.disk_write_and_read_monitoring(date_time)
+            self.kernel_killed_process_monitoring(date_time)
+            time.sleep(self.monitoring.sleep_time)
+
+    def cpu_monitoring(self, date_time):
+        cpu_info = execute_command("mpstat | grep all").split()
+        usr, nice, sys_used, iowait, soft = cpu_info[2], cpu_info[3], cpu_info[4], cpu_info[5], cpu_info[7]
+        self._log("cpu.csv", "usr;nice;sys;iowait;soft;date_time", usr, nice, sys_used, iowait, soft, date_time)
+
+    def disk_monitoring(self, date_time):
+        used = execute_command("df | grep '/$' | awk '{print $3}'")
+        self._log("disk.csv", "used;date_time", used, date_time)
+
+    def memory_monitoring(self, date_time):
+        used = execute_command("free | grep Mem | awk '{print $3}'")
+        cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
+        buffers = execute_command("cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'")
+        swap = execute_command("cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'")
+        self._log("memory.csv", "used;cached;buffers;swap;date_time", used, cached, buffers, swap, date_time)
+
+    def process_monitoring(self, date_time):
+        zombies = execute_command("ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l")
+        self._log("process.csv", "zombies;date_time", zombies, date_time)
+
+    def disk_write_and_read_monitoring(self, date_time):
+        data = execute_command("iostat -d | grep vda").split()
+        tps, read, write, dscd = data[1], data[2], data[3], data[4]
+        self._log("disk_write_read.csv", "tps;kB_reads;kB_wrtns;kB_dscds;date_time", tps, read, write, dscd,
+                  date_time)
+
+    def kernel_killed_process_monitoring(self, date_time):
+        killed = execute_command("dmesg | egrep -i 'killed process'  || true")
+        oom = execute_command("dmesg | grep -i 'oom' || true")
+        self._log("killed.csv", "log;date_time", killed, date_time)
+        self._log("omm.csv", "log;date_time", oom, date_time)
+
+    # ---- energia -----------------------------------------------------------------------
+    def rapl_loop(self):
+        reader = RaplReader(zone_filters=self.energy.rapl_zones)
         temp_path = find_pkg_temp_path()
 
         if not reader.available:
@@ -202,261 +215,39 @@ class MonitoringEnvironment:
         header = ";".join(columns) + ";date_time"
 
         while True:
-            sample = sample_power(reader, temp_path, self.sleep_time_rapl)
+            sample = sample_power(reader, temp_path, self.energy.sleep_time_rapl)
+            values = [_fmt(sample.get(column), 1 if column == "cpu_temp_c" else 4) for column in columns]
+            self._log("energy_rapl.csv", header, *values, current_time())
 
-            values = [
-                _fmt(sample.get(column), 1) if column == "cpu_temp_c" else _fmt(sample.get(column))
-                for column in columns
-            ]
-
-            write_to_file(
-                f"{self.path}/{self.log_dir}/energy_rapl.csv",
-                header,
-                ";".join(str(value) for value in values) + f";{current_time()}"
-            )
-
-    def tomada_monitoring(self):
+    def tomada_loop(self):
         def on_sample(sample):
-            write_to_file(
-                f"{self.path}/{self.log_dir}/energy_tomada.csv",
-                "power_w;kwh_interval;kwh_total;state;date_time",
-                f"{sample['power_w']};{sample['kwh_interval']};"
-                f"{sample['kwh_total']};{sample['state']};{current_time()}"
-            )
+            self._log("energy_tomada.csv", "power_w;kwh_interval;kwh_total;state;date_time",
+                      sample['power_w'], sample['kwh_interval'], sample['kwh_total'], sample['state'],
+                      current_time())
 
         def on_error(message):
-            write_to_file(
-                f"{self.path}/{self.log_dir}/errors.csv",
-                "event;container;date_time",
-                f"tomada;{message};{current_time()}"
-            )
+            log_error(self.logs_path, "tomada", message, current_time())
 
         try:
             asyncio.run(run_tomada_monitor(
-                ip=self.tomada_ip,
-                username=self.tomada_username,
-                password=self.tomada_password,
-                interval=self.sleep_time_tomada,
+                ip=self.energy.tomada_ip,
+                username=self.energy.tomada_username,
+                password=self.energy.tomada_password,
+                interval=self.energy.sleep_time_tomada,
                 on_sample=on_sample,
                 on_error=on_error,
             ))
         except ImportError:
             print("Pacote 'python-kasa' nao instalado.")
 
-    def container_lifecycle(self):
-        for container in self.containers:
-            date_time = current_time()
-            container_name = container["name"]
-            host_port = container["host_port"]
-            container_port = container["port"]
-
-            load_image_time = get_time(f"{self.software} load -i {self.path}/{container_name}.tar -q")
-
-            try:
-                start_time = get_time(
-                    f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}")
-            except:
-                print("Could not start container, executing fallback method")
-                has_container = execute_command(
-                    f"{self.software} container inspect {container_name} > /dev/null 2>&1 && echo true",
-                    continue_if_error=True, error_informative=False)
-                if has_container is not None:
-                    execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
-                                    error_informative=False)
-                    has_container = None
-
-                tries = 0
-                while has_container is None:
-                    if tries > 5:
-                        write_to_file(
-                            f'{self.path}/{self.log_dir}/errors.csv',
-                            'event;container;date_time',
-                            f'start;{container_name};{date_time}'
-                        )
-                        print(f"Could not start container, exiting {container_name} lifecycle")
-                        execute_command(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
-                                        error_informative=False)
-                        return
-                    time.sleep(2)
-                    try:
-                        start_time = get_time(
-                            f"{self.software} run --name {container_name} -td -p {host_port}:{container_port} --init {container_name}",
-                            continue_if_error=False, error_informative=False)
-                        has_container = execute_command(
-                            f"{self.software} container inspect {container_name} > /dev/null 2>&1 && echo true",
-                            continue_if_error=True, error_informative=False)
-                    except:
-                        tries += 1
-
-            up_time = ""
-            if self.using_containers_app_time:
-                up_time = execute_command(
-                    f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
-                    continue_if_error=True, error_informative=False)
-
-                while up_time is None:
-                    time.sleep(0.5)
-                    up_time = execute_command(
-                        f"{self.software} exec -i {container_name} sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
-                        continue_if_error=True, error_informative=False)
-
-            try:
-                stop_time = get_time(f"{self.software} stop {container_name}", continue_if_error=False,
-                                     error_informative=False)
-            except:
-                write_to_file(
-                    f'{self.path}/{self.log_dir}/errors.csv',
-                    'event;container;date_time',
-                    f'kill;{container_name};{date_time}'
-                )
-                stop_time = get_time(f"{self.software} kill {container_name}", continue_if_error=True,
-                                     error_informative=False)
-
-            try:
-                remove_container_time = get_time(f"{self.software} rm -v {container_name}", continue_if_error=False,
-                                                 error_informative=False)
-            except:
-                print("Forced container removal")
-                write_to_file(
-                    f'{self.path}/{self.log_dir}/errors.csv',
-                    'event;container;date_time',
-                    f'force-remove;{container_name};{date_time}'
-                )
-                remove_container_time = get_time(f"{self.software} rm -v -f {container_name}", continue_if_error=False,
-                                                 error_informative=True)
-
-            remove_image_time = get_time(f"{self.software} rmi {container_name}")
-
-            if self.using_containers_app_time:
-                write_to_file(
-                    f"{self.path}/{self.log_dir}/{container_name}.csv",
-                    "load_image;start;up_time;stop;remove_container;remove_image;date_time",
-                    f"{load_image_time};{start_time};{up_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}"
-                )
-            else:
-                write_to_file(
-                    f"{self.path}/{self.log_dir}/{container_name}.csv",
-                    "load_image;start;stop;remove_container;remove_image;date_time",
-                    f"{load_image_time};{start_time};{stop_time};{remove_container_time};{remove_image_time};{date_time}")
-
-    def machine_resources(self):
+    # ---- custo do proprio monitoramento ----------------------------------------------------
+    def monitoring_cost_loop(self):
         while True:
-            date_time = current_time()
-            self.cpu_monitoring(date_time)
-            self.disk_monitoring(date_time)
-            self.memory_monitoring(date_time)
-            self.process_monitoring(date_time)
-            self.disk_write_and_read_monitoring(date_time)
-            self.kernel_killed_process_monitoring(date_time)
-            time.sleep(self.sleep_time)
-
-    def container_metrics(self):
-        start_time = time.time()
-        self.container_lifecycle()
-        end_time = time.time()
-
-        time_taken = end_time - start_time
-        sleep_time = self.sleep_time_container_metrics - time_taken
-
-        while True:
-            if sleep_time > 0:
-                time.sleep(sleep_time)
-            start_time = time.time()
-            self.container_lifecycle()
-            end_time = time.time()
-
-            time_taken = end_time - start_time
-            sleep_time = self.sleep_time_container_metrics - time_taken
-
-    def disk_monitoring(self, date_time):
-        comando = "df | grep '/$' | awk '{print $3}'"
-        mem = execute_command(comando)
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/disk.csv",
-            "used;date_time",
-            f"{mem};{date_time}"
-        )
-
-    def disk_write_and_read_monitoring(self, date_time):
-        comando = "iostat -d | grep vda"
-        data = execute_command(comando).split()
-        tps = data[1]
-        read = data[2]
-        write = data[3]
-        dscd = data[4]
-        write_to_file(
-            f"{self.path}/{self.log_dir}/disk_write_read.csv",
-            "tps;kB_reads;kB_wrtns;kB_dscds;date_time",
-            f"{tps};{read};{write};{dscd};{date_time}"
-        )
-
-    def cpu_monitoring(self, date_time):
-        cpu_info = execute_command("mpstat | grep all").split()
-        usr = cpu_info[2]
-        nice = cpu_info[3]
-        sys_used = cpu_info[4]
-        iowait = cpu_info[5]
-        soft = cpu_info[7]
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/cpu.csv",
-            "usr;nice;sys;iowait;soft;date_time",
-            f"{usr};{nice};{sys_used};{iowait};{soft};{date_time}"
-        )
-
-    def memory_monitoring(self, date_time):
-        used = execute_command("free | grep Mem | awk '{print $3}'")
-        cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
-        buffers = execute_command("cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'")
-        swap = execute_command("cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'")
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/memory.csv",
-            "used;cached;buffers;swap;date_time",
-            f"{used};{cached};{buffers};{swap};{date_time}"
-        )
-
-    def process_monitoring(self, date_time):
-        zombies = execute_command("ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l")
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/process.csv",
-            "zombies;date_time",
-            f"{zombies};{date_time}"
-        )
-
-    def kernel_killed_process_monitoring(self, date_time):
-        killed = execute_command("dmesg | egrep -i 'killed process'  || true")
-        omm = execute_command("dmesg | grep -i 'oom' || true")
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/killed.csv",
-            "log;date_time",
-            f"{killed};{date_time}"
-        )
-
-        write_to_file(
-            f"{self.path}/{self.log_dir}/omm.csv",
-            "log;date_time",
-            f"{omm};{date_time}"
-        )
-
-    def track_monitoring_cost(self):
-        def monitoring_cost():
-            while True:
-                try:
-                    for thread in threading.enumerate():
-                        if thread.name.startswith(('systemtap', 'container_metrics', 'docker_processes',
-                                                   'podman_processes', 'monitoring', 'monitoring_tomada', 'monitoring_rapl')):
-                            tid = thread.native_id
-
-                            self.get_process_data(process_name="process_" + thread.name, custom_pid=tid)
-                    time.sleep(self.sleep_time)
-                except Exception as e:
-                    print(f"Erro no monitoramento de custo: {e}")
-                    time.sleep(self.sleep_time)
-
-        monitoring_thread = threading.Thread(target=monitoring_cost, name="monitoring_cost")
-        monitoring_thread.daemon = True
-        monitoring_thread.start()
+            try:
+                for thread in threading.enumerate():
+                    if thread.name.startswith(MONITORING_THREAD_PREFIXES):
+                        self.get_process_data(process_name="process_" + thread.name, custom_pid=thread.native_id)
+                time.sleep(self.monitoring.sleep_time)
+            except Exception as e:
+                print(f"Erro no monitoramento de custo: {e}")
+                time.sleep(self.monitoring.sleep_time)

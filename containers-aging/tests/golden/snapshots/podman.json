@@ -1301,7 +1301,7 @@
    "died_with": null
   },
   "14": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres",
    "commands": [
     "podman load -i <TMP>/work/temp_postgres.tar -q"
    ],
@@ -1309,7 +1309,7 @@
    "died_with": null
   },
   "14/0": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "podman run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "podman exec -i temp_temp_postgres-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1321,7 +1321,7 @@
    "died_with": null
   },
   "14/1": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "podman run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "podman exec -i temp_temp_postgres-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1332,7 +1332,7 @@
    "died_with": null
   },
   "14/2": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "podman run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "podman exec -i temp_temp_postgres-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1343,7 +1343,7 @@
    "died_with": null
   },
   "14/3": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "podman run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "podman exec -i temp_temp_postgres-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1354,7 +1354,7 @@
    "died_with": null
   },
   "14/4": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "podman run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "podman exec -i temp_temp_postgres-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1365,7 +1365,7 @@
    "died_with": null
   },
   "15": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis",
    "commands": [
     "podman load -i <TMP>/work/temp_redis.tar -q"
    ],
@@ -1373,7 +1373,7 @@
    "died_with": null
   },
   "15/0": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "podman run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "podman container inspect temp_temp_redis-0-0 > /dev/null 2>&1 && echo true",
@@ -1389,7 +1389,7 @@
    "died_with": null
   },
   "15/1": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "podman run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "podman exec -i temp_temp_redis-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1400,7 +1400,7 @@
    "died_with": null
   },
   "15/2": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "podman run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "podman exec -i temp_temp_redis-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1411,7 +1411,7 @@
    "died_with": null
   },
   "15/3": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "podman run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "podman exec -i temp_temp_redis-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1422,7 +1422,7 @@
    "died_with": null
   },
   "15/4": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "podman run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "podman exec -i temp_temp_redis-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1433,7 +1433,7 @@
    "died_with": null
   },
   "16": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq",
    "commands": [
     "podman load -i <TMP>/work/temp_rabbitmq.tar -q"
    ],
@@ -1441,7 +1441,7 @@
    "died_with": null
   },
   "16/0": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq_0",
    "commands": [
     "podman run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
     "podman exec -i temp_temp_rabbitmq-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1454,7 +1454,7 @@
    "died_with": null
   },
   "16/1": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq_0",
    "commands": [
     "podman run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
     "podman exec -i temp_temp_rabbitmq-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1466,7 +1466,7 @@
    "died_with": null
   },
   "16/2": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq_0",
    "commands": [
     "podman run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
     "podman exec -i temp_temp_rabbitmq-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1478,7 +1478,7 @@
    "died_with": null
   },
   "16/3": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq_0",
    "commands": [
     "podman run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
     "podman exec -i temp_temp_rabbitmq-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1490,7 +1490,7 @@
    "died_with": null
   },
   "16/4": {
-   "name": "{'name': 'rabbitmq', 'version': '4.0-rc-management', 'host_port': 5672, 'port': 5672, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_rabbitmq_0",
    "commands": [
     "podman run --name temp_temp_rabbitmq-0-0 -td -p 5772:5672 --init temp_rabbitmq",
     "podman exec -i temp_temp_rabbitmq-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1502,7 +1502,7 @@
    "died_with": null
   },
   "17": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx",
    "commands": [
     "podman load -i <TMP>/work/temp_nginx.tar -q"
    ],
@@ -1510,7 +1510,7 @@
    "died_with": null
   },
   "17/0": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx_0",
    "commands": [
     "podman run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
     "podman exec -i temp_temp_nginx-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1523,7 +1523,7 @@
    "died_with": null
   },
   "17/1": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx_0",
    "commands": [
     "podman run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
     "podman exec -i temp_temp_nginx-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1535,7 +1535,7 @@
    "died_with": null
   },
   "17/2": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx_0",
    "commands": [
     "podman run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
     "podman exec -i temp_temp_nginx-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1547,7 +1547,7 @@
    "died_with": null
   },
   "17/3": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx_0",
    "commands": [
     "podman run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
     "podman exec -i temp_temp_nginx-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -1559,7 +1559,7 @@
    "died_with": null
   },
   "17/4": {
-   "name": "{'name': 'nginx', 'version': '1.27.1-bookworm', 'host_port': 8085, 'port': 80, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_nginx_0",
    "commands": [
     "podman run --name temp_temp_nginx-0-0 -td -p 8185:80 --init temp_nginx",
     "podman exec -i temp_temp_nginx-0-0 sh -c \"test -e /root/log.txt && cat /root/log.txt\"",
@@ -2303,15 +2303,9 @@
    "commands": [
     "which docker",
     "which podman",
-    "which docker",
-    "which podman",
     "lsb_release -i",
     "lsb_release -r",
-    "which docker",
-    "which podman",
     "podman -v",
-    "which docker",
-    "which podman",
     "rm -rf <TMP>/work/logs",
     "mkdir <TMP>/work/logs",
     "podman stop $(podman ps -aq)",

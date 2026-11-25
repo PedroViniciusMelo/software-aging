@@ -1368,7 +1368,7 @@
    "died_with": null
   },
   "15": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres",
    "commands": [
     "docker load -i <TMP>/work/temp_postgres.tar -q"
    ],
@@ -1376,7 +1376,7 @@
    "died_with": null
   },
   "15/0": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1386,7 +1386,7 @@
    "died_with": null
   },
   "15/1": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1396,7 +1396,7 @@
    "died_with": null
   },
   "15/2": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1406,7 +1406,7 @@
    "died_with": null
   },
   "15/3": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1416,7 +1416,7 @@
    "died_with": null
   },
   "15/4": {
-   "name": "{'name': 'postgres', 'version': '16.4-bookworm', 'host_port': 5432, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_postgres_0",
    "commands": [
     "docker run --name temp_temp_postgres-0-0 -td -p 5532:5432 --init temp_postgres",
     "docker stop temp_temp_postgres-0-0",
@@ -1426,7 +1426,7 @@
    "died_with": null
   },
   "16": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg",
    "commands": [
     "docker load -i <TMP>/work/temp_badimg.tar -q"
    ],
@@ -1434,7 +1434,7 @@
    "died_with": null
   },
   "16/0": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg_0",
    "commands": [
     "docker run --name temp_temp_badimg-0-0 -td -p 7100:5432 --init temp_badimg",
     "docker stop temp_temp_badimg-0-0",
@@ -1444,7 +1444,7 @@
    "died_with": null
   },
   "16/1": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg_0",
    "commands": [
     "docker run --name temp_temp_badimg-0-0 -td -p 7100:5432 --init temp_badimg",
     "docker stop temp_temp_badimg-0-0",
@@ -1454,7 +1454,7 @@
    "died_with": null
   },
   "16/2": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg_0",
    "commands": [
     "docker run --name temp_temp_badimg-0-0 -td -p 7100:5432 --init temp_badimg",
     "docker stop temp_temp_badimg-0-0",
@@ -1464,7 +1464,7 @@
    "died_with": null
   },
   "16/3": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg_0",
    "commands": [
     "docker run --name temp_temp_badimg-0-0 -td -p 7100:5432 --init temp_badimg",
     "docker stop temp_temp_badimg-0-0",
@@ -1474,7 +1474,7 @@
    "died_with": null
   },
   "16/4": {
-   "name": "{'name': 'badimg', 'version': '16.4-bookworm', 'host_port': 7000, 'port': 5432, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_badimg_0",
    "commands": [
     "docker run --name temp_temp_badimg-0-0 -td -p 7100:5432 --init temp_badimg",
     "docker stop temp_temp_badimg-0-0",
@@ -1484,7 +1484,7 @@
    "died_with": null
   },
   "17": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis",
    "commands": [
     "docker load -i <TMP>/work/temp_redis.tar -q"
    ],
@@ -1492,7 +1492,7 @@
    "died_with": null
   },
   "17/0": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "docker container inspect temp_temp_redis-0-0 > /dev/null 2>&1 && echo true",
@@ -1506,7 +1506,7 @@
    "died_with": null
   },
   "17/1": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "docker stop temp_temp_redis-0-0",
@@ -1516,7 +1516,7 @@
    "died_with": null
   },
   "17/2": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "docker stop temp_temp_redis-0-0",
@@ -1526,7 +1526,7 @@
    "died_with": null
   },
   "17/3": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "docker stop temp_temp_redis-0-0",
@@ -1536,7 +1536,7 @@
    "died_with": null
   },
   "17/4": {
-   "name": "{'name': 'redis', 'version': '7.4.0-bookworm', 'host_port': 6380, 'port': 6379, 'min_container_wait_time': 1, 'max_container_wait_time': 10}",
+   "name": "stressload_redis_0",
    "commands": [
     "docker run --name temp_temp_redis-0-0 -td -p 6480:6379 --init temp_redis",
     "docker stop temp_temp_redis-0-0",
@@ -2302,15 +2302,9 @@
     "docker rmi redis:latest",
     "docker rmi temp_redis:latest",
     "docker rmi redis:7.4.0-bookworm",
-    "which docker",
-    "which podman",
     "lsb_release -i",
     "lsb_release -r",
-    "which docker",
-    "which podman",
     "docker -v",
-    "which docker",
-    "which podman",
     "rm -rf <TMP>/work/logs",
     "mkdir <TMP>/work/logs",
     "docker stop $(docker ps -aq)",

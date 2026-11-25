@@ -129,7 +129,7 @@ INSTALL_PYTHON_DEPENDENCIES() {
 
   source env/bin/activate
 
-  pip install PyYAML python-kasa
+  pip install -r requirements.txt
 }
 
 INSTALL_LIBRARIES_FOR_MONITORING() {
