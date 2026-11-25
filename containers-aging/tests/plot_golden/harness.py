@@ -33,7 +33,7 @@ COMMANDS = [
     ("plot_data", ["plot_data.py"]),
     ("theilsen", ["theilsen.py"]),
     ("mannkendall", ["mannkendall.py"]),
-    ("mannkendall_summary", ["temp.py"]),
+    ("mannkendall_summary", ["mannkendall_summary.py"]),
 ]
 
 

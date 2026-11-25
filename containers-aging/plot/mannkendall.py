@@ -1,29 +1,18 @@
+"""
+Teste de Mann-Kendall (tendencia) de memoria e CPU por cenario e por periodo do experimento.
+
+    python3 plot/mannkendall.py [base_dir] [--output arquivo.csv]
+    (padrao: base_dir "D:/final", saida "<base_dir>/mann_kendall_results.csv")
+"""
+import argparse
+from pathlib import Path
+
 import pandas as pd
 from pymannkendall import original_test
-from pathlib import Path
-from sklearn.preprocessing import MinMaxScaler
 
-def extract_categorical_info(folder_name):
-    """Extract System, Software, and Software Version based on folder name."""
-    system = None
-    software = None
-    version = None
+from scenario import extract_categorical_info
 
-    if "debian" in folder_name:
-        system = "Debian 12"
-    elif "ubuntu22" in folder_name:
-        system = "Ubuntu 22.04"
-    elif "ubuntu24" in folder_name:
-        system = "Ubuntu 24.04"
-
-    if "docker" in folder_name:
-        software = "Docker"
-        version = "27.2" if "novo" in folder_name else "23"
-    elif "podman" in folder_name:
-        software = "Podman"
-        version = "5.1.3"
-
-    return system, software, version
+DEFAULT_BASE_DIR = "D:/final"
 
 
 def perform_mann_kendall_analysis(data, columns, intervals):
@@ -45,16 +34,6 @@ def perform_mann_kendall_analysis(data, columns, intervals):
                 "z": mk_result.z
             })
     return results
-
-
-def normalize_columns(df, columns):
-    """Apply Min-Max normalization to each column independently."""
-    for column in columns:
-        if column in df.columns:
-            min_val = df[column].min()
-            max_val = df[column].max()
-            df[column] = (df[column] - min_val) / (max_val - min_val) if max_val > min_val else 0
-    return df
 
 
 def analyze_folder(folder_path, output_data):
@@ -115,9 +94,6 @@ def analyze_folder(folder_path, output_data):
         if "swap" in df.columns:
             df["swap"] = (df["swap"] - 8192) * -1
 
-        # Apply Min-Max normalization
-        #df = normalize_columns(df, columns)
-
         # Perform Mann-Kendall analysis
         mk_results = perform_mann_kendall_analysis(df, columns, intervals)
 
@@ -154,9 +130,13 @@ def main(base_directory, output_csv_path):
     print("Analysis complete.")
 
 
-# Execute the main function
-base_directory = "D:/final"  # Substitua pelo caminho correto
-output_csv_path = "D:/final/mann_kendall_results.csv"
-main(base_directory, output_csv_path)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("base_dir", nargs="?", default=DEFAULT_BASE_DIR,
+                        help="pasta com uma subpasta por cenario (padrao: %(default)s)")
+    parser.add_argument("--output", help="CSV de saida (padrao: <base_dir>/mann_kendall_results.csv)")
+    args = parser.parse_args()
+    output_csv_path = args.output or f"{args.base_dir}/mann_kendall_results.csv"
 
-print(f"Mann-Kendall results saved to {output_csv_path}")
+    main(args.base_dir, output_csv_path)
+    print(f"Mann-Kendall results saved to {output_csv_path}")

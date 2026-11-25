@@ -1,10 +1,23 @@
-import pandas as pd
-import numpy as np
-from scipy.stats import theilslopes
+"""
+Theil-Sen: inclinacao (tendencia) de memoria e CPU em cada cenario e um indice de
+envelhecimento a partir das inclinacoes normalizadas. Salva CSV/PNGs no diretorio atual.
+
+    python3 plot/theilsen.py [logs_dir]      # padrao: ./logs
+"""
+import argparse
+import json  # cache dos resultados por pasta
 from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.stats import theilslopes
 from sklearn.preprocessing import MinMaxScaler
-import json  # Added for caching
+
+from scenario import extract_categorical_info
+
+UNKNOWN_SCENARIO = ("Unknown OS", "Unknown Software", "N/A")
+DEFAULT_LOGS_DIR = "./logs"
 
 
 # Helper functions for NaN conversion for JSON compatibility
@@ -28,37 +41,6 @@ def convert_none_to_nan(obj):
     elif obj is None:
         return np.nan
     return obj
-
-
-# Função fornecida pelo usuário para extrair informações do nome da pasta
-def extract_categorical_info(folder_name):
-    """Extract System, Software, and Software Version based on folder name."""
-    folder_name_lower = folder_name.lower()
-
-    # Determine System
-    if "debian" in folder_name_lower:
-        system = "Debian 12"
-    elif "ubuntu22" in folder_name_lower:
-        system = "Ubuntu 22.04"
-    elif "ubuntu24" in folder_name_lower:
-        system = "Ubuntu 24.04"
-    else:
-        system = "Unknown OS"
-
-    # Determine Software and Version
-    if "docker" in folder_name_lower:
-        software = "Docker"
-        version = "23"  # Default Docker version
-        if "novo" in folder_name_lower:  # Assuming "novo" implies the newer version
-            version = "27.2"
-    elif "podman" in folder_name_lower:
-        software = "Podman"
-        version = "5.1.3"  # Default Podman version if not specified otherwise
-    else:
-        software = "Unknown Software"
-        version = "N/A"
-
-    return system, software, version
 
 
 # Robust Slope calculation
@@ -127,7 +109,7 @@ def process_folder(subfolder_path):
 
     print(f"Cache MISS: Processando: {folder_name}")
 
-    system, software, version = extract_categorical_info(folder_name)
+    system, software, version = extract_categorical_info(folder_name, unknown=UNKNOWN_SCENARIO)
     scenario_label = f"{system} - {software} {version}"
 
     current_folder_results = {
@@ -230,8 +212,8 @@ def process_folder(subfolder_path):
     return current_folder_results
 
 
-def main():
-    root_folder_path = Path("./logs")
+def main(logs_dir=DEFAULT_LOGS_DIR):
+    root_folder_path = Path(logs_dir)
     all_results_data = []
 
     print(f"Analisando pastas em: {root_folder_path.resolve()}")
@@ -432,4 +414,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("logs_dir", nargs="?", default=DEFAULT_LOGS_DIR,
+                        help="pasta com uma subpasta por cenario (padrao: %(default)s)")
+    main(parser.parse_args().logs_dir)
