@@ -87,5 +87,5 @@ headers e símbolos dele normalmente não existem no repositório da imagem.
 
 Os scripts de `plot/` identificam o cenário pelo nome da pasta, no formato
 `<sistema><versão>_<runtime>_<versão>`, por exemplo `debian12_docker_27.2.0` ou
-`fedora45_podman_5.1.2`. Os nomes antigos (`docker_novo`, `docker_velho`, `podman`) continuam
-sendo reconhecidos.
+`fedora45_podman_5.1.2`. Nomes antigos (`docker_novo`, `docker_velho`) não são mais reconhecidos
+(aparecem como `unknown`): renomeie as pastas de resultados antigas para o formato com versão.
