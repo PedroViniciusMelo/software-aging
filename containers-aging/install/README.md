@@ -59,30 +59,6 @@ Se uma versão antiga não compilar num sistema novo (por exemplo, por um gcc ma
 primeiro recurso é ajustar flags no componente. O "malabarismo" antigo (usar o repositório de
 outra distro) só vale se o binário resultante for comprovadamente o mesmo nos sistemas.
 
-## Testes
-
-`tests/install/run-in-container.sh <imagem> <docker|podman>` roda o instalador num container
-descartável e privilegiado. Depois verifica o venv, o systemtap, a remoção das ferramentas de
-build e sobe um container de verdade com o runtime compilado (`--init` e porta publicada). O
-host não é alterado.
-
-```bash
-tests/install/run-in-container.sh debian:12 docker
-tests/install/run-in-container.sh fedora:latest podman
-```
-
-Quando passa, o container instalado vira a imagem `containers-aging-test:<distro>-<runtime>`
-(ex.: `containers-aging-test:debian-12-docker`). Para repetir a verificação nessas imagens sem
-recompilar nada:
-
-```bash
-tests/install/smoke.sh                    # todas as imagens
-tests/install/smoke.sh fedora-latest-podman
-```
-
-Esse teste não exercita o systemtap contra o kernel: o kernel do container é o do host, e os
-headers e símbolos dele normalmente não existem no repositório da imagem.
-
 ## Nomes das pastas de resultados
 
 Os scripts de `plot/` identificam o cenário pelo nome da pasta, no formato

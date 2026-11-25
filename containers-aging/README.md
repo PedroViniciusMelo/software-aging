@@ -84,17 +84,4 @@ fragmentation.stp       script systemtap de fragmentação de memória
 install/                instalador (versões fixas, compilação do fonte)
 plot/                   análise e gráficos dos resultados
 tools/                  hardware falso (RAPL e tomada) para testar a coleta de energia
-tests/                  testes automatizados
 ```
-
-## Testes
-
-```bash
-env/bin/python -m unittest discover -s tests -t .
-```
-
-Os testes não executam nada de verdade na máquina: comandos, relógio e sensores são
-simulados, e a saída é comparada com um resultado de referência. O teste dos gráficos só
-roda quando `PLOT_PYTHON` aponta para um Python com as bibliotecas de `plot/requirements.txt`.
-Os testes do instalador (`tests/install/`) rodam em containers descartáveis; veja
-[`install/README.md`](install/README.md#testes).
