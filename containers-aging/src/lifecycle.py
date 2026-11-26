@@ -3,7 +3,7 @@ import time
 from typing import Callable, Optional
 
 from src.runtime import ContainerRuntime
-from src.utils import CommandError, execute_command, get_time
+from src.utils import CommandError, execute_command, get_time, log
 
 START_MAX_RETRIES = 5
 START_RETRY_DELAY = 2
@@ -29,7 +29,7 @@ class ContainerLifecycle:
         try:
             return get_time(command)
         except CommandError:
-            print("Could not start container, executing fallback method")
+            log.warning("Could not start container %s, retrying", container)
 
         if self.exists(container):
             execute_command(self.runtime.force_remove(container), continue_if_error=False, error_informative=False)
@@ -67,6 +67,6 @@ class ContainerLifecycle:
         try:
             return get_time(self.runtime.remove(container), continue_if_error=False, error_informative=False)
         except CommandError:
-            print("Forced container removal")
+            log.warning("Could not remove container %s, forcing removal", container)
             on_force()
             return get_time(self.runtime.force_remove(container), continue_if_error=False, error_informative=True)

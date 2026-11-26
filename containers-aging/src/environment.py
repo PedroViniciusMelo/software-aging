@@ -6,15 +6,16 @@ import sys
 import time
 from datetime import datetime, timedelta
 
+from src import activity
 from src.config import DEFAULT_CONFIG_PATH, Config, load_config
+from src.console import Console, ExperimentStatus
 from src.images import build_images
+from src.logsetup import attach_log_file, setup_logging
 from src.monitoring import MonitoringEnvironment
+from src.rejuvenation import RejuvenationContext, create_method
 from src.runtime import ContainerRuntime, describe_environment, detect_runtime, scenario_name
 from src.stressload import StressLoad
-from src.utils import current_time, execute_command, write_csv_row
-
-REJUVENATION_DELAY = 5
-PROGRESS_BAR_SIZE = 50
+from src.utils import current_time, execute_command, log, write_csv_row
 
 
 class Environment:
@@ -28,9 +29,17 @@ class Environment:
         self.monitoring_environment = monitoring_environment
         self.stressload = StressLoad(runtime, config.stressload, self.path, self.logs_path,
                                      config.monitoring.using_containers_app_time)
+        self.status = ExperimentStatus(self.general.runs)
+        # criado ja' aqui para que um nome de metodo errado falhe antes de comecar o experimento
+        self.rejuvenation = create_method(RejuvenationContext(
+            runtime=runtime, config=config.rejuvenation, logs_path=self.logs_path,
+            start_teastore=self.start_teastore, lifecycle_lock=monitoring_environment.lifecycle_lock,
+        )) if self.general.apply_rejuvenation else None
+        if self.rejuvenation:
+            self.status.rejuvenation = f"{self.rejuvenation.name} - {self.rejuvenation.description}"
 
     def clear(self):
-        print("Cleaning old logs and containers")
+        log.info("Cleaning old logs, containers, images and volumes")
         execute_command(f"rm -rf {self.logs_path}", continue_if_error=True, error_informative=False)
         execute_command(f"mkdir {self.logs_path}", continue_if_error=True, error_informative=False)
         self.clear_containers_and_images()
@@ -39,43 +48,49 @@ class Environment:
         for command in self.runtime.cleanup_commands():
             execute_command(command, continue_if_error=True, error_informative=False)
 
-    def rejuvenation_method(self):
-        print("Applying rejuvenation")
-        self.clear_containers_and_images()
-        time.sleep(REJUVENATION_DELAY)
-        self.start_teastore()
-
     def start_teastore(self):
-        print("Starting teastore")
+        log.info("Starting TeaStore (takes ~6 minutes)")
         execute_command(f"{self.path}/start_teastore.sh {self.runtime}", informative=True, error_informative=True)
 
     def run(self):
         self.clear()
+        if self.config.logging.to_file:
+            attach_log_file(self.logs_path)
+        log.info("Rejuvenation: %s", self.status.rejuvenation)
+        self.status.set_phase("starting TeaStore")
         self.start_teastore()
         self.monitoring_environment.start()
+        if self.config.console.enabled:
+            Console(self.status, self.monitoring_environment).start()
 
-        now = datetime.now()
-        end = datetime.now() + timedelta(
-            seconds=(self.stress.max_stress_time * self.general.runs + self.stress.wait_after_stress * self.general.runs))
-        print(f"{now} - Script should end at around {end}")
+        cycle = self.stress.max_stress_time + self.stress.wait_after_stress
+        self.status.expected_end = datetime.now() + timedelta(seconds=cycle * self.general.runs)
+        log.info("Experiment: %d runs of %ds stress + %ds rest; should end at around %s",
+                 self.general.runs, self.stress.max_stress_time, self.stress.wait_after_stress,
+                 f"{self.status.expected_end:%Y-%m-%d %H:%M:%S}")
 
-        for current_run in range(self.general.runs):
-            self._print_progress_bar(current_run)
+        for current_run in range(1, self.general.runs + 1):
+            log.info("Run %d/%d (%d%% done)", current_run, self.general.runs,
+                     100 * (current_run - 1) // self.general.runs)
 
             if not self.stress.stressload_first:
-                self._rest()
+                self._rest(current_run)
 
             self._log_event("stress")
+            self.status.set_phase("stress", current_run, self._until(self.stress.max_stress_time))
+            log.info("Stress phase until %s", f"{self.status.phase_until:%Y-%m-%d %H:%M:%S}")
             self.stressload.run(self.config.containers, self.stress.max_stress_time)
 
-            if self.general.apply_rejuvenation:
-                self.rejuvenation_method()
+            if self.rejuvenation:
+                self._log_event("rejuvenation")
+                self.status.set_phase("rejuvenation", current_run)
+                self.rejuvenation()
 
             if self.stress.stressload_first:
-                self._rest()
+                self._rest(current_run)
 
-        self._print_progress_bar(self.general.runs)
-        print(f"\nEnded at {datetime.now()}")
+        self.status.set_phase("finished")
+        log.info("Experiment ended")
         self.monitoring_environment.stop()
 
         if self.general.plot_results:
@@ -85,38 +100,38 @@ class Environment:
         """Copia logs/ para results/<cenario>_<data>, no formato de nome lido por plot/."""
         folder = f"{self.path}/results/{scenario_name(self.runtime)}_{datetime.now():%Y%m%d-%H%M}"
         shutil.copytree(self.logs_path, folder)
-        print(f"Results saved to {folder}")
+        log.info("Results saved to %s", folder)
         return folder
 
     def plot(self, folder: str) -> None:
         """Gera os graficos num processo separado (o coletor nao importa as libs de plot/)."""
-        print("Plotting results")
+        log.info("Plotting results")
         result = subprocess.run([sys.executable, f"{self.path}/plot/plot_data.py", folder],
                                 env={**os.environ, "MPLBACKEND": "Agg"})
         if result.returncode != 0:
-            print(f"Plotting failed. Run it again with: {sys.executable} plot/plot_data.py {folder}")
+            log.warning("Plotting failed. Run it again with: %s plot/plot_data.py %s", sys.executable, folder)
 
-    def _rest(self):
+    @staticmethod
+    def _until(seconds: int) -> datetime:
+        return datetime.now() + timedelta(seconds=seconds)
+
+    def _rest(self, current_run: int):
         self._log_event("sleep")
+        self.status.set_phase("rest", current_run, self._until(self.stress.wait_after_stress))
+        log.info("Rest phase until %s", f"{self.status.phase_until:%Y-%m-%d %H:%M:%S}")
+        activity.waiting(self.stress.wait_after_stress, "rest phase")
         time.sleep(self.stress.wait_after_stress)
 
     def _log_event(self, event: str):
         write_csv_row(f"{self.logs_path}/runs.csv", "event;date_time", event, current_time())
 
-    def _print_progress_bar(self, current_run: int, text: str = "Progress"):
-        current_progress = current_run / self.general.runs
-        sys.stdout.write(
-            f"\r{text}: [{'=' * int(PROGRESS_BAR_SIZE * current_progress):{PROGRESS_BAR_SIZE}s}] "
-            f"{round(current_progress, 2) * 100}%"
-        )
-        sys.stdout.flush()
-
 
 def run_experiment(config_path: str = DEFAULT_CONFIG_PATH) -> None:
     config = load_config(config_path)
+    setup_logging(config.logging.informative, config.logging.debug)
     runtime = detect_runtime()
+    monitoring_environment = MonitoringEnvironment(config, runtime, describe_environment(runtime))
+    environment = Environment(config, runtime, monitoring_environment)
 
     build_images(runtime, config.containers, config.general.scripts_folder, config.setup.rebuild_images)
-
-    monitoring_environment = MonitoringEnvironment(config, runtime, describe_environment(runtime))
-    Environment(config, runtime, monitoring_environment).run()
+    environment.run()

@@ -18,7 +18,7 @@ PKGS_KERNEL_HEADERS=("kernel-devel-$KERNEL_VERSION")
 PKGS_DOCKER=(iptables-nft)
 PKGS_PODMAN=(iptables-nft)
 
-# ---- pacotes so' de compilacao (removidos no final) ---------------------------------------
+# ---- pacotes so de compilacao (removidos no final) ---------------------------------------
 BUILD_COMMON=(git-core curl xz make gcc gcc-c++ glibc-static pkgconf-pkg-config autoconf automake libtool)
 BUILD_DOCKER=(libseccomp-devel cmake)
 BUILD_PODMAN=(libseccomp-devel systemd-devel gpgme-devel libassuan-devel libgpg-error-devel glib2-devel

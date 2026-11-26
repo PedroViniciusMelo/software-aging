@@ -44,6 +44,26 @@ class EnergyConfig:
 
 
 @dataclass
+class RejuvenationConfig:
+    method: str = "cleanup_keep_teastore"  # nome registrado em src/rejuvenation.py
+    delay: int = 5  # espera (s) depois de aplicar o metodo
+    # imagens (substring do nome) cujos containers, imagens e volumes o rejuvenescimento preserva
+    protected_images: list = field(default_factory=lambda: ["descartesresearch/teastore"])
+
+
+@dataclass
+class LoggingConfig:
+    informative: bool = True  # mensagens de progresso e eventos (INFO); false = so' avisos e erros
+    debug: bool = False  # cada comando executado, com tempo e CPU (muito verboso)
+    to_file: bool = True  # tambem grava logs/collector.log
+
+
+@dataclass
+class ConsoleConfig:
+    enabled: bool = True  # terminal interativo (threads, status); ignorado se a entrada nao for um terminal
+
+
+@dataclass
 class StressloadConfig:
     stressload_first: bool
     max_stress_time: int
@@ -72,6 +92,9 @@ class Config:
     stressload: StressloadConfig
     containers: list
     energy: EnergyConfig = field(default_factory=EnergyConfig)
+    rejuvenation: RejuvenationConfig = field(default_factory=RejuvenationConfig)
+    logging: LoggingConfig = field(default_factory=LoggingConfig)
+    console: ConsoleConfig = field(default_factory=ConsoleConfig)
 
     @property
     def logs_path(self) -> str:
@@ -79,12 +102,16 @@ class Config:
 
 
 def _known_keys(cls, data: dict) -> dict:
-    """Secoes opcionais (energy) ignoram chaves desconhecidas, avisando (ex.: as antigas tomada_*)."""
+    """Secoes opcionais (energy, rejuvenation, ...) ignoram chaves desconhecidas, avisando (ex.: as antigas tomada_*)."""
     names = {item.name for item in fields(cls)}
     unknown = sorted(key for key in data if key not in names)
     if unknown:
         print(f"Aviso: chaves desconhecidas ignoradas em {cls.__name__}: {', '.join(unknown)}")
     return {key: value for key, value in data.items() if key in names}
+
+
+def _optional(cls, data: dict, section: str):
+    return cls(**_known_keys(cls, data.get(section) or {}))
 
 
 def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
@@ -97,5 +124,8 @@ def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
         monitoring=MonitoringConfig(**data["monitoring"]),
         stressload=StressloadConfig(**data["stressload"]),
         containers=[ContainerConfig(**container) for container in data["containers"]],
-        energy=EnergyConfig(**_known_keys(EnergyConfig, data.get("energy") or {})),
+        energy=_optional(EnergyConfig, data, "energy"),
+        rejuvenation=_optional(RejuvenationConfig, data, "rejuvenation"),
+        logging=_optional(LoggingConfig, data, "logging"),
+        console=_optional(ConsoleConfig, data, "console"),
     )

@@ -41,6 +41,28 @@ o consumo de energia.
    gera os gráficos em `plots_img/` dentro dessa pasta. Para desligar, use
    `general.plot_results: false`.
 
+   Enquanto roda, digite comandos no terminal (`console.enabled`): `threads` mostra as
+   threads de cada parte (monitores, stressload, principal) com TID, CPU e o que cada uma
+   está fazendo; `children` mostra os comandos externos em execução; `status`, a fase e o
+   run; `cost`, o custo do monitoramento; `log debug|info|quiet` troca o nível de log. Os
+   logs informativos (`logging.informative`) também vão para `logs/collector.log`; com
+   `false`, só aparecem avisos e erros.
+
+## Rejuvenescimento
+
+Com `general.apply_rejuvenation: true`, o método `rejuvenation.method` roda ao fim de cada
+período de stress, com o monitor de ciclo de vida pausado. Métodos disponíveis
+(`src/rejuvenation.py`):
+
+- `cleanup_keep_teastore` (padrão): remove os containers, as imagens e os volumes sem uso,
+  **preservando tudo do TeaStore** (containers com o rótulo `containers-aging.role=teastore`,
+  posto pelo `start_teastore.sh`, ou com imagem em `rejuvenation.protected_images`);
+- `full_reset`: o método antigo; apaga tudo, inclusive o TeaStore, e o sobe de novo.
+
+Para criar um método, escreva uma classe com `@register("nome")` em `src/rejuvenation.py`
+(o cabeçalho do arquivo tem um exemplo) e coloque o nome em `rejuvenation.method`. Cada
+aplicação vai para `logs/rejuvenation.csv` (método, duração e o que foi removido).
+
 4. **Compare os cenários** juntando as pastas de `results/` das várias máquinas numa só:
 
    ```bash
@@ -67,6 +89,10 @@ outro host, apontando para a máquina do experimento.
 | `killed.csv`, `omm.csv` | mensagens novas do kernel sobre processos mortos e OOM |
 | `energy_rapl.csv`, `energy_smart_plug.csv` | energia, quando habilitada |
 | `errors.csv` | falhas ao subir, matar ou remover containers |
+| `monitoring_cost.csv` | CPU de cada parte do coletor (threads + comandos que elas executam), acumulada e em % de um núcleo |
+| `collector.csv` | processo coletor inteiro: CPU, RSS, VSZ e threads; `monitoring_cpu_pct` é o custo só do monitoramento |
+| `rejuvenation.csv`, `runs.csv` | aplicações do rejuvenescimento; início de cada fase (stress, sleep, rejuvenation) |
+| `collector.log` | logs do coletor (com `logging.to_file`) |
 | `environment.txt`, `build-manifest.txt` | sistema, kernel e versões exatas do que foi compilado |
 
 ## Organização
@@ -80,7 +106,11 @@ src/
   runtime.py            comandos do Docker/Podman e detecção do runtime e do disco
   lifecycle.py          subir, parar e remover um container (com tentativas)
   stressload.py         ciclos de estresse: vários containers em paralelo
-  monitoring.py         threads de coleta (máquina, processos, kernel, fragmentação, energia)
+  monitoring.py         threads de coleta (máquina, processos, kernel, fragmentação, energia, custo)
+  rejuvenation.py       métodos de rejuvenescimento (troque em rejuvenation.method)
+  activity.py           partes do sistema, comandos em andamento e CPU de cada parte
+  console.py            terminal interativo (threads, comandos, status, custo)
+  logsetup.py           níveis e destino dos logs
   energy.py             leitura do RAPL e do smart plug
   images.py             baixa as imagens e salva os .tar usados no monitoramento e no estresse
   utils.py              execução de comandos e escrita dos CSVs

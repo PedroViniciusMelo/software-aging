@@ -1,6 +1,6 @@
 """Preparacao das imagens (.tar) usadas pelo monitoramento e pela carga de estresse."""
 from src.runtime import ContainerRuntime
-from src.utils import execute_command
+from src.utils import execute_command, log
 
 
 def build_images(runtime: ContainerRuntime, containers: list, scripts_folder: str, rebuild_images: bool) -> None:
@@ -10,12 +10,12 @@ def build_images(runtime: ContainerRuntime, containers: list, scripts_folder: st
       temp_<name>.tar  -> usada pela carga de estresse (imagem temp_<name>:latest)
     """
     if not rebuild_images:
-        print("Rebuilding images is disabled. Skipping...")
+        log.info("Rebuilding images is disabled. Skipping...")
         return
 
     for container in containers:
         name, version = container.name, container.version
-        print(f"Building image {name}:{version}")
+        log.info("Building image %s:%s", name, version)
         for command in [
             f"pull docker.io/{name}:{version}",
             f"tag {name}:{version} {name}:latest",
@@ -27,4 +27,3 @@ def build_images(runtime: ContainerRuntime, containers: list, scripts_folder: st
             f"rmi {name}:{version}",
         ]:
             execute_command(runtime.command(command))
-        print("Done!")

@@ -1,7 +1,7 @@
 """Runtime de containers (docker/podman): deteccao e montagem dos comandos."""
 import re
 
-from src.utils import execute_command
+from src.utils import execute_command, log
 
 # Processos do host monitorados (pidstat) para cada runtime, na ordem em que as threads sobem.
 MONITORED_PROCESSES = {
@@ -77,11 +77,11 @@ def detect_runtime() -> ContainerRuntime:
     podman = execute_command("which podman", continue_if_error=True, error_informative=False)
 
     if docker is not None and podman is not None:
-        print("Both docker and podman are installed. Please, uninstall one of them.")
+        log.error("Both docker and podman are installed. Please, uninstall one of them.")
         raise SystemExit(1)
 
     if docker is None and podman is None:
-        print("Neither docker nor podman is installed. Please, install one of them.")
+        log.error("Neither docker nor podman is installed. Please, install one of them.")
         raise SystemExit(1)
 
     return ContainerRuntime("podman" if podman is not None else "docker")
@@ -96,7 +96,7 @@ def detect_root_disk() -> str:
         'lsblk -nrso NAME,TYPE "$(findmnt -nvo SOURCE /)" | awk \'$2 == "disk" {print $1; exit}\'',
         continue_if_error=True, error_informative=False)
     if not disk:
-        print(f"Could not detect the root disk, using {DEFAULT_DISK_DEVICE}")
+        log.warning("Could not detect the root disk, using %s", DEFAULT_DISK_DEVICE)
         return DEFAULT_DISK_DEVICE
     return disk
 

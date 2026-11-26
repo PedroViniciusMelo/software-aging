@@ -2,10 +2,7 @@
 #
 # Instala as dependencias do framework de envelhecimento de software em containers.
 #
-# Docker, Podman e systemtap sao COMPILADOS do fonte, em versoes fixas (install/versions/),
-# com o mesmo toolchain em todas as distros, para que a unica diferenca entre os cenarios
-# seja o sistema. A compilacao acontece num diretorio temporario (BUILD_ROOT) e os pacotes
-# usados so' para compilar sao removidos no final, deixando o sistema medido limpo.
+# Docker, Podman e systemtap sao COMPILADOS do fonte, em versoes fixas.
 #
 # Uso:
 #   install/install.sh                       # menu interativo
@@ -99,7 +96,6 @@ main() {
   [ "$RUNTIME" = docker ] && pkg_install "${PKGS_DOCKER[@]}"
   [ "$RUNTIME" = podman ] && pkg_install "${PKGS_PODMAN[@]}"
 
-  # 2) compilacao, com pacotes de build temporarios
   local build_deps=()
   [ "$MONITORING" = yes ] && read -ra build_deps <<< "$(monitoring_build_deps)"
   case "$RUNTIME" in
