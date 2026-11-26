@@ -167,11 +167,12 @@ def sample_power(reader: RaplReader, temp_path, interval):
     return result
 
 
-async def run_tomada_monitor(ip, username, password, interval, on_sample, on_error=None):
+async def run_smart_plug_monitor(ip, username, password, interval, on_sample, on_error=None, should_stop=None):
     """
     Connects to a TP-Link Kasa/Tapo smart plug and repeatedly samples its real-time power,
     invoking on_sample(dict) every `interval` seconds. Reconnects automatically if the
-    connection is lost, so it can run unattended for the whole experiment.
+    connection is lost, so it can run unattended for the whole experiment. Returns when
+    should_stop() becomes true (checked once per interval).
 
     Requires the "python-kasa" package (only imported here, lazily, so the rest of the
     monitoring framework works fine without it when this feature is disabled).
@@ -181,7 +182,7 @@ async def run_tomada_monitor(ip, username, password, interval, on_sample, on_err
     device = None
     kwh_total = 0.0
 
-    while True:
+    while not (should_stop and should_stop()):
         try:
             if device is None:
                 device = await Discover.discover_single(ip, username=username, password=password)
@@ -210,4 +211,4 @@ async def run_tomada_monitor(ip, username, password, interval, on_sample, on_err
                 on_error(str(error))
             device = None  # force rediscovery on the next iteration
 
-        await asyncio.sleep(interval)
+        await asyncio.sleep(interval)

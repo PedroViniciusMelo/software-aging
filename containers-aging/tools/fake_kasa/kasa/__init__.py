@@ -1,6 +1,6 @@
 """
-Substituto falso da biblioteca "python-kasa", so pra testar o monitoramento da tomada
-(src/energy.py -> run_tomada_monitor) em uma maquina/VM sem a tomada real na rede.
+Substituto falso da biblioteca "python-kasa", so pra testar o monitoramento do smart plug
+(src/energy.py -> run_smart_plug_monitor) em uma maquina/VM sem o smart plug real na rede.
 
 Nao implementa o protocolo de rede de verdade dos dispositivos TP-Link Kasa/Tapo (esse
 protocolo e' proprietario e, na Tapo, criptografado -- reimplementa-lo so pra teste seria
@@ -15,7 +15,7 @@ precisa estar instalado):
   export PYTHONPATH=tools/fake_kasa:$PYTHONPATH
 
 O "ip"/"username"/"password" passados para discover_single sao ignorados (nenhuma rede e'
-usada de verdade), entao qualquer valor de tomada_ip no config.yaml serve durante o teste.
+usada de verdade), entao qualquer valor de smart_plug_ip no config.yaml serve durante o teste.
 """
 import asyncio
 import random
@@ -36,7 +36,7 @@ class _FakeEmulatedPlug:
         await asyncio.sleep(0.02)
 
         if random.random() < DISCONNECT_CHANCE:
-            raise ConnectionError("tomada simulada: timeout de rede (falha simulada de proposito)")
+            raise ConnectionError("smart plug simulado: timeout de rede (falha simulada de proposito)")
 
     async def get_emeter_realtime(self):
         self._power_w = max(0.0, self._power_w + random.uniform(-JITTER_W, JITTER_W) * 0.3)

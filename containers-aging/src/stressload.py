@@ -66,7 +66,7 @@ class StressLoad:
                 for index in range(exec_runs)
             ])
             for result in results:
-                qtd_container += result
+                qtd_container += result or 0  # None: o lote terminou com erro inesperado
 
         write_csv_row(f"{self.logs_path}/qtd_containers.csv", "thread;qtd_containers;date",
                       container.name, qtd_container, current_time())
@@ -86,7 +86,7 @@ class StressLoad:
             if self.lifecycle.start(container_name, image_name, host_port, container.port) is None:
                 print(f"Could not start container, exiting {image_name} lifecycle")
                 log_error(self.logs_path, "start", image_name, current_time())
-                execute_command(self.runtime.force_remove(container_name), continue_if_error=False,
+                execute_command(self.runtime.force_remove(container_name), continue_if_error=True,
                                 error_informative=False)
                 errors += 1
                 continue

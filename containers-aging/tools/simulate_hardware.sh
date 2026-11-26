@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Sobe o hardware "falso" (RAPL + tomada) para testar o framework de monitoramento de
-# energia em uma maquina/VM sem Intel RAPL e sem a tomada real na rede.
+# Sobe o hardware "falso" (RAPL + smart plug) para testar o framework de monitoramento de
+# energia em uma maquina/VM sem Intel RAPL e sem o smart plug real na rede.
 #
 # IMPORTANTE: rode com "source" (nao "./"), para as variaveis de ambiente valerem no seu
 # shell atual, onde voce vai rodar o main.py em seguida:
@@ -13,12 +13,12 @@
 #   2. Exporta RAPL_BASE_PATH / THERMAL_BASE_PATH apontando pra essa pasta falsa, para
 #      que src/energy.py leia de la em vez do /sys real (ver o topo do proprio energy.py).
 #   3. Exporta PYTHONPATH incluindo tools/fake_kasa, para que "from kasa import Discover"
-#      (usado pelo monitoramento da tomada) resolva para o modulo falso -- nem precisa
+#      (usado pelo monitoramento do smart plug) resolva para o modulo falso -- nem precisa
 #      ter o pacote "python-kasa" real instalado para testar.
 #
 # Depois disso, rode o framework normalmente NO MESMO SHELL (ex.: python3 main.py), com
-# energy.enable_rapl: true e energy.enable_tomada: true no config.yaml. O valor de
-# energy.tomada_ip pode ser qualquer coisa (ex.: "127.0.0.1"): o modulo falso nao usa rede.
+# energy.enable_rapl: true e energy.enable_smart_plug: true no config.yaml. O valor de
+# energy.smart_plug_ip pode ser qualquer coisa (ex.: "127.0.0.1"): o modulo falso nao usa rede.
 #
 # Para parar o simulador de RAPL depois: kill "$FAKE_RAPL_PID"
 

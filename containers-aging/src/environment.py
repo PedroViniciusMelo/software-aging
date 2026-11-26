@@ -1,4 +1,7 @@
 """Orquestracao do experimento: preparacao, workload, monitoramento e ciclos de stress/descanso."""
+import os
+import shutil
+import subprocess
 import sys
 import time
 from datetime import datetime, timedelta
@@ -6,7 +9,7 @@ from datetime import datetime, timedelta
 from src.config import DEFAULT_CONFIG_PATH, Config, load_config
 from src.images import build_images
 from src.monitoring import MonitoringEnvironment
-from src.runtime import ContainerRuntime, describe_environment, detect_runtime
+from src.runtime import ContainerRuntime, describe_environment, detect_runtime, scenario_name
 from src.stressload import StressLoad
 from src.utils import current_time, execute_command, write_csv_row
 
@@ -73,6 +76,25 @@ class Environment:
 
         self._print_progress_bar(self.general.runs)
         print(f"\nEnded at {datetime.now()}")
+        self.monitoring_environment.stop()
+
+        if self.general.plot_results:
+            self.plot(self.save_results())
+
+    def save_results(self) -> str:
+        """Copia logs/ para results/<cenario>_<data>, no formato de nome lido por plot/."""
+        folder = f"{self.path}/results/{scenario_name(self.runtime)}_{datetime.now():%Y%m%d-%H%M}"
+        shutil.copytree(self.logs_path, folder)
+        print(f"Results saved to {folder}")
+        return folder
+
+    def plot(self, folder: str) -> None:
+        """Gera os graficos num processo separado (o coletor nao importa as libs de plot/)."""
+        print("Plotting results")
+        result = subprocess.run([sys.executable, f"{self.path}/plot/plot_data.py", folder],
+                                env={**os.environ, "MPLBACKEND": "Agg"})
+        if result.returncode != 0:
+            print(f"Plotting failed. Run it again with: {sys.executable} plot/plot_data.py {folder}")
 
     def _rest(self):
         self._log_event("sleep")

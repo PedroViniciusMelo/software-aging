@@ -1,17 +1,21 @@
 """Leitura e validacao do config.yaml em objetos tipados."""
 from dataclasses import dataclass, field, fields
+from pathlib import Path
 from typing import Optional
 
 import yaml
 
-DEFAULT_CONFIG_PATH = "config.yaml"
+# Raiz do projeto (pasta do main.py): scripts, imagens .tar e logs ficam aqui.
+PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
+DEFAULT_CONFIG_PATH = f"{PROJECT_ROOT}/config.yaml"
 
 
 @dataclass
 class GeneralConfig:
     runs: int
-    scripts_folder: str
     apply_rejuvenation: bool
+    plot_results: bool = True  # ao fim, copia logs/ para results/<cenario> e gera os graficos
+    scripts_folder: str = PROJECT_ROOT  # detectado; so' defina no config.yaml para usar outra pasta
 
 
 @dataclass
@@ -32,11 +36,11 @@ class EnergyConfig:
     enable_rapl: bool = False
     sleep_time_rapl: int = 1
     rapl_zones: Optional[list] = None
-    enable_tomada: bool = False
-    sleep_time_tomada: int = 300
-    tomada_ip: str = ""
-    tomada_username: str = ""
-    tomada_password: str = ""
+    enable_smart_plug: bool = False
+    sleep_time_smart_plug: int = 300
+    smart_plug_ip: str = ""
+    smart_plug_username: str = ""
+    smart_plug_password: str = ""
 
 
 @dataclass
@@ -75,8 +79,11 @@ class Config:
 
 
 def _known_keys(cls, data: dict) -> dict:
-    """Secoes opcionais (energy) ignoram chaves desconhecidas, como antes."""
+    """Secoes opcionais (energy) ignoram chaves desconhecidas, avisando (ex.: as antigas tomada_*)."""
     names = {item.name for item in fields(cls)}
+    unknown = sorted(key for key in data if key not in names)
+    if unknown:
+        print(f"Aviso: chaves desconhecidas ignoradas em {cls.__name__}: {', '.join(unknown)}")
     return {key: value for key, value in data.items() if key in names}
 
 

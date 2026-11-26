@@ -6,7 +6,7 @@ import threading
 import time
 
 from src.config import Config
-from src.energy import RaplReader, find_pkg_temp_path, run_tomada_monitor, sample_power
+from src.energy import RaplReader, find_pkg_temp_path, run_smart_plug_monitor, sample_power
 from src.lifecycle import ContainerLifecycle
 from src.runtime import ContainerRuntime, detect_root_disk
 from src.utils import (
@@ -23,7 +23,7 @@ from src.utils import (
 # Os nomes das threads fazem parte da saida: o monitor de custo grava process_<thread>.csv
 # para cada thread cujo nome comeca com um destes prefixos.
 MONITORING_THREAD_PREFIXES = ('systemtap', 'container_metrics', 'docker_processes', 'podman_processes',
-                              'monitoring', 'monitoring_tomada', 'monitoring_rapl')
+                              'monitoring', 'monitoring_smart_plug', 'monitoring_rapl')
 
 PROCESS_HEADER = 'cpu;mem;rss;vsz;threads;swap;date_time'
 # postgres.csv ja e' usado pelo monitor de ciclo de vida do container postgres.
@@ -35,11 +35,21 @@ BUILD_MANIFEST = "/etc/containers-aging/build-manifest.txt"
 STAP_MAX_ATTEMPTS = 11
 STAP_RETRY_DELAY = 120
 PIDSTAT_DURATION = 1  # "pidstat ... 1 1" ja leva 1 s, descontado do intervalo de coleta
+PROCESS_RETRY_DELAY = 1  # espera entre tentativas quando o processo ainda nao existe
+STOP_GRACE = 3  # tempo para as leituras em andamento (pidstat/mpstat/iostat) terminarem no stop
 
 
 def _fmt(value, ndigits=4):
     """Formata uma leitura numerica opcional para o CSV (vazio quando indisponivel)."""
     return "" if value is None else round(value, ndigits)
+
+
+def _pgrep_pattern(process_name: str) -> str:
+    """
+    Padrao do "pgrep -f" que nao casa com o proprio shell que o executa: "[d]ocker" casa com
+    "docker", mas nao com a linha de comando "pgrep -f [d]ocker".
+    """
+    return f"[{process_name[0]}]{process_name[1:]}"
 
 
 class MonitoringEnvironment:
@@ -54,9 +64,18 @@ class MonitoringEnvironment:
         self.lifecycle = ContainerLifecycle(runtime)
         self.disk_device = None
         self._seen_kernel_logs = {"killed.csv": set(), "omm.csv": set()}
+        self._stop = threading.Event()
 
     def _log(self, filename: str, header: str, *values) -> None:
         write_csv_row(f"{self.logs_path}/{filename}", header, *values)
+
+    def _wait(self, seconds: float) -> bool:
+        """Espera `seconds` (ou ate o stop). Devolve True se o monitoramento foi encerrado."""
+        return self._stop.wait(max(seconds, 0))
+
+    @property
+    def running(self) -> bool:
+        return not self._stop.is_set()
 
     @staticmethod
     def _start_thread(name: str, target, *args) -> None:
@@ -79,9 +98,17 @@ class MonitoringEnvironment:
         self._start_thread("monitoring", self.machine_resources_loop)
         if self.energy.enable_rapl:
             self._start_thread("monitoring_rapl", self.rapl_loop)
-        if self.energy.enable_tomada:
-            self._start_thread("monitoring_tomada", self.tomada_loop)
+        if self.energy.enable_smart_plug:
+            self._start_thread("monitoring_smart_plug", self.smart_plug_loop)
         self._start_thread("monitoring_cost", self.monitoring_cost_loop)
+
+    def stop(self):
+        """Encerra a coleta: as threads saem na proxima espera e o systemtap e' interrompido."""
+        print("Stopping monitoring scripts")
+        self._stop.set()
+        # SIGINT deixa o stap descarregar o modulo do kernel e fechar o CSV corretamente.
+        execute_command("pkill -INT -x stap", continue_if_error=True, error_informative=False)
+        time.sleep(STOP_GRACE)
 
     # ---- fragmentacao de memoria (systemtap) -----------------------------------------
     def systemtap_loop(self):
@@ -92,28 +119,34 @@ class MonitoringEnvironment:
                 "-D STP_OVERLOAD_INTERVAL=1000000000LL "
                 f"{self.path}/fragmentation.stp",
                 continue_if_error=True, error_informative=False)
-            time.sleep(STAP_RETRY_DELAY)
+            if self._wait(STAP_RETRY_DELAY):
+                return
         print("Tried to start systemtap more than 10 times, skipping....")
 
     # ---- processos -------------------------------------------------------------------
     def process_loop(self, process: str):
-        while True:
+        while self.running:
             self.get_process_data(process)
-            time.sleep(self.monitoring.sleep_time - PIDSTAT_DURATION)
+            self._wait(self.monitoring.sleep_time - PIDSTAT_DURATION)
 
     def get_process_data(self, process_name: str, custom_pid=None):
-        """Coleta cpu/mem/rss/vsz/threads/swap do processo, tentando ate conseguir."""
+        """
+        Coleta cpu/mem/rss/vsz/threads/swap do processo. Se ele ainda nao existe, tenta de novo
+        a cada PROCESS_RETRY_DELAY segundos ate encontra-lo. Com custom_pid (uma thread do
+        proprio coletor) tenta uma vez so': a thread pode ter terminado.
+        """
         date_time = current_time()
-        data = []
 
-        while len(data) == 0:
+        while self.running:
             try:
                 if custom_pid is not None:
                     pid = custom_pid
                 else:
-                    pid = execute_command(f'pgrep -f {process_name} | head -n 1')
+                    pid = execute_command(f"pgrep -f '{_pgrep_pattern(process_name)}' | head -n 1",
+                                          error_informative=False)
 
-                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'").split()
+                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'",
+                                       error_informative=False).split()
                 threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
                                           continue_if_error=True)
                 swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
@@ -122,21 +155,28 @@ class MonitoringEnvironment:
 
                 filename = PROCESS_FILE_NAMES.get(process_name, process_name)
                 self._log(f"{filename}.csv", PROCESS_HEADER, cpu, mem, rss, vsz, threads, swap, date_time)
+                return
             except (CommandError, Exception):
-                continue
+                if custom_pid is not None:
+                    return
+                self._wait(PROCESS_RETRY_DELAY)
 
     # ---- ciclo de vida dos containers ---------------------------------------------------
     def container_metrics_loop(self):
-        while True:
+        while self.running:
             started = time.time()
-            self.container_lifecycle()
-            remaining = self.monitoring.sleep_time_container_metrics - (time.time() - started)
-            if remaining > 0:
-                time.sleep(remaining)
+            try:
+                self.container_lifecycle()
+            except CommandError as error:
+                # ex.: falha ao carregar ou remover a imagem; registra e tenta no proximo ciclo
+                log_error(self.logs_path, "lifecycle", error.command, current_time())
+            self._wait(self.monitoring.sleep_time_container_metrics - (time.time() - started))
 
     def container_lifecycle(self):
         """Mede o tempo de cada etapa do ciclo de vida de cada container configurado."""
         for container in self.containers:
+            if not self.running:
+                return
             date_time = current_time()
             name = container.name
 
@@ -146,7 +186,7 @@ class MonitoringEnvironment:
             if start_time is None:
                 log_error(self.logs_path, "start", name, date_time)
                 print(f"Could not start container, exiting {name} lifecycle")
-                execute_command(self.runtime.force_remove(name), continue_if_error=False, error_informative=False)
+                execute_command(self.runtime.force_remove(name), continue_if_error=True, error_informative=False)
                 return
 
             up_time = self.lifecycle.wait_app_time(name) if self.monitoring.using_containers_app_time else ""
@@ -166,19 +206,26 @@ class MonitoringEnvironment:
 
     # ---- recursos da maquina ---------------------------------------------------------
     def machine_resources_loop(self):
-        while True:
+        collectors = [self.cpu_monitoring, self.disk_monitoring, self.memory_monitoring, self.process_monitoring,
+                      self.disk_write_and_read_monitoring, self.kernel_killed_process_monitoring]
+        while self.running:
+            started = time.time()
             date_time = current_time()
-            self.cpu_monitoring(date_time)
-            self.disk_monitoring(date_time)
-            self.memory_monitoring(date_time)
-            self.process_monitoring(date_time)
-            self.disk_write_and_read_monitoring(date_time)
-            self.kernel_killed_process_monitoring(date_time)
-            time.sleep(self.monitoring.sleep_time)
+            for collect in collectors:
+                # uma leitura que falha nao derruba as demais nem a thread
+                try:
+                    collect(date_time)
+                except (CommandError, Exception) as error:
+                    print(f"{date_time} - {collect.__name__} failed: {error!r}")
+            # mpstat/iostat medem 1 s cada; desconta para manter o intervalo de sleep_time
+            self._wait(self.monitoring.sleep_time - (time.time() - started))
 
     def cpu_monitoring(self, date_time):
-        cpu_info = execute_command("mpstat | grep all").split()
-        usr, nice, sys_used, iowait, soft = cpu_info[2], cpu_info[3], cpu_info[4], cpu_info[5], cpu_info[7]
+        # "mpstat 1 1": uso no ultimo segundo ("mpstat" sozinho da' a media desde o boot)
+        cpu_info = execute_command("mpstat 1 1 | grep all | head -n 1").split()
+        index = cpu_info.index("all")  # o horario pode ocupar 1 ou 2 colunas (AM/PM)
+        usr, nice, sys_used, iowait, soft = (cpu_info[index + 1], cpu_info[index + 2], cpu_info[index + 3],
+                                             cpu_info[index + 4], cpu_info[index + 6])
         self._log("cpu.csv", "usr;nice;sys;iowait;soft;date_time", usr, nice, sys_used, iowait, soft, date_time)
 
     def disk_monitoring(self, date_time):
@@ -197,7 +244,8 @@ class MonitoringEnvironment:
         self._log("process.csv", "zombies;date_time", zombies, date_time)
 
     def disk_write_and_read_monitoring(self, date_time):
-        data = execute_command(f"iostat -d | awk '$1 == \"{self.disk_device}\"'").split()
+        # "-y 1 1": taxas do ultimo segundo ("iostat -d" sozinho da' a media desde o boot)
+        data = execute_command(f"iostat -dy 1 1 | awk '$1 == \"{self.disk_device}\"'").split()
         tps, read, write, dscd = data[1], data[2], data[3], data[4]
         self._log("disk_write_read.csv", "tps;kB_reads;kB_wrtns;kB_dscds;date_time", tps, read, write, dscd,
                   date_time)
@@ -231,40 +279,40 @@ class MonitoringEnvironment:
         columns.append("cpu_temp_c")
         header = ";".join(columns) + ";date_time"
 
-        while True:
+        while self.running:
             sample = sample_power(reader, temp_path, self.energy.sleep_time_rapl)
             values = [_fmt(sample.get(column), 1 if column == "cpu_temp_c" else 4) for column in columns]
             self._log("energy_rapl.csv", header, *values, current_time())
 
-    def tomada_loop(self):
+    def smart_plug_loop(self):
         def on_sample(sample):
-            self._log("energy_tomada.csv", "power_w;kwh_interval;kwh_total;state;date_time",
+            self._log("energy_smart_plug.csv", "power_w;kwh_interval;kwh_total;state;date_time",
                       sample['power_w'], sample['kwh_interval'], sample['kwh_total'], sample['state'],
                       current_time())
 
         def on_error(message):
-            log_error(self.logs_path, "tomada", message, current_time())
+            log_error(self.logs_path, "smart_plug", message, current_time())
 
         try:
-            asyncio.run(run_tomada_monitor(
-                ip=self.energy.tomada_ip,
-                username=self.energy.tomada_username,
-                password=self.energy.tomada_password,
-                interval=self.energy.sleep_time_tomada,
+            asyncio.run(run_smart_plug_monitor(
+                ip=self.energy.smart_plug_ip,
+                username=self.energy.smart_plug_username,
+                password=self.energy.smart_plug_password,
+                interval=self.energy.sleep_time_smart_plug,
                 on_sample=on_sample,
                 on_error=on_error,
+                should_stop=self._stop.is_set,
             ))
         except ImportError:
             print("Pacote 'python-kasa' nao instalado.")
 
     # ---- custo do proprio monitoramento ----------------------------------------------------
     def monitoring_cost_loop(self):
-        while True:
+        while self.running:
             try:
                 for thread in threading.enumerate():
                     if thread.name.startswith(MONITORING_THREAD_PREFIXES):
                         self.get_process_data(process_name="process_" + thread.name, custom_pid=thread.native_id)
-                time.sleep(self.monitoring.sleep_time)
             except Exception as e:
                 print(f"Erro no monitoramento de custo: {e}")
-                time.sleep(self.monitoring.sleep_time)
+            self._wait(self.monitoring.sleep_time)

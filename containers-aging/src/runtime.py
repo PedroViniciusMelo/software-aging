@@ -1,4 +1,6 @@
 """Runtime de containers (docker/podman): deteccao e montagem dos comandos."""
+import re
+
 from src.utils import execute_command
 
 # Processos do host monitorados (pidstat) para cada runtime, na ordem em que as threads sobem.
@@ -99,19 +101,41 @@ def detect_root_disk() -> str:
     return disk
 
 
-def _lsb_release(flag: str, label: str) -> str:
-    output = execute_command(f"lsb_release {flag}", continue_if_error=True, error_informative=False) or ""
-    return output.replace("No LSB modules are available.", "").replace(label, "").strip()
+def read_os_release(path: str = "/etc/os-release") -> dict:
+    """Campos do /etc/os-release (presente em toda distro; o lsb_release nem sempre esta' instalado)."""
+    info = {}
+    try:
+        with open(path) as file:
+            for line in file:
+                key, sep, value = line.strip().partition("=")
+                if sep:
+                    info[key] = value.strip('"')
+    except FileNotFoundError:
+        pass
+    return info
+
+
+def runtime_version(runtime: ContainerRuntime) -> str:
+    """Versao numerica do runtime, ex.: "Docker version 27.2.0, build 3ab4256" -> "27.2.0"."""
+    output = execute_command(runtime.version(), continue_if_error=True, error_informative=False) or ""
+    match = re.search(r"\d+(?:\.\d+)+", output)
+    return match.group(0) if match else "unknown"
+
+
+def scenario_name(runtime: ContainerRuntime) -> str:
+    """Nome do cenario no formato lido por plot/scenario.py, ex.: debian13_docker_27.2.0."""
+    os_info = read_os_release()
+    system = os_info.get("ID", "linux") + os_info.get("VERSION_ID", "")
+    return f"{system}_{runtime}_{runtime_version(runtime)}"
 
 
 def describe_environment(runtime: ContainerRuntime) -> str:
-    system = _lsb_release("-i", "Distributor ID:")
-    version = _lsb_release("-r", "Release:")
+    os_info = read_os_release()
     software_version = execute_command(runtime.version(), continue_if_error=False, error_informative=True)
 
-    return f""""
+    return f"""
 Software={runtime}
 Software Version={software_version}
-OS={system}
-OS Version={version}
+OS={os_info.get("ID", "").capitalize()}
+OS Version={os_info.get("VERSION_ID", "")}
     """

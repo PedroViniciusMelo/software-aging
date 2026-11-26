@@ -1,7 +1,8 @@
 general:
     runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
-    scripts_folder: "/root/software-aging/containers-aging"
     apply_rejuvenation: false
+    plot_results: true  # At the end, copy logs/ to results/<scenario>_<date> and generate the plots there
+    # scripts_folder is detected automatically (the folder that holds main.py)
 
 setup:
   rebuild_images: true # If true, the images will be rebuilt before the experiments
@@ -13,15 +14,15 @@ monitoring:
     # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
 
 energy:
-    enable_rapl: true  # Intel RAPL (CPU/DRAM power). Needs an Intel CPU with RAPL support and the script running as root
+    enable_rapl: false  # Intel RAPL (CPU/DRAM power). Needs an Intel CPU with RAPL support and the script running as root
     sleep_time_rapl: 1  # Interval (seconds) between RAPL power samples
     rapl_zones: ["package", "core", "uncore", "dram"]  # Which RAPL domains to monitor (matched by name substring). Remove entries you don't need.
 
-    enable_tomada: false  # TP-Link Kasa/Tapo smart plug. Needs the "python-kasa" package (pip install python-kasa)
-    sleep_time_tomada: 300  # Interval (seconds) between smart plug power samples
-    tomada_ip: "192.168.0.1"  # Smart plug IP address on the local network
-    tomada_username: "exemplo@email.com"  # Account e-mail registered on the plug
-    tomada_password: "changeme"  # Account password registered on the plug
+    enable_smart_plug: false  # TP-Link Kasa/Tapo smart plug. Needs the "python-kasa" package (pip install python-kasa)
+    sleep_time_smart_plug: 300  # Interval (seconds) between smart plug power samples
+    smart_plug_ip: "192.168.0.1"  # Smart plug IP address on the local network
+    smart_plug_username: "exemplo@email.com"  # Account e-mail registered on the plug
+    smart_plug_password: "changeme"  # Account password registered on the plug
 
 stressload:
     stressload_first: false # If true, the stressload will be executed before the sleep time

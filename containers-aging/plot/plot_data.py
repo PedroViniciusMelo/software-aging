@@ -1,6 +1,7 @@
 """
 Gera os graficos de cada cenario: uma subpasta de <logs_dir> por cenario (ex.:
-logs/debian12_docker_27.2.0, ver scenario.py), com as imagens salvas em <cenario>/plots_img.
+results/debian12_docker_27.2.0, ver scenario.py), com as imagens salvas em <cenario>/plots_img.
+Tambem aceita a pasta de um unico cenario (a que contem o cpu.csv).
 
     python3 plot/plot_data.py [logs_dir]      # padrao: ./logs/
 """
@@ -142,11 +143,11 @@ def start(base_folder, qtd_item):
             highlight_intervals=intervals
         )
 
-    if base_folder.joinpath('energy_tomada.csv').exists():
+    if base_folder.joinpath('energy_smart_plug.csv').exists():
         ploted += plot(
-            title="Energy - Tomada",
+            title="Energy - Smart plug",
             folder=base_folder,
-            filename='energy_tomada.csv',
+            filename='energy_smart_plug.csv',
             ylabel={
                 "power_w": "Power (W)",
                 "kwh_interval": "Energy per interval (kWh)",
@@ -205,7 +206,13 @@ def main():
                         help="pasta com uma subpasta por cenario (padrao: %(default)s)")
     args = parser.parse_args()
 
-    for folder in [item for item in Path(args.logs_dir).iterdir() if item.is_dir()]:
+    logs_dir = Path(args.logs_dir)
+    if logs_dir.joinpath("cpu.csv").exists():
+        folders = [logs_dir]  # a propria pasta de um cenario
+    else:
+        folders = [item for item in logs_dir.iterdir() if item.is_dir()]
+
+    for folder in folders:
         start(base_folder=folder, qtd_item=len([file for file in folder.iterdir() if file.suffix == '.csv']))
 
 
