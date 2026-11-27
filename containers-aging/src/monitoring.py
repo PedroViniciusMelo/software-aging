@@ -36,12 +36,7 @@ PROCESS_FILE_NAMES = {'postgres': 'postgres_process'}
 # Gerado por install/install.sh: versoes/commits exatos do runtime e do systemtap compilados.
 BUILD_MANIFEST = "/etc/containers-aging/build-manifest.txt"
 
-STAP_MAX_ATTEMPTS = 11
-STAP_RETRY_DELAY = 120
-PIDSTAT_DURATION = 1  # "pidstat ... 1 1" ja leva 1 s, descontado do intervalo de coleta
-PROCESS_RETRY_DELAY = 1  # espera entre tentativas quando o processo ainda nao existe
-STOP_GRACE = 3  # tempo para as leituras em andamento (pidstat/mpstat/iostat) terminarem no stop
-LIFECYCLE_STOP_TIMEOUT = 120  # espera maxima pelo container que o monitor de ciclo de vida esta' medindo
+# Intervalos, tentativas e limites da coleta: secao "monitoring" do config.yaml (MonitoringConfig).
 
 
 def _fmt(value, ndigits=4):
@@ -66,7 +61,7 @@ class MonitoringEnvironment:
         self.energy = config.energy
         self.runtime = runtime
         self.environment_description = environment_description
-        self.lifecycle = ContainerLifecycle(runtime)
+        self.lifecycle = ContainerLifecycle(runtime, config.lifecycle)
         self.disk_device = None
         self._seen_kernel_logs = {"killed.csv": set(), "omm.csv": set()}
         self._stop = threading.Event()
@@ -123,39 +118,41 @@ class MonitoringEnvironment:
         # SIGINT deixa o stap descarregar o modulo do kernel e fechar o CSV corretamente.
         execute_command("pkill -INT -x stap", continue_if_error=True, error_informative=False)
         # nao deixa um container do monitor de ciclo de vida pela metade
-        if self.lifecycle_lock.acquire(timeout=LIFECYCLE_STOP_TIMEOUT):
+        if self.lifecycle_lock.acquire(timeout=self.monitoring.lifecycle_stop_timeout):
             self.lifecycle_lock.release()
         else:
-            log.warning("Container lifecycle still running after %ds; stopping anyway", LIFECYCLE_STOP_TIMEOUT)
-        time.sleep(STOP_GRACE)
+            log.warning("Container lifecycle still running after %ds; stopping anyway",
+                        self.monitoring.lifecycle_stop_timeout)
+        time.sleep(self.monitoring.stop_grace)
 
     # ---- fragmentacao de memoria (systemtap) -----------------------------------------
     def systemtap_loop(self):
-        for attempt in range(STAP_MAX_ATTEMPTS):
-            log.info("Starting systemtap (attempt %d/%d)", attempt + 1, STAP_MAX_ATTEMPTS)
+        attempts = self.monitoring.stap_max_attempts
+        for attempt in range(attempts):
+            log.info("Starting systemtap (attempt %d/%d)", attempt + 1, attempts)
             execute_command(
                 f"stap -o {self.logs_path}/fragmentation_{attempt}.csv "
-                "-D STP_OVERLOAD_THRESHOLD=650000000LL "
-                "-D STP_OVERLOAD_INTERVAL=1000000000LL "
+                f"-D STP_OVERLOAD_THRESHOLD={self.monitoring.stap_overload_threshold}LL "
+                f"-D STP_OVERLOAD_INTERVAL={self.monitoring.stap_overload_interval}LL "
                 f"{self.path}/fragmentation.stp",
                 continue_if_error=True, error_informative=False)
             if not self.running:
                 return
-            log.warning("systemtap exited; trying again in %ds", STAP_RETRY_DELAY)
-            if self._wait(STAP_RETRY_DELAY):
+            log.warning("systemtap exited; trying again in %ds", self.monitoring.stap_retry_delay)
+            if self._wait(self.monitoring.stap_retry_delay):
                 return
-        log.warning("systemtap failed %d times; memory fragmentation will not be collected", STAP_MAX_ATTEMPTS)
+        log.warning("systemtap failed %d times; memory fragmentation will not be collected", attempts)
 
     # ---- processos -------------------------------------------------------------------
     def process_loop(self, process: str):
         while self.running:
             self.get_process_data(process)
-            self._wait(self.monitoring.sleep_time - PIDSTAT_DURATION)
+            self._wait(self.monitoring.sleep_time - self.monitoring.pidstat_interval)
 
     def get_process_data(self, process_name: str):
         """
         Coleta cpu/mem/rss/vsz/threads/swap do processo. Se ele ainda nao existe, tenta de novo
-        a cada PROCESS_RETRY_DELAY segundos ate encontra-lo.
+        a cada process_retry_delay segundos ate encontra-lo.
         """
         date_time = current_time()
 
@@ -164,7 +161,8 @@ class MonitoringEnvironment:
                 pid = execute_command(f"pgrep -f '{_pgrep_pattern(process_name)}' | head -n 1",
                                       error_informative=False)
 
-                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r 1 1 | sed -n '4p'",
+                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r {self.monitoring.pidstat_interval} 1 "
+                                       "| sed -n '4p'",
                                        error_informative=False).split()
                 threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
                                           continue_if_error=True)
@@ -176,7 +174,7 @@ class MonitoringEnvironment:
                 self._log(f"{filename}.csv", PROCESS_HEADER, cpu, mem, rss, vsz, threads, swap, date_time)
                 return
             except (CommandError, Exception):
-                self._wait(PROCESS_RETRY_DELAY)
+                self._wait(self.monitoring.process_retry_delay)
 
     # ---- ciclo de vida dos containers ---------------------------------------------------
     def container_metrics_loop(self):

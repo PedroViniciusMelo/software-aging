@@ -3,7 +3,7 @@
 ip_address=$(hostname -I | awk '{print $1}')
 
 software=$1
-sleep_time=60
+sleep_time=${2:-60}  # espera entre os servicos (teastore.start_interval no config.yaml)
 # rotulo usado pelo rejuvenescimento (src/rejuvenation.py) para preservar os containers do TeaStore
 label="--label containers-aging.role=teastore"
 

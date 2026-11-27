@@ -1,10 +1,31 @@
 general:
     runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
-    apply_rejuvenation: false  # Applies rejuvenation.method after each stress period
     plot_results: true  # At the end, copy logs/ to results/<scenario>_<date> and generate the plots there
     # scripts_folder is detected automatically (the folder that holds main.py)
 
+setup:
+    rebuild_images: true # If true, the images will be rebuilt before the experiments
+    teastore_start_interval: 60  # Seconds between starting each of the 7 TeaStore services
+
+stressload:
+    stressload_first: false # If true, the stressload will be executed before the sleep time
+    max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
+    wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
+
+    min_lifecycle_runs: 3 # min number of lifecycle runs for each container
+    max_lifecycle_runs: 5 # max number of lifecycle runs for each container
+
+    min_qtt_containers: 5 # min number of containers that will be created and deleted on each lifecycle run
+    max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
+    port_offset: 100  # Each parallel batch uses host_port + port_offset + batch index
+
+lifecycle:  # Start/stop of every container (stress load and lifecycle monitor)
+    start_max_retries: 5  # Extra attempts to start a container that failed
+    start_retry_delay: 2  # Seconds between those attempts
+    # stop_timeout: 10  # "stop -t": seconds before the runtime kills the container. If omitted, the runtime default (10)
+
 rejuvenation:
+    enabled: false  # Applies the method below after each stress period
     # Methods are registered in src/rejuvenation.py (add a new one there with @register("name")):
     #   cleanup_keep_teastore: removes containers, images and unused volumes, keeping everything from TeaStore
     #   full_reset: old method, removes everything (TeaStore included) and starts TeaStore again
@@ -12,21 +33,18 @@ rejuvenation:
     delay: 5  # Seconds to wait after the rejuvenation
     protected_images: ["descartesresearch/teastore"]  # Kept by cleanup_keep_teastore (substring of the image name)
 
-logging:
-    informative: true  # Progress and event messages. false = only warnings and errors
-    debug: false  # Every command executed, with its duration and CPU time (very verbose)
-    to_file: true  # Also writes logs/collector.log
-
-console:
-    enabled: true  # Interactive terminal (type "help"): threads of each part, running commands, status, cost. Off automatically when stdin is not a terminal
-
-setup:
-  rebuild_images: true # If true, the images will be rebuilt before the experiments
-
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
     # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
+    pidstat_interval: 1  # Window (seconds) of each pidstat reading of a runtime process; subtracted from sleep_time
+    process_retry_delay: 1  # Seconds between attempts while a monitored process does not exist yet
+    stap_max_attempts: 11  # How many times systemtap is (re)started if it exits
+    stap_retry_delay: 120  # Seconds to wait before restarting systemtap
+    stap_overload_threshold: 650000000  # systemtap STP_OVERLOAD_THRESHOLD (ns of probe time per interval)
+    stap_overload_interval: 1000000000  # systemtap STP_OVERLOAD_INTERVAL (ns)
+    stop_grace: 3  # Seconds at the end for the readings in progress to finish
+    lifecycle_stop_timeout: 120  # Max seconds, at the end, waiting for the container the lifecycle monitor is measuring
 
 energy:
     enable_rapl: false  # Intel RAPL (CPU/DRAM power). Needs an Intel CPU with RAPL support and the script running as root
@@ -39,16 +57,11 @@ energy:
     smart_plug_username: "exemplo@email.com"  # Account e-mail registered on the plug
     smart_plug_password: "changeme"  # Account password registered on the plug
 
-stressload:
-    stressload_first: false # If true, the stressload will be executed before the sleep time
-    max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
-    wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
-
-    min_lifecycle_runs: 3 # min number of lifecycle runs for each container
-    max_lifecycle_runs: 5 # max number of lifecycle runs for each container
-
-    min_qtt_containers: 5 # min number of containers that will be created and deleted on each lifecycle run
-    max_qtt_containers: 10 # max number of containers that will be created and deleted on each lifecycle run
+logging:  # What the collector shows in the terminal
+    informative: true  # Progress and event messages. false = only warnings and errors
+    debug: false  # Every command executed, with its duration and CPU time (very verbose)
+    to_file: true  # Also writes logs/collector.log
+    console: true  # Interactive terminal (type "help"): threads of each part, running commands, status, cost. Off automatically when stdin is not a terminal
 
 containers:
   - name: postgres

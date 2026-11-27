@@ -41,7 +41,7 @@ o consumo de energia.
    gera os gráficos em `plots_img/` dentro dessa pasta. Para desligar, use
    `general.plot_results: false`.
 
-   Enquanto roda, digite comandos no terminal (`console.enabled`): `threads` mostra as
+   Enquanto roda, digite comandos no terminal (`logging.console`): `threads` mostra as
    threads de cada parte (monitores, stressload, principal) com TID, CPU e o que cada uma
    está fazendo; `children` mostra os comandos externos em execução; `status`, a fase e o
    run; `cost`, o custo do monitoramento; `log debug|info|quiet` troca o nível de log. Os
@@ -56,7 +56,7 @@ o consumo de energia.
 
 ## Rejuvenescimento
 
-Com `general.apply_rejuvenation: true`, o método `rejuvenation.method` roda ao fim de cada
+Com `rejuvenation.enabled: true`, o método `rejuvenation.method` roda ao fim de cada
 período de stress, com o monitor de ciclo de vida pausado. Métodos disponíveis
 (`src/rejuvenation.py`):
 

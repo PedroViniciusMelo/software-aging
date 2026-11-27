@@ -35,8 +35,8 @@ class ContainerRuntime:
     def exists(self, container: str) -> str:
         return self.command(f"container inspect {container} > /dev/null 2>&1 && echo true")
 
-    def stop(self, container: str) -> str:
-        return self.command(f"stop {container}")
+    def stop(self, container: str, timeout: int = None) -> str:
+        return self.command(f"stop {container}" if timeout is None else f"stop -t {timeout} {container}")
 
     def kill(self, container: str) -> str:
         return self.command(f"kill {container}")

@@ -40,9 +40,12 @@ def _handler(signum, _frame):
     name = signal.Signals(signum).name
     if _graceful and not requested.is_set():
         requested.set()
-        log.warning("%s received: stopping gracefully (finishing the current containers and saving the results). "
-                    "Press Ctrl+C again to force.", name)
+        log.warning("%s received: stopping gracefully. Each thread finishes its current container (a 'docker stop' "
+                    "can take ~10 s) and the results are saved; %d commands running now. "
+                    "Press Ctrl+C again to force.", name, len(activity.running_children()))
         return
+    log.error("%s received %s: forced stop", name,
+              "again" if requested.is_set() else "before the monitoring started (nothing to save yet)")
     raise KeyboardInterrupt
 
 

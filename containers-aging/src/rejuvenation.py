@@ -1,5 +1,5 @@
 """
-Metodos de rejuvenescimento, aplicados ao fim de cada periodo de stress (general.apply_rejuvenation).
+Metodos de rejuvenescimento, aplicados ao fim de cada periodo de stress (rejuvenation.enabled).
 
 Para trocar o metodo, mude rejuvenation.method no config.yaml. Para criar um novo:
 

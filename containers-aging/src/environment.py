@@ -26,13 +26,13 @@ class Environment:
         self.logs_path = config.logs_path
         self.runtime = runtime
         self.monitoring_environment = monitoring_environment
-        self.stressload = StressLoad(runtime, config.stressload, self.path, self.logs_path)
+        self.stressload = StressLoad(runtime, config.stressload, self.path, self.logs_path, config.lifecycle)
         self.status = ExperimentStatus(self.general.runs)
         # criado ja' aqui para que um nome de metodo errado falhe antes de comecar o experimento
         self.rejuvenation = create_method(RejuvenationContext(
             runtime=runtime, config=config.rejuvenation, logs_path=self.logs_path,
             start_teastore=self.start_teastore, lifecycle_lock=monitoring_environment.lifecycle_lock,
-        )) if self.general.apply_rejuvenation else None
+        )) if config.rejuvenation.enabled else None
         if self.rejuvenation:
             self.status.rejuvenation = f"{self.rejuvenation.name} - {self.rejuvenation.description}"
 
@@ -47,8 +47,10 @@ class Environment:
             execute_command(command, continue_if_error=True, error_informative=False)
 
     def start_teastore(self):
-        log.info("Starting TeaStore (takes ~6 minutes)")
-        execute_command(f"{self.path}/start_teastore.sh {self.runtime}", informative=True, error_informative=True)
+        interval = self.config.setup.teastore_start_interval
+        log.info("Starting TeaStore (takes ~%d minutes)", round(6 * interval / 60))
+        execute_command(f"{self.path}/start_teastore.sh {self.runtime} {interval}", informative=True,
+                        error_informative=True)
 
     def run(self):
         self.clear()
@@ -59,7 +61,7 @@ class Environment:
         self.start_teastore()
         self.monitoring_environment.start()
         shutdown.enable_graceful()
-        if self.config.console.enabled:
+        if self.config.logging.console:
             Console(self.status, self.monitoring_environment).start()
 
         cycle = self.stress.max_stress_time + self.stress.wait_after_stress

@@ -4,13 +4,10 @@ import threading
 from datetime import datetime, timedelta
 
 from src import activity, shutdown
-from src.config import ContainerConfig, StressloadConfig
+from src.config import ContainerConfig, LifecycleConfig, StressloadConfig
 from src.lifecycle import ContainerLifecycle
 from src.runtime import ContainerRuntime
 from src.utils import current_time, execute_command, log, log_error, write_csv_row
-
-# Cada lote paralelo usa portas a partir de host_port + PORT_OFFSET + indice do lote.
-PORT_OFFSET = 100
 
 
 class ResultThread(threading.Thread):
@@ -37,12 +34,13 @@ def run_in_threads(jobs: list) -> list:
 
 
 class StressLoad:
-    def __init__(self, runtime: ContainerRuntime, config: StressloadConfig, scripts_folder: str, logs_path: str):
+    def __init__(self, runtime: ContainerRuntime, config: StressloadConfig, scripts_folder: str, logs_path: str,
+                 lifecycle: LifecycleConfig = None):
         self.runtime = runtime
         self.config = config
         self.scripts_folder = scripts_folder
         self.logs_path = logs_path
-        self.lifecycle = ContainerLifecycle(runtime)
+        self.lifecycle = ContainerLifecycle(runtime, lifecycle)
 
     def run(self, containers: list, max_stress_time: int) -> None:
         """Estressa todos os containers em paralelo por max_stress_time segundos (ou ate' a parada)."""
@@ -61,7 +59,7 @@ class StressLoad:
             exec_runs = random.randint(self.config.min_lifecycle_runs, self.config.max_lifecycle_runs)
             results = run_in_threads([
                 (f"stressload_{container.name}_{index}", self.container_stressload,
-                 (container, container.host_port + index + PORT_OFFSET, index))
+                 (container, container.host_port + index + self.config.port_offset, index))
                 for index in range(exec_runs)
             ])
             for result in results:

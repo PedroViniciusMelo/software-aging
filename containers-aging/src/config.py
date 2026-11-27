@@ -13,7 +13,6 @@ DEFAULT_CONFIG_PATH = f"{PROJECT_ROOT}/config.yaml"
 @dataclass
 class GeneralConfig:
     runs: int
-    apply_rejuvenation: bool
     plot_results: bool = True  # ao fim, copia logs/ para results/<cenario> e gera os graficos
     scripts_folder: str = PROJECT_ROOT  # detectado; so' defina no config.yaml para usar outra pasta
 
@@ -21,6 +20,7 @@ class GeneralConfig:
 @dataclass
 class SetupConfig:
     rebuild_images: bool
+    teastore_start_interval: int = 60  # espera (s) entre subir cada um dos 7 servicos do TeaStore
 
 
 @dataclass
@@ -28,6 +28,21 @@ class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
     disk_device: Optional[str] = None  # disco do iostat; None = detecta o disco que contem a raiz "/"
+    pidstat_interval: int = 1  # janela (s) de cada leitura do pidstat; descontada do sleep_time
+    process_retry_delay: int = 1  # espera (s) entre tentativas quando o processo monitorado ainda nao existe
+    stap_max_attempts: int = 11  # quantas vezes (re)iniciar o systemtap se ele sair
+    stap_retry_delay: int = 120  # espera (s) antes de reiniciar o systemtap
+    stap_overload_threshold: int = 650000000  # -D STP_OVERLOAD_THRESHOLD (ns de probe por intervalo)
+    stap_overload_interval: int = 1000000000  # -D STP_OVERLOAD_INTERVAL (ns)
+    stop_grace: int = 3  # espera (s) no fim para as leituras em andamento terminarem
+    lifecycle_stop_timeout: int = 120  # espera maxima (s) no fim pelo container que o monitor de ciclo de vida mede
+
+
+@dataclass
+class LifecycleConfig:
+    start_max_retries: int = 5  # novas tentativas de subir um container que falhou
+    start_retry_delay: int = 2  # espera (s) entre essas tentativas
+    stop_timeout: Optional[int] = None  # "stop -t" (s) antes de o runtime matar o container; None = padrao (10 s)
 
 
 @dataclass
@@ -44,6 +59,7 @@ class EnergyConfig:
 
 @dataclass
 class RejuvenationConfig:
+    enabled: bool = False  # aplica o metodo ao fim de cada periodo de stress
     method: str = "cleanup_keep_teastore"  # nome registrado em src/rejuvenation.py
     delay: int = 5  # espera (s) depois de aplicar o metodo
     # imagens (substring do nome) cujos containers, imagens e volumes o rejuvenescimento preserva
@@ -55,11 +71,7 @@ class LoggingConfig:
     informative: bool = True  # mensagens de progresso e eventos (INFO); false = so' avisos e erros
     debug: bool = False  # cada comando executado, com tempo e CPU (muito verboso)
     to_file: bool = True  # tambem grava logs/collector.log
-
-
-@dataclass
-class ConsoleConfig:
-    enabled: bool = True  # terminal interativo (threads, status); ignorado se a entrada nao for um terminal
+    console: bool = True  # terminal interativo (threads, status); ignorado se a entrada nao for um terminal
 
 
 @dataclass
@@ -71,6 +83,7 @@ class StressloadConfig:
     max_lifecycle_runs: int
     min_qtt_containers: int
     max_qtt_containers: int
+    port_offset: int = 100  # cada lote paralelo usa a porta host_port + port_offset + indice do lote
 
 
 @dataclass
@@ -95,7 +108,7 @@ class Config:
     energy: EnergyConfig = field(default_factory=EnergyConfig)
     rejuvenation: RejuvenationConfig = field(default_factory=RejuvenationConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
-    console: ConsoleConfig = field(default_factory=ConsoleConfig)
+    lifecycle: LifecycleConfig = field(default_factory=LifecycleConfig)
 
     @property
     def logs_path(self) -> str:
@@ -115,9 +128,31 @@ def _optional(cls, data: dict, section: str):
     return cls(**_known_keys(cls, data.get(section) or {}))
 
 
+# Chaves que mudaram de lugar: (secao antiga, chave antiga) -> (secao nova, chave nova).
+MOVED_KEYS = {
+    ("general", "apply_rejuvenation"): ("rejuvenation", "enabled"),
+    ("teastore", "start_interval"): ("setup", "teastore_start_interval"),
+    ("console", "enabled"): ("logging", "console"),
+}
+
+
+def _migrate(data: dict) -> None:
+    """Aceita config.yaml antigos: move as chaves para o lugar novo, avisando."""
+    for (old_section, old_key), (new_section, new_key) in MOVED_KEYS.items():
+        section = data.get(old_section) or {}
+        if old_key not in section:
+            continue
+        value = section.pop(old_key)
+        target = data.get(new_section) or {}
+        target.setdefault(new_key, value)  # se as duas existirem, vale a nova
+        data[new_section] = target
+        print(f"Aviso: {old_section}.{old_key} agora e' {new_section}.{new_key}; atualize o config.yaml")
+
+
 def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
     with open(path, "r") as yml_file:
         data = yaml.safe_load(yml_file)
+    _migrate(data)
 
     return Config(
         general=GeneralConfig(**data["general"]),
@@ -129,5 +164,5 @@ def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
         energy=_optional(EnergyConfig, data, "energy"),
         rejuvenation=_optional(RejuvenationConfig, data, "rejuvenation"),
         logging=_optional(LoggingConfig, data, "logging"),
-        console=_optional(ConsoleConfig, data, "console"),
+        lifecycle=_optional(LifecycleConfig, data, "lifecycle"),
     )
