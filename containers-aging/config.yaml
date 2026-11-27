@@ -26,7 +26,6 @@ setup:
 monitoring:
     sleep_time: 60  # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
-    using_containers_app_time: false  # If true, the app time will be collected from the containers
     # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
 
 energy:
@@ -58,6 +57,8 @@ containers:
     port: 5432
     min_container_wait_time: 1
     max_container_wait_time: 10
+    env:  # Optional: environment variables (docker run -e). The postgres image exits at once without a password
+      POSTGRES_PASSWORD: "postgres"
 
   - name: redis
     version: "7.4.0-bookworm"

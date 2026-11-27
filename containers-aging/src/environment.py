@@ -3,10 +3,9 @@ import os
 import shutil
 import subprocess
 import sys
-import time
 from datetime import datetime, timedelta
 
-from src import activity
+from src import activity, shutdown
 from src.config import DEFAULT_CONFIG_PATH, Config, load_config
 from src.console import Console, ExperimentStatus
 from src.images import build_images
@@ -27,8 +26,7 @@ class Environment:
         self.logs_path = config.logs_path
         self.runtime = runtime
         self.monitoring_environment = monitoring_environment
-        self.stressload = StressLoad(runtime, config.stressload, self.path, self.logs_path,
-                                     config.monitoring.using_containers_app_time)
+        self.stressload = StressLoad(runtime, config.stressload, self.path, self.logs_path)
         self.status = ExperimentStatus(self.general.runs)
         # criado ja' aqui para que um nome de metodo errado falhe antes de comecar o experimento
         self.rejuvenation = create_method(RejuvenationContext(
@@ -60,6 +58,7 @@ class Environment:
         self.status.set_phase("starting TeaStore")
         self.start_teastore()
         self.monitoring_environment.start()
+        shutdown.enable_graceful()
         if self.config.console.enabled:
             Console(self.status, self.monitoring_environment).start()
 
@@ -76,29 +75,43 @@ class Environment:
             if not self.stress.stressload_first:
                 self._rest(current_run)
 
+            if shutdown.stopping():
+                break
             self._log_event("stress")
             self.status.set_phase("stress", current_run, self._until(self.stress.max_stress_time))
             log.info("Stress phase until %s", f"{self.status.phase_until:%Y-%m-%d %H:%M:%S}")
             self.stressload.run(self.config.containers, self.stress.max_stress_time)
 
-            if self.rejuvenation:
+            if self.rejuvenation and not shutdown.stopping():
                 self._log_event("rejuvenation")
                 self.status.set_phase("rejuvenation", current_run)
                 self.rejuvenation()
 
-            if self.stress.stressload_first:
+            if self.stress.stressload_first and not shutdown.stopping():
                 self._rest(current_run)
 
-        self.status.set_phase("finished")
-        log.info("Experiment ended")
+            if shutdown.stopping():
+                break
+
+        interrupted = shutdown.stopping()
+        if interrupted:
+            self._log_event("interrupted")
+            log.warning("Experiment stopped by the user during run %d/%d", self.status.run, self.general.runs)
+        else:
+            log.info("Experiment ended")
+        self.status.set_phase("interrupted" if interrupted else "finished")
         self.monitoring_environment.stop()
 
         if self.general.plot_results:
-            self.plot(self.save_results())
+            self.plot(self.save_results(interrupted))
+        elif interrupted:
+            self.save_results(interrupted)
 
-    def save_results(self) -> str:
-        """Copia logs/ para results/<cenario>_<data>, no formato de nome lido por plot/."""
+    def save_results(self, interrupted: bool = False) -> str:
+        """Copia logs/ para results/<cenario>_<data>[_interrupted], no formato de nome lido por plot/."""
         folder = f"{self.path}/results/{scenario_name(self.runtime)}_{datetime.now():%Y%m%d-%H%M}"
+        if interrupted:
+            folder += "_interrupted"
         shutil.copytree(self.logs_path, folder)
         log.info("Results saved to %s", folder)
         return folder
@@ -120,7 +133,7 @@ class Environment:
         self.status.set_phase("rest", current_run, self._until(self.stress.wait_after_stress))
         log.info("Rest phase until %s", f"{self.status.phase_until:%Y-%m-%d %H:%M:%S}")
         activity.waiting(self.stress.wait_after_stress, "rest phase")
-        time.sleep(self.stress.wait_after_stress)
+        shutdown.wait(self.stress.wait_after_stress)
 
     def _log_event(self, event: str):
         write_csv_row(f"{self.logs_path}/runs.csv", "event;date_time", event, current_time())
@@ -129,9 +142,17 @@ class Environment:
 def run_experiment(config_path: str = DEFAULT_CONFIG_PATH) -> None:
     config = load_config(config_path)
     setup_logging(config.logging.informative, config.logging.debug)
-    runtime = detect_runtime()
-    monitoring_environment = MonitoringEnvironment(config, runtime, describe_environment(runtime))
-    environment = Environment(config, runtime, monitoring_environment)
+    shutdown.install()
+    try:
+        runtime = detect_runtime()
+        monitoring_environment = MonitoringEnvironment(config, runtime, describe_environment(runtime))
+        environment = Environment(config, runtime, monitoring_environment)
 
-    build_images(runtime, config.containers, config.general.scripts_folder, config.setup.rebuild_images)
-    environment.run()
+        build_images(runtime, config.containers, config.general.scripts_folder, config.setup.rebuild_images)
+        environment.run()
+    except KeyboardInterrupt:
+        # parada forcada (2o Ctrl+C, ou o 1o antes de o monitoramento comecar)
+        log.error("Forced stop: terminating running commands; results were not saved")
+        shutdown.kill_children()
+        execute_command("pkill -INT -x stap", continue_if_error=True, error_informative=False)
+        raise SystemExit(130)

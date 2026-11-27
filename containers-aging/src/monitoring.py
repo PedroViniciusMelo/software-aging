@@ -41,6 +41,7 @@ STAP_RETRY_DELAY = 120
 PIDSTAT_DURATION = 1  # "pidstat ... 1 1" ja leva 1 s, descontado do intervalo de coleta
 PROCESS_RETRY_DELAY = 1  # espera entre tentativas quando o processo ainda nao existe
 STOP_GRACE = 3  # tempo para as leituras em andamento (pidstat/mpstat/iostat) terminarem no stop
+LIFECYCLE_STOP_TIMEOUT = 120  # espera maxima pelo container que o monitor de ciclo de vida esta' medindo
 
 
 def _fmt(value, ndigits=4):
@@ -121,6 +122,11 @@ class MonitoringEnvironment:
         self._stop.set()
         # SIGINT deixa o stap descarregar o modulo do kernel e fechar o CSV corretamente.
         execute_command("pkill -INT -x stap", continue_if_error=True, error_informative=False)
+        # nao deixa um container do monitor de ciclo de vida pela metade
+        if self.lifecycle_lock.acquire(timeout=LIFECYCLE_STOP_TIMEOUT):
+            self.lifecycle_lock.release()
+        else:
+            log.warning("Container lifecycle still running after %ds; stopping anyway", LIFECYCLE_STOP_TIMEOUT)
         time.sleep(STOP_GRACE)
 
     # ---- fragmentacao de memoria (systemtap) -----------------------------------------
@@ -202,27 +208,20 @@ class MonitoringEnvironment:
 
         load_image_time = get_time(self.runtime.load_image(f"{self.path}/{name}.tar"))
 
-        start_time = self.lifecycle.start(name, name, container.host_port, container.port)
+        start_time = self.lifecycle.start(name, name, container.host_port, container.port, container.env)
         if start_time is None:
             log_error(self.logs_path, "start", name, date_time)
             log.warning("Could not start container %s, skipping this lifecycle round", name)
             execute_command(self.runtime.force_remove(name), continue_if_error=True, error_informative=False)
             return False
 
-        up_time = self.lifecycle.wait_app_time(name) if self.monitoring.using_containers_app_time else ""
         stop_time = self.lifecycle.stop(name, on_kill=lambda: log_error(self.logs_path, "kill", name, date_time))
         remove_container_time = self.lifecycle.remove(
             name, on_force=lambda: log_error(self.logs_path, "force-remove", name, date_time))
         remove_image_time = get_time(self.runtime.remove_image(name))
 
-        if self.monitoring.using_containers_app_time:
-            self._log(f"{name}.csv", "load_image;start;up_time;stop;remove_container;remove_image;date_time",
-                      load_image_time, start_time, up_time, stop_time, remove_container_time,
-                      remove_image_time, date_time)
-        else:
-            self._log(f"{name}.csv", "load_image;start;stop;remove_container;remove_image;date_time",
-                      load_image_time, start_time, stop_time, remove_container_time, remove_image_time,
-                      date_time)
+        self._log(f"{name}.csv", "load_image;start;stop;remove_container;remove_image;date_time",
+                  load_image_time, start_time, stop_time, remove_container_time, remove_image_time, date_time)
         return True
 
     # ---- recursos da maquina ---------------------------------------------------------

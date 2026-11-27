@@ -97,9 +97,12 @@ _POPEN = _AccountedPopen if hasattr(os, "wait4") and hasattr(subprocess.Popen, "
 
 
 def _run(command: str, continue_if_error: bool, error_informative: bool) -> Optional[str]:
-    # stdin=DEVNULL: nenhum comando le' o terminal, que fica livre para o console interativo
+    # stdin=DEVNULL: nenhum comando le' o terminal, que fica livre para o console interativo.
+    # start_new_session: o Ctrl+C do terminal nao chega aos comandos, so' ao coletor (src/shutdown.py),
+    # que para graciosamente sem interromper um "docker rm" ou o stap no meio.
     started = time.perf_counter()
-    process = _POPEN(command, shell=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = _POPEN(command, shell=True, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                     start_new_session=True)
     activity.child_started(process.pid, command)
     try:
         output, error = process.communicate()

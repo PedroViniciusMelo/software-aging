@@ -27,7 +27,6 @@ class SetupConfig:
 class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
-    using_containers_app_time: bool
     disk_device: Optional[str] = None  # disco do iostat; None = detecta o disco que contem a raiz "/"
 
 
@@ -82,6 +81,8 @@ class ContainerConfig:
     port: int
     min_container_wait_time: int
     max_container_wait_time: int
+    # variaveis de ambiente do container (docker run -e), ex.: a senha que a imagem do postgres exige
+    env: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -121,7 +122,8 @@ def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
     return Config(
         general=GeneralConfig(**data["general"]),
         setup=SetupConfig(**data["setup"]),
-        monitoring=MonitoringConfig(**data["monitoring"]),
+        # _known_keys: configs antigos com using_containers_app_time (removido) so' geram aviso
+        monitoring=MonitoringConfig(**_known_keys(MonitoringConfig, data["monitoring"])),
         stressload=StressloadConfig(**data["stressload"]),
         containers=[ContainerConfig(**container) for container in data["containers"]],
         energy=_optional(EnergyConfig, data, "energy"),

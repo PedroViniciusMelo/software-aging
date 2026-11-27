@@ -1,5 +1,6 @@
 """Runtime de containers (docker/podman): deteccao e montagem dos comandos."""
 import re
+import shlex
 
 from src.utils import execute_command, log
 
@@ -27,14 +28,12 @@ class ContainerRuntime:
     def command(self, args: str) -> str:
         return f"{self.name} {args}"
 
-    def run(self, container: str, image: str, host_port: int, port: int) -> str:
-        return self.command(f"run --name {container} -td -p {host_port}:{port} --init {image}")
+    def run(self, container: str, image: str, host_port: int, port: int, env: dict = None) -> str:
+        env_args = "".join(f" -e {shlex.quote(f'{key}={value}')}" for key, value in (env or {}).items())
+        return self.command(f"run --name {container} -td -p {host_port}:{port}{env_args} --init {image}")
 
     def exists(self, container: str) -> str:
         return self.command(f"container inspect {container} > /dev/null 2>&1 && echo true")
-
-    def read_app_time(self, container: str) -> str:
-        return self.command(f"exec -i {container} sh -c \"test -e /root/log.txt && cat /root/log.txt\"")
 
     def stop(self, container: str) -> str:
         return self.command(f"stop {container}")

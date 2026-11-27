@@ -48,6 +48,12 @@ o consumo de energia.
    logs informativos (`logging.informative`) também vão para `logs/collector.log`; com
    `false`, só aparecem avisos e erros.
 
+   **Para parar antes do fim**, aperte Ctrl+C (ou envie SIGTERM): o coletor termina os
+   containers que estão no meio do ciclo (para e remove o que subiu), encerra a coleta e
+   salva os resultados parciais em `results/<cenário>_<data>_interrupted`. Um segundo
+   Ctrl+C força a saída sem salvar. Antes de o monitoramento começar (limpeza, imagens,
+   TeaStore), o primeiro Ctrl+C já encerra na hora.
+
 ## Rejuvenescimento
 
 Com `general.apply_rejuvenation: true`, o método `rejuvenation.method` roda ao fim de cada

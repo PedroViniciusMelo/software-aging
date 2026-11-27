@@ -7,7 +7,6 @@ from src.utils import CommandError, execute_command, get_time, log
 
 START_MAX_RETRIES = 5
 START_RETRY_DELAY = 2
-APP_TIME_POLL_DELAY = 0.5
 
 
 class ContainerLifecycle:
@@ -20,12 +19,12 @@ class ContainerLifecycle:
         return execute_command(self.runtime.exists(container), continue_if_error=True,
                                error_informative=False) is not None
 
-    def start(self, container: str, image: str, host_port: int, port: int) -> Optional[int]:
+    def start(self, container: str, image: str, host_port: int, port: int, env: dict = None) -> Optional[int]:
         """
         Sobe o container. Se falhar, remove o que sobrou e tenta de novo a cada
         START_RETRY_DELAY segundos. Devolve None se desistir apos START_MAX_RETRIES falhas.
         """
-        command = self.runtime.run(container, image, host_port, port)
+        command = self.runtime.run(container, image, host_port, port, env)
         try:
             return get_time(command)
         except CommandError:
@@ -44,15 +43,6 @@ class ContainerLifecycle:
             except CommandError:
                 failures += 1
         return None
-
-    def wait_app_time(self, container: str) -> str:
-        """Espera a aplicacao do container gravar /root/log.txt e devolve o conteudo."""
-        command = self.runtime.read_app_time(container)
-        up_time = execute_command(command, continue_if_error=True, error_informative=False)
-        while up_time is None:
-            time.sleep(APP_TIME_POLL_DELAY)
-            up_time = execute_command(command, continue_if_error=True, error_informative=False)
-        return up_time
 
     def stop(self, container: str, on_kill: Callable[[], None]) -> int:
         """Para o container; se nao parar, chama on_kill() e mata o container."""
