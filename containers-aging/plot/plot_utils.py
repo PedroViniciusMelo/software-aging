@@ -62,7 +62,9 @@ def plot(
         highlight_intervals=None,
         # Parâmetro opcional para intervalos a destacar [(hora_inicial, hora_final, cor, alpha), ...]
         x_lim=None,  # Novo parâmetro opcional para limitar o eixo x (limite superior)
-        y_lim=None  # Novo parâmetro opcional para limitar o eixo y (limite superior)
+        y_lim=None,  # Novo parâmetro opcional para limitar o eixo y (limite superior)
+        skip_columns=(),  # colunas do CSV que nao viram grafico
+        legacy_swap_free=False,  # memory.csv antigo: a coluna "swap" e' o swap LIVRE; mostra 8192 MB - livre
 ):
     if cols_to_divide is None:
         cols_to_divide = []
@@ -75,8 +77,10 @@ def plot(
         parse_dates=[datetime]
     ).rename(columns={datetime: 'seconds'})
 
-    df['seconds'] = (df['seconds'] - df['seconds'][0]).dt.total_seconds() / 3600
+    t0 = df['seconds'][0]
+    df['seconds'] = (df['seconds'] - t0).dt.total_seconds() / 3600
     df = df.set_index('seconds').replace(',', '.', regex=True).apply(lambda x: pd.to_numeric(x))
+    df = df.drop(columns=[column for column in skip_columns if column in df.columns])
     cols_to_divide = cols_to_divide if len(cols_to_divide) != 0 else df.columns
     df[cols_to_divide] = df[cols_to_divide].div(division)
 
@@ -85,7 +89,9 @@ def plot(
 
         df[col] = df[col].fillna(0)
 
-        if col == "swap":
+        # So' no memory.csv antigo. Nos processos, "swap" ja' e' o swap usado (VmSwap): antes esta
+        # conta valia para eles tambem e mostrava 8 GB de swap para um processo que usava 0.
+        if col == "swap" and legacy_swap_free:
             df[col] = (df[col] - 8192) * -1
 
         # Configurar o gráfico
@@ -109,10 +115,20 @@ def plot(
             ax.set_ylim(top=y_lim)
 
         # Destacar intervalos, se especificados (agora com alpha)
+        # inicio/fim em horas, ou datetimes (fases do runs.csv, ver phases.py) convertidos com o t0
+        # deste arquivo; fim None = ate' o ultimo dado. As faixas nao mudam os limites do eixo x.
         if highlight_intervals is not None:
-            for interval in highlight_intervals:
-                start, end, color, alpha = interval
+            x_limits = ax.get_xlim()
+            last_hour = df.index.max()
+            for start, end, color, alpha in highlight_intervals:
+                if not isinstance(start, (int, float)):
+                    start = (start - t0).total_seconds() / 3600
+                if end is None:
+                    end = last_hour
+                elif not isinstance(end, (int, float)):
+                    end = (end - t0).total_seconds() / 3600
                 ax.axvspan(start, end, color=color, alpha=alpha)
+            ax.set_xlim(x_limits)
 
         # Análise Mann-Kendall e regressão
         if apply_mann_kendall:

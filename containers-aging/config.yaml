@@ -36,15 +36,15 @@ rejuvenation:
 monitoring:
     sleep_time: 15  # VALIDATION (experiment: 60) # Sleep time the machine data will be collected in seconds
     sleep_time_container_metrics: 60  # VALIDATION (experiment: 240) # Sleep time the machine data will be collected in seconds
-    # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
-    pidstat_interval: 1  # Window (seconds) of each pidstat reading of a runtime process; subtracted from sleep_time
-    process_retry_delay: 10  # Seconds between attempts while a monitored process does not exist yet (each attempt runs pgrep + pidstat + 2 cat)
+    # disk_device: "vda"  # Disk whose I/O is monitored (disk_write_read.csv). If omitted, the disk that holds "/" is detected automatically
+    raw_values: true  # Also writes the raw /proc counters behind cpu/memory/disk/process metrics to logs/raw/ (same date_time)
+    process_retry_delay: 10  # Seconds between attempts while a monitored process does not exist yet (reads /proc, no commands)
     stap_max_attempts: 11  # How many times systemtap is (re)started if it exits
     stap_retry_delay: 30  # VALIDATION (experiment: 120) # Seconds to wait before restarting systemtap
     stap_overload_threshold: 650000000  # systemtap STP_OVERLOAD_THRESHOLD (ns of probe time per interval)
     stap_overload_interval: 1000000000  # systemtap STP_OVERLOAD_INTERVAL (ns)
     stop_grace: 3  # Seconds at the end for the readings in progress to finish
-    processes:  # Host processes monitored with pidstat, one <name>.csv each. Matched with "pgrep -f" (any part of the command line)
+    processes:  # Host processes monitored, one <name>.csv each: exact process name (like "pgrep -x"; first 15 chars), all instances summed
         docker: [docker, dockerd, containerd, containerd-shim, runc, docker-proxy]  # Used when the runtime is Docker
         podman: [podman, conmon, cron, crun, systemd]  # Used when the runtime is Podman
         common: [java, postgres, beam.smp, initdb, mysqld]  # Workload (TeaStore and stress containers), with either runtime

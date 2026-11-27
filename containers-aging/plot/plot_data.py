@@ -11,29 +11,25 @@ from pathlib import Path
 
 from fragmentation import plot_fragmentation
 from jmeter import plot_jmeter
+from phases import highlight_intervals
 from plot_utils import plot, plot_time_series
 
 DEFAULT_LOGS_DIR = "./logs/"
 
-# Periodos (em horas) destacados nos graficos: (inicio, fim, cor, alpha)
-intervals = [
-    (0, 12, "green", 0.3),
-    (84, 96, "green", 0.3),
-    (168, 180, "green", 0.3),
-    (252, 264, "green", 0.3)
-]
-
 PROCESS_YLABEL = {
-    'cpu': 'CPU usage (percentage)',
+    'cpu': 'CPU usage (percentage of one core)',
+    'threads': 'Threads (all instances)',
+    'processes': 'Running instances',
     "rss": "Physical memory usage(MB)",
     "vsz": "Virtual memory usage (MB)",
     "swap": "Swap used(MB)",
     'mem': 'Memory usage (percentage)'
 }
 
-# Processos monitorados (monitoring.processes no config.yaml): todo CSV da pasta com este
-# cabecalho vira grafico, qualquer que seja o processo.
-PROCESS_HEADER = "cpu;mem;rss;vsz;threads;swap;date_time"
+# Processos monitorados (monitoring.processes no config.yaml): todo CSV da pasta com um destes
+# cabecalhos vira grafico, qualquer que seja o processo. O novo tem "processes" (instancias somadas).
+PROCESS_HEADERS = ("cpu;mem;rss;vsz;threads;swap;date_time", "cpu;mem;rss;vsz;threads;swap;processes;date_time")
+PROCESS_HEADER = PROCESS_HEADERS[-1]
 # Titulos (e ordem) dos processos conhecidos; os demais saem como "Process - <nome>", em ordem alfabetica.
 PROCESS_TITLES = {
     "docker.csv": "Process - Docker",
@@ -87,7 +83,7 @@ def _first_line(path):
 def find_process_files(base_folder):
     """(titulo, arquivo) de cada CSV de processo da pasta: os conhecidos primeiro, os outros em ordem alfabetica."""
     found = sorted(path.name for path in base_folder.glob("*.csv")
-                   if not path.name.startswith(OLD_COST_PREFIX) and _first_line(path) == PROCESS_HEADER)
+                   if not path.name.startswith(OLD_COST_PREFIX) and _first_line(path) in PROCESS_HEADERS)
     known = [name for name in PROCESS_TITLES if name in found]
     others = [name for name in found if name not in PROCESS_TITLES]
     return [(PROCESS_TITLES[name], name) for name in known] +            [(f"Process - {name[:-len('.csv')]}", name) for name in others]
@@ -112,6 +108,8 @@ def plot_processes(base_folder, processes):
 def start(base_folder, qtd_item):
     recreate_plot_folders(base_folder)
     ploted = 0
+    # descanso (verde) e rejuvenescimento (laranja), das fases reais do runs.csv
+    intervals = highlight_intervals(base_folder)
 
     ploted += plot(
         title="CPU",
@@ -129,6 +127,8 @@ def start(base_folder, qtd_item):
     if base_folder.joinpath('process.csv').exists():
         ploted += plot(title="Zumbis", folder=base_folder, filename='process.csv', ylabel='Zumbis processes(qtt)')
 
+    # memory.csv novo traz swap_used; o antigo so' o swap livre ("swap"), convertido supondo 8 GB de swap
+    new_memory = "swap_used" in _first_line(base_folder.joinpath('memory.csv')).split(";")
     ploted += plot(
         title="Memory",
         folder=base_folder,
@@ -137,11 +137,14 @@ def start(base_folder, qtd_item):
             "used": "Memory used(MB)",
             "cached": "Memory cached(MB)",
             "buffers": "Memory buffers(MB)",
-            "swap": "Swap used(MB)"
+            "swap": "Swap used(MB)",
+            "swap_used": "Swap used(MB)",
         },
         division=1024,
         includeColYlabel=True,
-        highlight_intervals=intervals
+        highlight_intervals=intervals,
+        skip_columns=["swap", "swap_total"] if new_memory else [],
+        legacy_swap_free=not new_memory,
     )
 
     if base_folder.joinpath('energy_rapl.csv').exists():

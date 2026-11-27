@@ -99,6 +99,8 @@ outro host, apontando para a máquina do experimento.
 | `collector.csv` | processo coletor inteiro: CPU, RSS, VSZ e threads; `monitoring_cpu_pct` é o custo só do monitoramento |
 | `rejuvenation.csv`, `runs.csv` | aplicações do rejuvenescimento; início de cada fase (stress, sleep, rejuvenation) |
 | `collector.log` | logs do coletor (com `logging.to_file`) |
+| `config.yaml` | cópia do config usado na execução |
+| `raw/` | valores brutos (com `monitoring.raw_values`): contadores do `/proc` de onde saem CPU, memória, disco e processos (uma linha por instância), com o mesmo `date_time` das métricas |
 | `environment.txt`, `build-manifest.txt` | sistema, kernel e versões exatas do que foi compilado |
 
 ## Organização

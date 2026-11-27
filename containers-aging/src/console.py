@@ -16,7 +16,7 @@ from src.utils import log
 
 HELP = """Commands:
   threads  (t)   threads of each part of the system: TID, CPU, what each one is doing now
-  children (c)   external commands running right now (pidstat, docker, stap...)
+  children (c)   external commands running right now (docker, stap, dmesg...)
   status   (s)   experiment phase, run, rejuvenation and logging
   cost           last sample of the monitoring cost (CPU per part)
   log <level>    change the logging level: debug | info | quiet

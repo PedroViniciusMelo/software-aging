@@ -18,8 +18,10 @@ from src.utils import current_time, execute_command, log, write_csv_row
 
 
 class Environment:
-    def __init__(self, config: Config, runtime: ContainerRuntime, monitoring_environment: MonitoringEnvironment):
+    def __init__(self, config: Config, runtime: ContainerRuntime, monitoring_environment: MonitoringEnvironment,
+                 config_path: str = None):
         self.config = config
+        self.config_path = config_path
         self.general = config.general
         self.stress = config.stressload
         self.path = config.general.scripts_folder
@@ -56,6 +58,8 @@ class Environment:
         self.clear()
         if self.config.logging.to_file:
             attach_log_file(self.logs_path)
+        if self.config_path:  # o config usado vai junto com os resultados (results/<cenario>/config.yaml)
+            shutil.copy(self.config_path, f"{self.logs_path}/config.yaml")
         log.info("Rejuvenation: %s", self.status.rejuvenation)
         self.status.set_phase("starting TeaStore")
         self.start_teastore()
@@ -148,7 +152,7 @@ def run_experiment(config_path: str = DEFAULT_CONFIG_PATH) -> None:
     try:
         runtime = detect_runtime()
         monitoring_environment = MonitoringEnvironment(config, runtime, describe_environment(runtime))
-        environment = Environment(config, runtime, monitoring_environment)
+        environment = Environment(config, runtime, monitoring_environment, config_path)
 
         build_images(runtime, config.containers, config.general.scripts_folder, config.setup.rebuild_images)
         environment.run()

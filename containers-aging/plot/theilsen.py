@@ -168,10 +168,12 @@ def process_folder(subfolder_path):
                 # Ensure the column is numeric before any calculation
                 df[col] = pd.to_numeric(df[col], errors='coerce')
 
-                # Apply specific calculation for 'swap'
+                # 'swap': o memory.csv novo traz swap_used; o antigo, o swap livre (supondo 8 GB de total)
                 if col == "swap":
-                    # df[col] is already numeric here
-                    df[col] = (df[col] - 8192) * -1
+                    if "swap_used" in df.columns:
+                        df[col] = pd.to_numeric(df["swap_used"], errors='coerce')
+                    else:
+                        df[col] = (df[col] - 8192) * -1
 
                 if not df[col].dropna().empty:
                     slope_value = calculate_slope(df.copy(), 'time_numeric_days', col)  # Pass a copy to calculate_slope

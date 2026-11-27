@@ -10,9 +10,11 @@ from pathlib import Path
 import pandas as pd
 from pymannkendall import original_test
 
+from phases import phase_windows
 from scenario import extract_categorical_info
 
 DEFAULT_BASE_DIR = "D:/final"
+MIN_SAMPLES = 3  # o teste precisa de pelo menos 3 pontos numa janela
 
 
 def perform_mann_kendall_analysis(data, columns, intervals):
@@ -20,7 +22,7 @@ def perform_mann_kendall_analysis(data, columns, intervals):
     results = []
     for label, (start, end) in intervals.items():
         subset = data[(data.index >= start) & (data.index <= end)]
-        if subset.empty:
+        if len(subset) < MIN_SAMPLES:  # ex.: o rejuvenescimento dura segundos (1 amostra)
             continue
         for col in columns:
             if col not in subset.columns:
@@ -44,26 +46,6 @@ def analyze_folder(folder_path, output_data):
     # Extract system, software, and version info
     system, software, version = extract_categorical_info(folder_name)
 
-    intervals = {
-        "Full": (0, float('inf')),  # Intervalo completo (todas as atividades)
-
-        # Primeiro período (0 a 3.5 dias)
-        "0 to 0.5 days": (0, 12),  # Apenas Workload 1
-        "0.5 days to 3.5 days": (12, 84),  # Workloade Stressload 1
-
-        # Segundo período (3.5 a 7 dias)
-        "3.5 to 4 days": (84, 96),  # Apenas Workload 2
-        "4 days to 7 days": (96, 168),  # Workload e Stressload 2
-
-        # Terceiro período (7 a 10.5 dias)
-        "7 to 7.5 days": (168, 180),  # Apenas Workload 3
-        "7.5 days to 10.5 days": (180, 252),  # Workload e Stressload 3
-
-        # Quarto período (10.5 a 14 dias)
-        "10.5 to 11 days": (252, 264),  # Apenas Workload 4
-        "11 days to 14 days": (264, 336),  # Workload e Stressload 4
-    }
-
     # Analyze files
     files_to_columns = {
         "memory.csv": ["used", "swap"],
@@ -84,17 +66,21 @@ def analyze_folder(folder_path, output_data):
         # Replace commas with dots for numeric conversion
         df = df.replace(',', '.', regex=True)
 
-        df['elapsed_hours'] = (df['date_time'] - df['date_time'].min()).dt.total_seconds() / 3600
+        t0 = df['date_time'].min()
+        df['elapsed_hours'] = (df['date_time'] - t0).dt.total_seconds() / 3600
         df = df.set_index('elapsed_hours')
         df = df.drop(columns=['date_time'], errors='ignore')
 
         # Convert columns to numeric
         df = df.apply(pd.to_numeric, errors='coerce')
 
-        if "swap" in df.columns:
+        if "swap_used" in df.columns:  # memory.csv novo: swap em uso
+            df["swap"] = df["swap_used"]
+        elif "swap" in df.columns:  # antigo: swap livre, supondo 8 GB de swap total
             df["swap"] = (df["swap"] - 8192) * -1
 
-        # Perform Mann-Kendall analysis
+        # "Full" (usado pelo mannkendall_summary.py) + cada fase real do runs.csv ("Run 1 - rest", ...)
+        intervals = {"Full": (0, float('inf')), **phase_windows(folder_path, t0)}
         mk_results = perform_mann_kendall_analysis(df, columns, intervals)
 
 

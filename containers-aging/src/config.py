@@ -26,9 +26,9 @@ class SetupConfig:
 @dataclass
 class ProcessesConfig:
     """
-    Processos do host monitorados com pidstat (um <nome>.csv cada), procurados com "pgrep -f":
-    o nome casa com qualquer parte da linha de comando. Monitora a lista do runtime em uso
-    seguida da comum, na ordem, sem repetir.
+    Processos do host monitorados (um <nome>.csv cada), pelo nome exato (/proc/<pid>/comm, como
+    "pgrep -x"), somando todas as instancias. Monitora a lista do runtime em uso seguida da
+    comum, na ordem, sem repetir.
     """
     common: list = field(default_factory=lambda: ["java", "postgres", "beam.smp", "initdb", "mysqld"])
     docker: list = field(default_factory=lambda: ["docker", "dockerd", "containerd", "containerd-shim", "runc",
@@ -51,9 +51,9 @@ class ProcessesConfig:
 class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
-    disk_device: Optional[str] = None  # disco do iostat; None = detecta o disco que contem a raiz "/"
-    pidstat_interval: int = 1  # janela (s) de cada leitura do pidstat; descontada do sleep_time
+    disk_device: Optional[str] = None  # disco do disk_write_read.csv; None = detecta o disco que contem a raiz "/"
     process_retry_delay: int = 1  # espera (s) entre tentativas quando o processo monitorado ainda nao existe
+    raw_values: bool = True  # grava tambem os contadores brutos de /proc em logs/raw/ (para refazer as contas)
     stap_max_attempts: int = 11  # quantas vezes (re)iniciar o systemtap se ele sair
     stap_retry_delay: int = 120  # espera (s) antes de reiniciar o systemtap
     stap_overload_threshold: int = 650000000  # -D STP_OVERLOAD_THRESHOLD (ns de probe por intervalo)

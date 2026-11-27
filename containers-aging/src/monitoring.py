@@ -5,7 +5,7 @@ import shutil
 import threading
 import time
 
-from src import activity
+from src import activity, procfs
 from src.config import Config
 from src.energy import RaplReader, find_pkg_temp_path, run_smart_plug_monitor, sample_power
 from src.lifecycle import ContainerLifecycle
@@ -29,7 +29,21 @@ COST_HEADER = "part;role;threads;threads_cpu_s;commands;commands_cpu_s;cpu_s;cpu
 COLLECTOR_FILE = "collector.csv"
 COLLECTOR_HEADER = "cpu_s;commands_cpu_s;cpu_pct;monitoring_cpu_pct;rss_kb;vsz_kb;threads;date_time"
 
-PROCESS_HEADER = 'cpu;mem;rss;vsz;threads;swap;date_time'
+# Soma de todas as instancias do processo (nome exato); "processes" = quantas instancias havia.
+PROCESS_HEADER = 'cpu;mem;rss;vsz;threads;swap;processes;date_time'
+CPU_HEADER = ";".join(procfs.CpuSampler.COLUMNS) + ";date_time"
+DISK_IO_HEADER = ";".join(procfs.DiskSampler.COLUMNS) + ";date_time"
+MEMORY_HEADER = "used;cached;buffers;swap;swap_total;swap_used;date_time"
+FIRST_WINDOW = 1  # a 1a amostra de CPU/disco cobre 1 s; as seguintes, o intervalo inteiro desde a anterior
+
+# Valores brutos (monitoring.raw_values): os contadores de /proc de onde saem as metricas acima,
+# com o mesmo date_time, para refazer ou conferir as contas depois. Ficam em logs/raw/.
+RAW_FOLDER = "raw"
+RAW_CPU_HEADER = "uptime_s;" + ";".join(procfs.CpuSampler.RAW_COLUMNS) + ";date_time"  # ticks acumulados
+RAW_DISK_HEADER = "uptime_s;" + ";".join(procfs.DiskSampler.RAW_COLUMNS) + ";date_time"
+RAW_MEMORY_HEADER = ";".join(procfs.MEMINFO_RAW) + ";date_time"  # kB
+# uma linha por instancia: ticks = utime+stime acumulados, start = inicio do processo (ticks desde o boot)
+RAW_PROCESS_HEADER = "process;pid;start_ticks;cpu_ticks;threads;vsz_kb;rss_kb;swap_kb;uptime_s;date_time"
 # postgres.csv ja e' usado pelo monitor de ciclo de vida do container postgres.
 PROCESS_FILE_NAMES = {'postgres': 'postgres_process'}
 
@@ -42,14 +56,6 @@ BUILD_MANIFEST = "/etc/containers-aging/build-manifest.txt"
 def _fmt(value, ndigits=4):
     """Formata uma leitura numerica opcional para o CSV (vazio quando indisponivel)."""
     return "" if value is None else round(value, ndigits)
-
-
-def _pgrep_pattern(process_name: str) -> str:
-    """
-    Padrao do "pgrep -f" que nao casa com o proprio shell que o executa: "[d]ocker" casa com
-    "docker", mas nao com a linha de comando "pgrep -f [d]ocker".
-    """
-    return f"[{process_name[0]}]{process_name[1:]}"
 
 
 class MonitoringEnvironment:
@@ -72,6 +78,10 @@ class MonitoringEnvironment:
     def _log(self, filename: str, header: str, *values) -> None:
         write_csv_row(f"{self.logs_path}/{filename}", header, *values)
 
+    def _log_raw(self, filename: str, header: str, *values) -> None:
+        if self.monitoring.raw_values:
+            write_csv_row(f"{self.logs_path}/{RAW_FOLDER}/{filename}", header, *values)
+
     def _wait(self, seconds: float) -> bool:
         """Espera `seconds` (ou ate o stop). Devolve True se o monitoramento foi encerrado."""
         activity.waiting(seconds, "waiting next sample")
@@ -92,6 +102,8 @@ class MonitoringEnvironment:
         if os.path.exists(BUILD_MANIFEST):
             shutil.copy(BUILD_MANIFEST, f"{self.logs_path}/build-manifest.txt")
         self.disk_device = self.monitoring.disk_device or detect_root_disk()
+        if self.monitoring.raw_values:
+            os.makedirs(f"{self.logs_path}/{RAW_FOLDER}", exist_ok=True)
 
         threads = ["systemtap", "container_metrics"]
         self._start_thread("systemtap", self.systemtap_loop)
@@ -146,36 +158,39 @@ class MonitoringEnvironment:
 
     # ---- processos -------------------------------------------------------------------
     def process_loop(self, process: str):
+        sampler = procfs.ProcessSampler(process)
+        sampler.sample()  # referencia: a 1a linha ja' traz a CPU do intervalo
+        self._wait(FIRST_WINDOW)
         while self.running:
-            self.get_process_data(process)
-            self._wait(self.monitoring.sleep_time - self.monitoring.pidstat_interval)
+            started = time.time()
+            self.get_process_data(sampler)
+            self._wait(self.monitoring.sleep_time - (time.time() - started))
 
-    def get_process_data(self, process_name: str):
+    def get_process_data(self, sampler: procfs.ProcessSampler):
         """
-        Coleta cpu/mem/rss/vsz/threads/swap do processo. Se ele ainda nao existe, tenta de novo
-        a cada process_retry_delay segundos ate encontra-lo.
+        Grava cpu/mem/rss/vsz/threads/swap somados de todas as instancias do processo (lidos de
+        /proc). Se ele ainda nao existe, tenta de novo a cada process_retry_delay segundos.
         """
-        date_time = current_time()
-
         while self.running:
             try:
-                pid = execute_command(f"pgrep -f '{_pgrep_pattern(process_name)}' | head -n 1",
-                                      error_informative=False)
-
-                data = execute_command(f"pidstat -u -h -p {pid} -T ALL -r {self.monitoring.pidstat_interval} 1 "
-                                       "| sed -n '4p'",
-                                       error_informative=False).split()
-                threads = execute_command(f"cat /proc/{pid}/status | grep Threads | awk '{{print $2}}'",
-                                          continue_if_error=True)
-                swap = execute_command(f"cat /proc/{pid}/status | grep Swap | awk '{{print $2}}'",
-                                       continue_if_error=True)
-                cpu, vsz, rss, mem = data[7], data[11], data[12], data[13]
-
-                filename = PROCESS_FILE_NAMES.get(process_name, process_name)
-                self._log(f"{filename}.csv", PROCESS_HEADER, cpu, mem, rss, vsz, threads, swap, date_time)
+                data = sampler.sample()
+                if data is not None and data["cpu"] is None:  # apareceu agora: mede a CPU em FIRST_WINDOW
+                    self._wait(FIRST_WINDOW)
+                    data = sampler.sample()
+            except Exception as error:
+                log.debug("Reading process %s failed: %r", sampler.name, error)
+                data = None
+            if data is not None and data["cpu"] is not None:
+                date_time = current_time()
+                filename = PROCESS_FILE_NAMES.get(sampler.name, sampler.name)
+                self._log(f"{filename}.csv", PROCESS_HEADER, _fmt(data["cpu"], 2), _fmt(data["mem"], 2), data["rss"],
+                          data["vsz"], data["threads"], data["swap"], data["processes"], date_time)
+                uptime, stats = sampler.last_raw
+                for pid, stat in stats:
+                    self._log_raw("processes.csv", RAW_PROCESS_HEADER, sampler.name, pid, stat["start"], stat["ticks"],
+                                  stat["threads"], stat["vsz_kb"], stat["rss_kb"], stat["swap_kb"], uptime, date_time)
                 return
-            except (CommandError, Exception):
-                self._wait(self.monitoring.process_retry_delay)
+            self._wait(self.monitoring.process_retry_delay)
 
     # ---- ciclo de vida dos containers ---------------------------------------------------
     def container_metrics_loop(self):
@@ -227,6 +242,14 @@ class MonitoringEnvironment:
     def machine_resources_loop(self):
         collectors = [self.cpu_monitoring, self.disk_monitoring, self.memory_monitoring, self.process_monitoring,
                       self.disk_write_and_read_monitoring, self.kernel_killed_process_monitoring]
+        # CPU e disco: media do intervalo inteiro entre amostras (contadores do kernel)
+        self.cpu_sampler = procfs.CpuSampler()
+        try:
+            self.disk_sampler = procfs.DiskSampler(self.disk_device)
+        except Exception as error:
+            log.warning("Disk I/O will not be collected: %s", error)
+            self.disk_sampler = None
+        self._wait(FIRST_WINDOW)
         while self.running:
             started = time.time()
             date_time = current_time()
@@ -236,38 +259,46 @@ class MonitoringEnvironment:
                     collect(date_time)
                 except (CommandError, Exception) as error:
                     log.warning("%s failed: %r", collect.__name__, error)
-            # mpstat/iostat medem 1 s cada; desconta para manter o intervalo de sleep_time
             self._wait(self.monitoring.sleep_time - (time.time() - started))
 
     def cpu_monitoring(self, date_time):
-        # "mpstat 1 1": uso no ultimo segundo ("mpstat" sozinho da' a media desde o boot)
-        cpu_info = execute_command("mpstat 1 1 | grep all | head -n 1").split()
-        index = cpu_info.index("all")  # o horario pode ocupar 1 ou 2 colunas (AM/PM)
-        usr, nice, sys_used, iowait, soft = (cpu_info[index + 1], cpu_info[index + 2], cpu_info[index + 3],
-                                             cpu_info[index + 4], cpu_info[index + 6])
-        self._log("cpu.csv", "usr;nice;sys;iowait;soft;date_time", usr, nice, sys_used, iowait, soft, date_time)
+        """% de CPU da maquina na media do intervalo desde a amostra anterior (/proc/stat)."""
+        sample = self.cpu_sampler.sample()
+        self._log("cpu.csv", CPU_HEADER, *(_fmt(sample[column], 2) for column in procfs.CpuSampler.COLUMNS),
+                  date_time)
+        self._log_raw("cpu.csv", RAW_CPU_HEADER, procfs.uptime_seconds(), *self.cpu_sampler.last_raw, date_time)
 
     def disk_monitoring(self, date_time):
-        used = execute_command("df | grep '/$' | awk '{print $3}'")
-        self._log("disk.csv", "used;date_time", used, date_time)
+        """kB usados em "/", como a coluna Used do df."""
+        stat = os.statvfs("/")
+        self._log("disk.csv", "used;date_time", (stat.f_blocks - stat.f_bfree) * stat.f_frsize // 1024, date_time)
 
     def memory_monitoring(self, date_time):
-        used = execute_command("free | grep Mem | awk '{print $3}'")
-        cached = execute_command("cat /proc/meminfo | grep -i Cached | sed -n '1p' | awk '{print $2}'")
-        buffers = execute_command("cat /proc/meminfo | grep -i Buffers | sed -n '1p' | awk '{print $2}'")
-        swap = execute_command("cat /proc/meminfo | grep -i Swap | grep -i Free | awk '{print $2}'")
-        self._log("memory.csv", "used;cached;buffers;swap;date_time", used, cached, buffers, swap, date_time)
+        """kB (/proc/meminfo); swap = swap livre (compatibilidade), swap_used = swap em uso."""
+        data = procfs.memory()
+        self._log("memory.csv", MEMORY_HEADER, data["used"], data["cached"], data["buffers"], data["swap"],
+                  data["swap_total"], data["swap_used"], date_time)
+        self._log_raw("memory.csv", RAW_MEMORY_HEADER, *data["raw"], date_time)
 
     def process_monitoring(self, date_time):
-        zombies = execute_command("ps aux | awk '{if ($8 ~ \"Z\") {print $0}}' | wc -l")
+        """Processos zumbis (estado Z)."""
+        zombies = 0
+        for entry in os.listdir("/proc"):
+            if entry.isdigit():
+                stat = procfs._read(f"/proc/{entry}/stat")
+                if stat and stat[stat.rfind(")") + 2:].startswith("Z"):
+                    zombies += 1
         self._log("process.csv", "zombies;date_time", zombies, date_time)
 
     def disk_write_and_read_monitoring(self, date_time):
-        # "-y 1 1": taxas do ultimo segundo ("iostat -d" sozinho da' a media desde o boot)
-        data = execute_command(f"iostat -dy 1 1 | awk '$1 == \"{self.disk_device}\"'").split()
-        tps, read, write, dscd = data[1], data[2], data[3], data[4]
-        self._log("disk_write_read.csv", "tps;kB_reads;kB_wrtns;kB_dscds;date_time", tps, read, write, dscd,
-                  date_time)
+        """Taxas do disco por segundo (como iostat -d), na media do intervalo (/proc/diskstats)."""
+        if self.disk_sampler is None:
+            return
+        sample = self.disk_sampler.sample()
+        self._log("disk_write_read.csv", DISK_IO_HEADER,
+                  *(_fmt(sample[column], 2) for column in procfs.DiskSampler.COLUMNS), date_time)
+        self._log_raw("disk_write_read.csv", RAW_DISK_HEADER, procfs.uptime_seconds(), *self.disk_sampler.last_raw,
+                      date_time)
 
     def kernel_killed_process_monitoring(self, date_time):
         """Grava uma linha por mensagem nova do kernel (processos mortos / OOM) desde a ultima coleta."""
