@@ -96,9 +96,10 @@ class MonitoringEnvironment:
         threads = ["systemtap", "container_metrics"]
         self._start_thread("systemtap", self.systemtap_loop)
         self._start_thread("container_metrics", self.container_metrics_loop)
-        for process in self.runtime.monitored_processes:
+        processes = self.monitoring.processes.for_runtime(self.runtime.name)
+        for process in processes:
             self._start_thread(f"processes_{process}", self.process_loop, process)
-        threads.append(f"{len(self.runtime.monitored_processes)} process monitors")
+        threads.append(f"{len(processes)} process monitors ({', '.join(processes) or 'none'})")
         self._start_thread("machine_resources", self.machine_resources_loop)
         threads.append("machine_resources")
         if self.energy.enable_rapl:

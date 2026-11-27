@@ -24,6 +24,30 @@ class SetupConfig:
 
 
 @dataclass
+class ProcessesConfig:
+    """
+    Processos do host monitorados com pidstat (um <nome>.csv cada), procurados com "pgrep -f":
+    o nome casa com qualquer parte da linha de comando. Monitora a lista do runtime em uso
+    seguida da comum, na ordem, sem repetir.
+    """
+    common: list = field(default_factory=lambda: ["java", "postgres", "beam.smp", "initdb", "mysqld"])
+    docker: list = field(default_factory=lambda: ["docker", "dockerd", "containerd", "containerd-shim", "runc",
+                                                  "docker-proxy"])
+    podman: list = field(default_factory=lambda: ["podman", "conmon", "cron", "crun", "systemd"])
+
+    def __post_init__(self):
+        for name in ("common", "docker", "podman"):
+            value = getattr(self, name)
+            if value is None:
+                setattr(self, name, [])
+            elif not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+                raise SystemExit(f"monitoring.processes.{name} must be a list of process names, got {value!r}")
+
+    def for_runtime(self, runtime: str) -> list:
+        return list(dict.fromkeys(getattr(self, runtime, []) + self.common))
+
+
+@dataclass
 class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
@@ -36,6 +60,7 @@ class MonitoringConfig:
     stap_overload_interval: int = 1000000000  # -D STP_OVERLOAD_INTERVAL (ns)
     stop_grace: int = 3  # espera (s) no fim para as leituras em andamento terminarem
     lifecycle_stop_timeout: int = 120  # espera maxima (s) no fim pelo container que o monitor de ciclo de vida mede
+    processes: ProcessesConfig = field(default_factory=ProcessesConfig)
 
 
 @dataclass
@@ -149,6 +174,12 @@ def _migrate(data: dict) -> None:
         print(f"Aviso: {old_section}.{old_key} agora e' {new_section}.{new_key}; atualize o config.yaml")
 
 
+def _monitoring(data: dict) -> MonitoringConfig:
+    data = dict(data)
+    processes = ProcessesConfig(**_known_keys(ProcessesConfig, data.pop("processes", None) or {}))
+    return MonitoringConfig(**_known_keys(MonitoringConfig, data), processes=processes)
+
+
 def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
     with open(path, "r") as yml_file:
         data = yaml.safe_load(yml_file)
@@ -158,7 +189,7 @@ def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
         general=GeneralConfig(**data["general"]),
         setup=SetupConfig(**data["setup"]),
         # _known_keys: configs antigos com using_containers_app_time (removido) so' geram aviso
-        monitoring=MonitoringConfig(**_known_keys(MonitoringConfig, data["monitoring"])),
+        monitoring=_monitoring(data["monitoring"]),
         stressload=StressloadConfig(**data["stressload"]),
         containers=[ContainerConfig(**container) for container in data["containers"]],
         energy=_optional(EnergyConfig, data, "energy"),

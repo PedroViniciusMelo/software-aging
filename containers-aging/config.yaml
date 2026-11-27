@@ -1,16 +1,16 @@
 general:
-    runs: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
+    runs: 2 # VALIDATION (15 min: 2 x (300 + 150)). Experiment: 4 # Changing this will affect the stress load, (max_stress_time + wait_after_stress) * (this value) will be total time of experiments
     plot_results: true  # At the end, copy logs/ to results/<scenario>_<date> and generate the plots there
     # scripts_folder is detected automatically (the folder that holds main.py)
 
 setup:
-    rebuild_images: true # If true, the images will be rebuilt before the experiments
-    teastore_start_interval: 60  # Seconds between starting each of the 7 TeaStore services
+    rebuild_images: false # VALIDATION (experiment: true) If true, the images will be rebuilt before the experiments
+    teastore_start_interval: 15  # VALIDATION (experiment: 60) # Seconds between starting each of the 7 TeaStore services
 
 stressload:
     stressload_first: false # If true, the stressload will be executed before the sleep time
-    max_stress_time: 259200  # Time the stress will be running in seconds (default 259200s = 3 days)
-    wait_after_stress: 43200  #Time the script will wait until next stress period in seconds (default 43200 = 12h)
+    max_stress_time: 300  # VALIDATION (experiment: 259200) # Time the stress will be running in seconds (default 259200s = 3 days)
+    wait_after_stress: 150  # VALIDATION (experiment: 43200) #Time the script will wait until next stress period in seconds (default 43200 = 12h)
 
     min_lifecycle_runs: 3 # min number of lifecycle runs for each container
     max_lifecycle_runs: 5 # max number of lifecycle runs for each container
@@ -25,7 +25,7 @@ lifecycle:  # Start/stop of every container (stress load and lifecycle monitor)
     # stop_timeout: 10  # "stop -t": seconds before the runtime kills the container. If omitted, the runtime default (10)
 
 rejuvenation:
-    enabled: false  # Applies the method below after each stress period
+    enabled: true  # VALIDATION (experiment: false) # Applies the method below after each stress period
     # Methods are registered in src/rejuvenation.py (add a new one there with @register("name")):
     #   cleanup_keep_teastore: removes containers, images and unused volumes, keeping everything from TeaStore
     #   full_reset: old method, removes everything (TeaStore included) and starts TeaStore again
@@ -34,16 +34,20 @@ rejuvenation:
     protected_images: ["descartesresearch/teastore"]  # Kept by cleanup_keep_teastore (substring of the image name)
 
 monitoring:
-    sleep_time: 60  # Sleep time the machine data will be collected in seconds
-    sleep_time_container_metrics: 240  # Sleep time the machine data will be collected in seconds
+    sleep_time: 15  # VALIDATION (experiment: 60) # Sleep time the machine data will be collected in seconds
+    sleep_time_container_metrics: 60  # VALIDATION (experiment: 240) # Sleep time the machine data will be collected in seconds
     # disk_device: "vda"  # Disk monitored by iostat. If omitted, the disk that holds "/" is detected automatically
     pidstat_interval: 1  # Window (seconds) of each pidstat reading of a runtime process; subtracted from sleep_time
-    process_retry_delay: 1  # Seconds between attempts while a monitored process does not exist yet
+    process_retry_delay: 10  # Seconds between attempts while a monitored process does not exist yet (each attempt runs pgrep + pidstat + 2 cat)
     stap_max_attempts: 11  # How many times systemtap is (re)started if it exits
-    stap_retry_delay: 120  # Seconds to wait before restarting systemtap
+    stap_retry_delay: 30  # VALIDATION (experiment: 120) # Seconds to wait before restarting systemtap
     stap_overload_threshold: 650000000  # systemtap STP_OVERLOAD_THRESHOLD (ns of probe time per interval)
     stap_overload_interval: 1000000000  # systemtap STP_OVERLOAD_INTERVAL (ns)
     stop_grace: 3  # Seconds at the end for the readings in progress to finish
+    processes:  # Host processes monitored with pidstat, one <name>.csv each. Matched with "pgrep -f" (any part of the command line)
+        docker: [docker, dockerd, containerd, containerd-shim, runc, docker-proxy]  # Used when the runtime is Docker
+        podman: [podman, conmon, cron, crun, systemd]  # Used when the runtime is Podman
+        common: [java, postgres, beam.smp, initdb, mysqld]  # Workload (TeaStore and stress containers), with either runtime
     lifecycle_stop_timeout: 120  # Max seconds, at the end, waiting for the container the lifecycle monitor is measuring
 
 energy:
@@ -59,7 +63,7 @@ energy:
 
 logging:  # What the collector shows in the terminal
     informative: true  # Progress and event messages. false = only warnings and errors
-    debug: false  # Every command executed, with its duration and CPU time (very verbose)
+    debug: true  # VALIDATION (experiment: false) # Every command executed, with its duration and CPU time (very verbose)
     to_file: true  # Also writes logs/collector.log
     console: true  # Interactive terminal (type "help"): threads of each part, running commands, status, cost. Off automatically when stdin is not a terminal
 

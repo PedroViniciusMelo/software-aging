@@ -31,27 +31,28 @@ PROCESS_YLABEL = {
     'mem': 'Memory usage (percentage)'
 }
 
-# (titulo, arquivo) dos processos de cada runtime; o runtime vem do nome da pasta.
-DOCKER_PROCESSES = [
-    ("Process - Docker", "docker.csv"),
-    ("Process - Dockerd", "dockerd.csv"),
-    ("Process - Containerd", "containerd.csv"),
-    ("Process - Containerd-shim", "containerd-shim.csv"),
-    ("Process - docker-proxy", "docker-proxy.csv"),
-    ("Process - runc", "runc.csv"),
-]
-PODMAN_PROCESSES = [
-    ("Process - Podman", "podman.csv"),
-    ("Process - Conmon", "conmon.csv"),
-    ("Process - Crun", "crun.csv"),
-    ("Process - systemd", "systemd.csv"),
-]
-APPLICATION_PROCESSES = [
-    ("Teastore - Java", "java.csv"),
-    ("Rabbitmq - beam.smp", "beam.smp.csv"),
-    ("Postgres - postgres", "postgres_process.csv"),
-    ("Teastore - mysqld", "mysqld.csv"),
-]
+# Processos monitorados (monitoring.processes no config.yaml): todo CSV da pasta com este
+# cabecalho vira grafico, qualquer que seja o processo.
+PROCESS_HEADER = "cpu;mem;rss;vsz;threads;swap;date_time"
+# Titulos (e ordem) dos processos conhecidos; os demais saem como "Process - <nome>", em ordem alfabetica.
+PROCESS_TITLES = {
+    "docker.csv": "Process - Docker",
+    "dockerd.csv": "Process - Dockerd",
+    "containerd.csv": "Process - Containerd",
+    "containerd-shim.csv": "Process - Containerd-shim",
+    "docker-proxy.csv": "Process - docker-proxy",
+    "runc.csv": "Process - runc",
+    "podman.csv": "Process - Podman",
+    "conmon.csv": "Process - Conmon",
+    "crun.csv": "Process - Crun",
+    "systemd.csv": "Process - systemd",
+    "java.csv": "Teastore - Java",
+    "beam.smp.csv": "Rabbitmq - beam.smp",
+    "postgres_process.csv": "Postgres - postgres",
+    "mysqld.csv": "Teastore - mysqld",
+}
+# process_<thread>.csv: custo por thread do coletor antigo (substituido por monitoring_cost.csv), mesmo cabecalho
+OLD_COST_PREFIX = "process_"
 # Tempos do ciclo de vida medidos pelo coletor (container_metrics)
 CONTAINER_METRICS = [
     ("Postgres", "postgres.csv"),
@@ -73,6 +74,23 @@ def recreate_plot_folders(base_folder):
     plots_folder.mkdir()
     plots_folder.joinpath('fragmentation').mkdir()
     plots_folder.joinpath('jmeter').mkdir()
+
+
+def _first_line(path):
+    try:
+        with open(path, encoding="utf-8", errors="replace") as file:
+            return file.readline().strip()
+    except OSError:
+        return ""
+
+
+def find_process_files(base_folder):
+    """(titulo, arquivo) de cada CSV de processo da pasta: os conhecidos primeiro, os outros em ordem alfabetica."""
+    found = sorted(path.name for path in base_folder.glob("*.csv")
+                   if not path.name.startswith(OLD_COST_PREFIX) and _first_line(path) == PROCESS_HEADER)
+    known = [name for name in PROCESS_TITLES if name in found]
+    others = [name for name in found if name not in PROCESS_TITLES]
+    return [(PROCESS_TITLES[name], name) for name in known] +            [(f"Process - {name[:-len('.csv')]}", name) for name in others]
 
 
 def plot_processes(base_folder, processes):
@@ -171,9 +189,7 @@ def start(base_folder, qtd_item):
             ylabel={'tps': 'TPS', "kB_reads": "kB_reads", "kB_wrtns": "kB_wrtns", "kB_dscds": "kB_dscds"}
         )
 
-    runtime_processes = DOCKER_PROCESSES if "docker" in base_folder.name else PODMAN_PROCESSES
-    ploted += plot_processes(base_folder, runtime_processes)
-    ploted += plot_processes(base_folder, APPLICATION_PROCESSES)
+    ploted += plot_processes(base_folder, find_process_files(base_folder))
 
     for title, filename in CONTAINER_METRICS:
         if base_folder.joinpath(filename).exists():

@@ -4,13 +4,6 @@ import shlex
 
 from src.utils import execute_command, log
 
-# Processos do host monitorados (pidstat) para cada runtime, na ordem em que as threads sobem.
-MONITORED_PROCESSES = {
-    "docker": ['docker', 'dockerd', 'containerd', 'containerd-shim', 'runc', 'docker-proxy', 'java', 'postgres',
-               'beam.smp', 'initdb', 'mysqld'],
-    "podman": ['podman', 'conmon', 'cron', 'crun', 'systemd', 'java', 'postgres', 'beam.smp', 'initdb', 'mysqld'],
-}
-
 
 class ContainerRuntime:
     """Monta as linhas de comando do runtime; quem executa e' o chamador."""
@@ -20,10 +13,6 @@ class ContainerRuntime:
 
     def __str__(self):
         return self.name
-
-    @property
-    def monitored_processes(self) -> list:
-        return MONITORED_PROCESSES.get(self.name, [])
 
     def command(self, args: str) -> str:
         return f"{self.name} {args}"
