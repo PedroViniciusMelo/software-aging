@@ -10,8 +10,8 @@
 #
 # Opcoes:
 #   --runtime docker|podman|none       runtime de containers a instalar
-#   --docker-version V                 versao do Docker (padrao: a unica em versions/)
-#   --podman-version V                 versao do Podman
+#   --docker-version V                 versao do Docker (padrao: 27.2.0; opcoes em versions/)
+#   --podman-version V                 versao do Podman (padrao: 5.1.2; opcoes em versions/)
 #   --monitoring yes|no                ferramentas de monitoramento + systemtap
 #   --no-kernel-debug                  nao instala simbolos de debug do kernel
 #   --no-python                        nao cria o venv do coletor
@@ -71,10 +71,25 @@ ask_missing() {
     case "$answer" in [sSyY]*) MONITORING=yes ;; *) MONITORING=no ;; esac
   fi
   if [ -z "$RUNTIME" ]; then
-    printf '%s\n' "Runtime de containers:" "  [1] Docker $DOCKER_VERSION" "  [2] Podman $PODMAN_VERSION" \
-      "  [outra tecla] nenhum"
+    # uma opcao por arquivo versions/docker-*.env e versions/podman-*.env
+    local options=() file name i
+    for file in "$INSTALL_DIR"/versions/docker-*.env "$INSTALL_DIR"/versions/podman-*.env; do
+      [ -f "$file" ] && options+=("$(basename "$file" .env)")
+    done
+    echo "Runtime de containers:"
+    for i in "${!options[@]}"; do
+      name="${options[$i]}"
+      printf '  [%d] %s %s\n' "$((i + 1))" "${name%%-*}" "${name#*-}"
+    done
+    echo "  [outra tecla] nenhum"
     read -r -p "escolha: " answer
-    case "$answer" in 1) RUNTIME=docker ;; 2) RUNTIME=podman ;; *) RUNTIME=none ;; esac
+    if [[ "$answer" =~ ^[0-9]+$ ]] && [ "$answer" -ge 1 ] && [ "$answer" -le ${#options[@]} ]; then
+      name="${options[$((answer - 1))]}"
+      RUNTIME="${name%%-*}"
+      if [ "$RUNTIME" = docker ]; then DOCKER_VERSION="${name#*-}"; else PODMAN_VERSION="${name#*-}"; fi
+    else
+      RUNTIME=none
+    fi
   fi
 }
 
@@ -85,9 +100,14 @@ main() {
   case "$RUNTIME" in docker | podman | none) ;; *) die "--runtime invalido: $RUNTIME" ;; esac
   case "$MONITORING" in yes | no) ;; *) die "--monitoring deve ser yes ou no" ;; esac
 
+  # carrega a versao cedo: falha logo se ela nao existir e define os pacotes de runtime extras
+  [ "$RUNTIME" = docker ] && load_versions "docker-$DOCKER_VERSION"
+  [ "$RUNTIME" = podman ] && load_versions "podman-$PODMAN_VERSION"
+
   detect_distro
   setup_build_root
   pkg_update
+  [ "$RUNTIME" != none ] && remove_distro_runtime_packages
 
   # 1) pacotes que ficam no sistema
   pkg_install "${PKGS_BASE[@]}"
@@ -95,6 +115,7 @@ main() {
   [ "$MONITORING" = yes ] && install_monitoring_runtime
   [ "$RUNTIME" = docker ] && pkg_install "${PKGS_DOCKER[@]}"
   [ "$RUNTIME" = podman ] && pkg_install "${PKGS_PODMAN[@]}"
+  [ "$RUNTIME" = podman ] && [ "${NETAVARK_FIREWALL_DRIVER:-}" = nftables ] && pkg_install "${PKGS_NFTABLES[@]}"
 
   local build_deps=()
   [ "$MONITORING" = yes ] && read -ra build_deps <<< "$(monitoring_build_deps)"

@@ -1,4 +1,4 @@
-"""Leitura e validacao do config.yaml em objetos tipados."""
+"""Leitura do config.yaml em objetos tipados."""
 from dataclasses import dataclass, field, fields
 from pathlib import Path
 from typing import Optional
@@ -26,34 +26,23 @@ class SetupConfig:
 @dataclass
 class ProcessesConfig:
     """
-    Processos do host monitorados (um <nome>.csv cada), pelo nome exato (/proc/<pid>/comm, como
-    "pgrep -x"), somando todas as instancias. Monitora a lista do runtime em uso seguida da
-    comum, na ordem, sem repetir.
+    Processos do host monitorados, pelo nome exato (/proc/<pid>/comm, como "pgrep -x"): a lista
+    do runtime em uso seguida da comum, na ordem, sem repetir.
     """
     common: list = field(default_factory=lambda: ["java", "postgres", "beam.smp", "initdb", "mysqld"])
     docker: list = field(default_factory=lambda: ["docker", "dockerd", "containerd", "containerd-shim", "runc",
                                                   "docker-proxy"])
     podman: list = field(default_factory=lambda: ["podman", "conmon", "cron", "crun", "systemd"])
 
-    def __post_init__(self):
-        for name in ("common", "docker", "podman"):
-            value = getattr(self, name)
-            if value is None:
-                setattr(self, name, [])
-            elif not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
-                raise SystemExit(f"monitoring.processes.{name} must be a list of process names, got {value!r}")
-
     def for_runtime(self, runtime: str) -> list:
-        return list(dict.fromkeys(getattr(self, runtime, []) + self.common))
+        return list(dict.fromkeys((getattr(self, runtime, None) or []) + (self.common or [])))
 
 
 @dataclass
 class MonitoringConfig:
     sleep_time: int
     sleep_time_container_metrics: int
-    disk_device: Optional[str] = None  # disco do disk_write_read.csv; None = detecta o disco que contem a raiz "/"
-    process_retry_delay: int = 1  # espera (s) entre tentativas quando o processo monitorado ainda nao existe
-    raw_values: bool = True  # grava tambem os contadores brutos de /proc em logs/raw/ (para refazer as contas)
+    disk_device: Optional[str] = None  # disco do disk_io.csv; None = detecta o disco que contem a raiz "/"
     stap_max_attempts: int = 11  # quantas vezes (re)iniciar o systemtap se ele sair
     stap_retry_delay: int = 120  # espera (s) antes de reiniciar o systemtap
     stap_overload_threshold: int = 650000000  # -D STP_OVERLOAD_THRESHOLD (ns de probe por intervalo)
@@ -85,7 +74,7 @@ class EnergyConfig:
 @dataclass
 class RejuvenationConfig:
     enabled: bool = False  # aplica o metodo ao fim de cada periodo de stress
-    method: str = "cleanup_keep_teastore"  # nome registrado em src/rejuvenation.py
+    method: str = "cleanup_keep_teastore"  # chave de METHODS em src/rejuvenation.py
     delay: int = 5  # espera (s) depois de aplicar o metodo
     # imagens (substring do nome) cujos containers, imagens e volumes o rejuvenescimento preserva
     protected_images: list = field(default_factory=lambda: ["descartesresearch/teastore"])
@@ -93,8 +82,7 @@ class RejuvenationConfig:
 
 @dataclass
 class LoggingConfig:
-    informative: bool = True  # mensagens de progresso e eventos (INFO); false = so' avisos e erros
-    debug: bool = False  # cada comando executado, com tempo e CPU (muito verboso)
+    informative: bool = True  # mensagens de progresso e eventos; false = so' avisos e erros
     to_file: bool = True  # tambem grava logs/collector.log
     console: bool = True  # terminal interativo (threads, status); ignorado se a entrada nao for um terminal
 
@@ -119,8 +107,7 @@ class ContainerConfig:
     port: int
     min_container_wait_time: int
     max_container_wait_time: int
-    # variaveis de ambiente do container (docker run -e), ex.: a senha que a imagem do postgres exige
-    env: dict = field(default_factory=dict)
+    env: dict = field(default_factory=dict)  # variaveis de ambiente (docker run -e)
 
 
 @dataclass
@@ -130,70 +117,40 @@ class Config:
     monitoring: MonitoringConfig
     stressload: StressloadConfig
     containers: list
-    energy: EnergyConfig = field(default_factory=EnergyConfig)
-    rejuvenation: RejuvenationConfig = field(default_factory=RejuvenationConfig)
-    logging: LoggingConfig = field(default_factory=LoggingConfig)
-    lifecycle: LifecycleConfig = field(default_factory=LifecycleConfig)
+    energy: EnergyConfig
+    rejuvenation: RejuvenationConfig
+    logging: LoggingConfig
+    lifecycle: LifecycleConfig
 
     @property
     def logs_path(self) -> str:
         return f"{self.general.scripts_folder}/logs"
 
 
-def _known_keys(cls, data: dict) -> dict:
-    """Secoes opcionais (energy, rejuvenation, ...) ignoram chaves desconhecidas, avisando (ex.: as antigas tomada_*)."""
+def _build(cls, data: Optional[dict]):
+    """Instancia a secao; chaves desconhecidas (ex.: removidas em versoes novas) so' geram aviso."""
+    data = dict(data or {})
     names = {item.name for item in fields(cls)}
     unknown = sorted(key for key in data if key not in names)
     if unknown:
         print(f"Aviso: chaves desconhecidas ignoradas em {cls.__name__}: {', '.join(unknown)}")
-    return {key: value for key, value in data.items() if key in names}
-
-
-def _optional(cls, data: dict, section: str):
-    return cls(**_known_keys(cls, data.get(section) or {}))
-
-
-# Chaves que mudaram de lugar: (secao antiga, chave antiga) -> (secao nova, chave nova).
-MOVED_KEYS = {
-    ("general", "apply_rejuvenation"): ("rejuvenation", "enabled"),
-    ("teastore", "start_interval"): ("setup", "teastore_start_interval"),
-    ("console", "enabled"): ("logging", "console"),
-}
-
-
-def _migrate(data: dict) -> None:
-    """Aceita config.yaml antigos: move as chaves para o lugar novo, avisando."""
-    for (old_section, old_key), (new_section, new_key) in MOVED_KEYS.items():
-        section = data.get(old_section) or {}
-        if old_key not in section:
-            continue
-        value = section.pop(old_key)
-        target = data.get(new_section) or {}
-        target.setdefault(new_key, value)  # se as duas existirem, vale a nova
-        data[new_section] = target
-        print(f"Aviso: {old_section}.{old_key} agora e' {new_section}.{new_key}; atualize o config.yaml")
-
-
-def _monitoring(data: dict) -> MonitoringConfig:
-    data = dict(data)
-    processes = ProcessesConfig(**_known_keys(ProcessesConfig, data.pop("processes", None) or {}))
-    return MonitoringConfig(**_known_keys(MonitoringConfig, data), processes=processes)
+    return cls(**{key: value for key, value in data.items() if key in names})
 
 
 def load_config(path: str = DEFAULT_CONFIG_PATH) -> Config:
     with open(path, "r") as yml_file:
         data = yaml.safe_load(yml_file)
-    _migrate(data)
 
+    monitoring = dict(data["monitoring"])
+    processes = _build(ProcessesConfig, monitoring.pop("processes", None))
     return Config(
-        general=GeneralConfig(**data["general"]),
-        setup=SetupConfig(**data["setup"]),
-        # _known_keys: configs antigos com using_containers_app_time (removido) so' geram aviso
-        monitoring=_monitoring(data["monitoring"]),
-        stressload=StressloadConfig(**data["stressload"]),
+        general=_build(GeneralConfig, data["general"]),
+        setup=_build(SetupConfig, data["setup"]),
+        monitoring=_build(MonitoringConfig, {**monitoring, "processes": processes}),
+        stressload=_build(StressloadConfig, data["stressload"]),
         containers=[ContainerConfig(**container) for container in data["containers"]],
-        energy=_optional(EnergyConfig, data, "energy"),
-        rejuvenation=_optional(RejuvenationConfig, data, "rejuvenation"),
-        logging=_optional(LoggingConfig, data, "logging"),
-        lifecycle=_optional(LifecycleConfig, data, "lifecycle"),
+        energy=_build(EnergyConfig, data.get("energy")),
+        rejuvenation=_build(RejuvenationConfig, data.get("rejuvenation")),
+        logging=_build(LoggingConfig, data.get("logging")),
+        lifecycle=_build(LifecycleConfig, data.get("lifecycle")),
     )

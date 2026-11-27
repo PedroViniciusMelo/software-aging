@@ -19,7 +19,6 @@ def plot_jmeter(folder, file_name, ignore_chunck=False, chunk_size=10000000, thr
         df_total = pd.read_csv(folder.joinpath(file_name), low_memory=False, sep=",")
 
 
-    print(df_total)
 
     # Converter 'timeStamp' para segundos (relativos ao início)
     df_total['timeStamp'] = (df_total['timeStamp'] - df_total['timeStamp'].min()) / 1000  # Em segundos
@@ -48,10 +47,8 @@ def plot_jmeter(folder, file_name, ignore_chunck=False, chunk_size=10000000, thr
         plt.grid(True)
         plt.legend()
 
-        # Exibir o gráfico
         plt.tight_layout()
         plt.savefig(folder.joinpath('plots_img/jmeter').joinpath(f"Time Series of Response Time - {label}.png"))
-        plt.show()
 
     # Gerar o gráfico de série temporal geral (todos os labels juntos)
     plt.figure(figsize=(10, 6))
@@ -64,10 +61,8 @@ def plot_jmeter(folder, file_name, ignore_chunck=False, chunk_size=10000000, thr
     plt.grid(True)
     plt.legend()
 
-    # Exibir o gráfico geral
     plt.tight_layout()
     plt.savefig(folder.joinpath('plots_img/jmeter').joinpath('Time Series of Overall Response Time.png'))
-    plt.show()
 
     # Adiciona a coluna de intervalo de tempo em minutos
     df_total['timeBucket'] = (df_total['timeStamp'] // throughput_interval) * throughput_interval
@@ -86,10 +81,8 @@ def plot_jmeter(folder, file_name, ignore_chunck=False, chunk_size=10000000, thr
     plt.grid(True)
     plt.legend()
 
-    # Exibir o gráfico de vazão
     plt.tight_layout()
     plt.savefig(folder.joinpath('plots_img/jmeter').joinpath('Time Series of Throughput.png'))
-    plt.show()
     return 1
 
 def calcular_metricas(df):

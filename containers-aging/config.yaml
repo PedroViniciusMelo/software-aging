@@ -34,17 +34,15 @@ rejuvenation:
     protected_images: ["descartesresearch/teastore"]  # Kept by cleanup_keep_teastore (substring of the image name)
 
 monitoring:
-    sleep_time: 15  # VALIDATION (experiment: 60) # Sleep time the machine data will be collected in seconds
-    sleep_time_container_metrics: 60  # VALIDATION (experiment: 240) # Sleep time the machine data will be collected in seconds
-    # disk_device: "vda"  # Disk whose I/O is monitored (disk_write_read.csv). If omitted, the disk that holds "/" is detected automatically
-    raw_values: true  # Also writes the raw /proc counters behind cpu/memory/disk/process metrics to logs/raw/ (same date_time)
-    process_retry_delay: 10  # Seconds between attempts while a monitored process does not exist yet (reads /proc, no commands)
+    sleep_time: 15  # VALIDATION (experiment: 60) # Interval (s) between machine and process samples
+    sleep_time_container_metrics: 60  # VALIDATION (experiment: 240) # Interval (s) between container lifecycle measurements
+    # disk_device: "vda"  # Disk whose I/O is monitored (disk_io.csv). If omitted, the disk that holds "/" is detected automatically
     stap_max_attempts: 11  # How many times systemtap is (re)started if it exits
     stap_retry_delay: 30  # VALIDATION (experiment: 120) # Seconds to wait before restarting systemtap
     stap_overload_threshold: 650000000  # systemtap STP_OVERLOAD_THRESHOLD (ns of probe time per interval)
     stap_overload_interval: 1000000000  # systemtap STP_OVERLOAD_INTERVAL (ns)
     stop_grace: 3  # Seconds at the end for the readings in progress to finish
-    processes:  # Host processes monitored, one <name>.csv each: exact process name (like "pgrep -x"; first 15 chars), all instances summed
+    processes:  # Host processes monitored (processes.csv, one row per instance): exact process name (like "pgrep -x"; first 15 chars)
         docker: [docker, dockerd, containerd, containerd-shim, runc, docker-proxy]  # Used when the runtime is Docker
         podman: [podman, conmon, cron, crun, systemd]  # Used when the runtime is Podman
         common: [java, postgres, beam.smp, initdb, mysqld]  # Workload (TeaStore and stress containers), with either runtime
@@ -63,7 +61,6 @@ energy:
 
 logging:  # What the collector shows in the terminal
     informative: true  # Progress and event messages. false = only warnings and errors
-    debug: true  # VALIDATION (experiment: false) # Every command executed, with its duration and CPU time (very verbose)
     to_file: true  # Also writes logs/collector.log
     console: true  # Interactive terminal (type "help"): threads of each part, running commands, status, cost. Off automatically when stdin is not a terminal
 

@@ -10,8 +10,19 @@ Custo de CPU de uma parte = CPU das suas threads Python (/proc/self/task/<tid>/s
                           + CPU dos comandos que elas executaram (rusage do wait4, que inclui
                             os netos: pipelines do sh, staprun/stapio do stap...)
                           + CPU, ate' agora, dos comandos ainda em execucao (ex.: o stap).
+
+Parada graciosa: o primeiro Ctrl+C (ou SIGTERM) pede para o experimento parar; o segundo forca.
+Na parada graciosa, as threads de stress terminam o container atual (param e removem o que
+subiram) e nao comecam outro, o monitor de ciclo de vida termina o container atual, a coleta
+para e os resultados parciais sao salvos em results/<cenario>_<data>_interrupted. Antes de o
+monitoramento comecar nao ha' nada para salvar: o primeiro Ctrl+C ja' encerra na hora.
+Os comandos externos rodam numa sessao propria (src/utils.py): o Ctrl+C do terminal chega so'
+ao coletor, que nao interrompe um "docker rm" ou o stap no meio; na parada forcada, ele mesmo
+encerra esses comandos.
 """
+import logging
 import os
+import signal
 import threading
 import time
 from collections import defaultdict
@@ -21,9 +32,8 @@ from typing import Optional
 # ("monitoring") da carga do experimento ("workload") e do controle ("control").
 PARTS = [
     ("systemtap", "systemtap", "monitoring"),
-    ("container_metrics", "container_metrics", "monitoring"),
-    ("processes_", "processes", "monitoring"),
-    ("machine_resources", "machine", "monitoring"),
+    ("container_lifecycle", "container_lifecycle", "monitoring"),
+    ("machine", "machine", "monitoring"),  # recursos da maquina e processos
     ("energy_rapl", "energy_rapl", "monitoring"),
     ("energy_smart_plug", "energy_smart_plug", "monitoring"),
     ("monitoring_cost", "monitoring_cost", "monitoring"),
@@ -243,3 +253,53 @@ class CostTracker:
         self._previous_time = now
         self.last = result
         return result
+
+
+# ---- parada (Ctrl+C / SIGTERM) -------------------------------------------------------------------
+_stop_requested = threading.Event()
+_graceful = False
+
+
+def install_signal_handlers() -> None:
+    """Instala o tratamento de SIGINT/SIGTERM (precisa ser chamado na thread principal)."""
+    signal.signal(signal.SIGINT, _signal_handler)
+    if hasattr(signal, "SIGTERM"):
+        signal.signal(signal.SIGTERM, _signal_handler)
+
+
+def enable_graceful_stop() -> None:
+    """A partir daqui ha' dados coletados: o primeiro Ctrl+C para graciosamente."""
+    global _graceful
+    _graceful = True
+
+
+def _signal_handler(signum, _frame):
+    log = logging.getLogger("aging")  # nao importa src.utils (que importa este modulo)
+    name = signal.Signals(signum).name
+    if _graceful and not _stop_requested.is_set():
+        _stop_requested.set()
+        log.warning("%s received: stopping gracefully. Each thread finishes its current container (a 'docker stop' "
+                    "can take ~10 s) and the results are saved; %d commands running now. "
+                    "Press Ctrl+C again to force.", name, len(running_children()))
+        return
+    log.error("%s received %s: forced stop", name,
+              "again" if _stop_requested.is_set() else "before the monitoring started (nothing to save yet)")
+    raise KeyboardInterrupt
+
+
+def stopping() -> bool:
+    return _stop_requested.is_set()
+
+
+def wait(seconds: float) -> bool:
+    """Espera `seconds` ou ate' a parada ser pedida. Devolve True se foi pedida."""
+    return _stop_requested.wait(max(seconds, 0))
+
+
+def kill_children() -> None:
+    """Parada forcada: encerra os comandos em execucao (cada um lider do proprio grupo)."""
+    for child in running_children():
+        try:
+            os.killpg(child.pid, signal.SIGTERM)
+        except (AttributeError, OSError):
+            pass

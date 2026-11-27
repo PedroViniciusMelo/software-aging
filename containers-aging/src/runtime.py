@@ -1,8 +1,14 @@
-"""Runtime de containers (docker/podman): deteccao e montagem dos comandos."""
+"""
+Runtime de containers (docker/podman): deteccao, montagem dos comandos, nome do cenario e as
+etapas do ciclo de vida de um container (usadas pelo monitoramento e pela carga de estresse).
+"""
 import re
 import shlex
+import time
+from typing import Callable, Optional
 
-from src.utils import execute_command, log
+from src.config import LifecycleConfig
+from src.utils import CommandError, execute_command, get_time, log
 
 
 class ContainerRuntime:
@@ -42,9 +48,6 @@ class ContainerRuntime:
     def remove_image(self, image: str) -> str:
         return self.command(f"rmi {image}")
 
-    def version(self) -> str:
-        return self.command("-v")
-
     def cleanup_commands(self) -> list:
         """Para e apaga todos os containers, imagens e volumes."""
         sw = self.name
@@ -58,39 +61,28 @@ class ContainerRuntime:
             f"{sw} system prune -a -f --volumes",
         ]
 
+    def version_text(self) -> str:
+        """Ex.: "Docker version 27.2.0, build 3ab4256"."""
+        return execute_command(self.command("-v"), continue_if_error=True, warn_on_error=False) or ""
+
+    def version(self) -> str:
+        """Versao numerica, ex.: "27.2.0"."""
+        match = re.search(r"\d+(?:\.\d+)+", self.version_text())
+        return match.group(0) if match else "unknown"
+
 
 def detect_runtime() -> ContainerRuntime:
     """Exige exatamente um entre docker e podman instalado."""
-    docker = execute_command("which docker", continue_if_error=True, error_informative=False)
-    podman = execute_command("which podman", continue_if_error=True, error_informative=False)
-
-    if docker is not None and podman is not None:
-        log.error("Both docker and podman are installed. Please, uninstall one of them.")
+    found = [name for name in ("docker", "podman")
+             if execute_command(f"which {name}", continue_if_error=True, warn_on_error=False) is not None]
+    if len(found) != 1:
+        log.error("Both docker and podman are installed. Please, uninstall one of them." if found else
+                  "Neither docker nor podman is installed. Please, install one of them.")
         raise SystemExit(1)
-
-    if docker is None and podman is None:
-        log.error("Neither docker nor podman is installed. Please, install one of them.")
-        raise SystemExit(1)
-
-    return ContainerRuntime("podman" if podman is not None else "docker")
-
-
-DEFAULT_DISK_DEVICE = "vda"
-
-
-def detect_root_disk() -> str:
-    """Nome do disco fisico (ex.: vda, sda, nvme0n1) que contem "/", atravessando LVM/particoes."""
-    disk = execute_command(
-        'lsblk -nrso NAME,TYPE "$(findmnt -nvo SOURCE /)" | awk \'$2 == "disk" {print $1; exit}\'',
-        continue_if_error=True, error_informative=False)
-    if not disk:
-        log.warning("Could not detect the root disk, using %s", DEFAULT_DISK_DEVICE)
-        return DEFAULT_DISK_DEVICE
-    return disk
+    return ContainerRuntime(found[0])
 
 
 def read_os_release(path: str = "/etc/os-release") -> dict:
-    """Campos do /etc/os-release (presente em toda distro; o lsb_release nem sempre esta' instalado)."""
     info = {}
     try:
         with open(path) as file:
@@ -103,27 +95,62 @@ def read_os_release(path: str = "/etc/os-release") -> dict:
     return info
 
 
-def runtime_version(runtime: ContainerRuntime) -> str:
-    """Versao numerica do runtime, ex.: "Docker version 27.2.0, build 3ab4256" -> "27.2.0"."""
-    output = execute_command(runtime.version(), continue_if_error=True, error_informative=False) or ""
-    match = re.search(r"\d+(?:\.\d+)+", output)
-    return match.group(0) if match else "unknown"
-
-
 def scenario_name(runtime: ContainerRuntime) -> str:
     """Nome do cenario no formato lido por plot/scenario.py, ex.: debian13_docker_27.2.0."""
     os_info = read_os_release()
-    system = os_info.get("ID", "linux") + os_info.get("VERSION_ID", "")
-    return f"{system}_{runtime}_{runtime_version(runtime)}"
+    return f"{os_info.get('ID', 'linux')}{os_info.get('VERSION_ID', '')}_{runtime}_{runtime.version()}"
 
 
-def describe_environment(runtime: ContainerRuntime) -> str:
-    os_info = read_os_release()
-    software_version = execute_command(runtime.version(), continue_if_error=False, error_informative=True)
+class ContainerLifecycle:
+    """Cada metodo executa uma etapa e devolve o tempo gasto (ns), com o fallback correspondente."""
 
-    return f"""
-Software={runtime}
-Software Version={software_version}
-OS={os_info.get("ID", "").capitalize()}
-OS Version={os_info.get("VERSION_ID", "")}
-    """
+    def __init__(self, runtime: ContainerRuntime, config: LifecycleConfig = None):
+        self.runtime = runtime
+        self.config = config or LifecycleConfig()
+
+    def exists(self, container: str) -> bool:
+        return execute_command(self.runtime.exists(container), continue_if_error=True,
+                               warn_on_error=False) is not None
+
+    def start(self, container: str, image: str, host_port: int, port: int, env: dict = None) -> Optional[int]:
+        """
+        Sobe o container. Se falhar, remove o que sobrou e tenta de novo a cada
+        start_retry_delay segundos. Devolve None se desistir apos start_max_retries falhas.
+        """
+        command = self.runtime.run(container, image, host_port, port, env)
+        try:
+            return get_time(command)
+        except CommandError:
+            log.warning("Could not start container %s, retrying", container)
+
+        if self.exists(container):
+            execute_command(self.runtime.force_remove(container), continue_if_error=False, warn_on_error=False)
+
+        failures = 0
+        while failures <= self.config.start_max_retries:
+            time.sleep(self.config.start_retry_delay)
+            try:
+                start_time = get_time(command, continue_if_error=False, warn_on_error=False)
+                if self.exists(container):
+                    return start_time
+            except CommandError:
+                failures += 1
+        return None
+
+    def stop(self, container: str, on_kill: Callable[[], None]) -> int:
+        """Para o container; se nao parar, chama on_kill() e mata o container."""
+        try:
+            return get_time(self.runtime.stop(container, self.config.stop_timeout), continue_if_error=False,
+                            warn_on_error=False)
+        except CommandError:
+            on_kill()
+            return get_time(self.runtime.kill(container), continue_if_error=True, warn_on_error=False)
+
+    def remove(self, container: str, on_force: Callable[[], None]) -> int:
+        """Remove o container; se falhar, chama on_force() e remove a forca."""
+        try:
+            return get_time(self.runtime.remove(container), continue_if_error=False, warn_on_error=False)
+        except CommandError:
+            log.warning("Could not remove container %s, forcing removal", container)
+            on_force()
+            return get_time(self.runtime.force_remove(container), continue_if_error=False, warn_on_error=True)

@@ -16,9 +16,16 @@ install_monitoring_runtime() {
       warn "simbolos de debug do kernel nao instalados; o systemtap roda, mas com menos detalhes"
   fi
 
-  # o systemtap procura o System.map em /boot
-  if [ ! -f "/boot/System.map-$KERNEL_VERSION" ] && [ -r /proc/kallsyms ]; then
-    cp /proc/kallsyms "/boot/System.map-$KERNEL_VERSION" || true
+  # O systemtap procura o System.map em /boot. O Debian instala ali um placeholder (uma linha
+  # "The real System.map is in the linux-image-<versao>-dbg package"): sem simbolos de texto,
+  # ele e' trocado pelo mapa real do pacote -dbg ou, sem ele, pelo /proc/kallsyms.
+  local map="/boot/System.map-$KERNEL_VERSION" real="/usr/lib/debug/boot/System.map-$KERNEL_VERSION"
+  if ! grep -q ' [Tt] ' "$map" 2> /dev/null; then
+    if [ -s "$real" ]; then
+      cp "$real" "$map" || true
+    elif [ -r /proc/kallsyms ]; then
+      cp /proc/kallsyms "$map" || true
+    fi
   fi
 }
 

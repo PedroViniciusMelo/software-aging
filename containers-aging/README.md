@@ -44,7 +44,7 @@ o consumo de energia.
    Enquanto roda, digite comandos no terminal (`logging.console`): `threads` mostra as
    threads de cada parte (monitores, stressload, principal) com TID, CPU e o que cada uma
    está fazendo; `children` mostra os comandos externos em execução; `status`, a fase e o
-   run; `cost`, o custo do monitoramento; `log debug|info|quiet` troca o nível de log. Os
+   run; `cost`, o custo do monitoramento; `log info|quiet` troca o nível de log. Os
    logs informativos (`logging.informative`) também vão para `logs/collector.log`; com
    `false`, só aparecem avisos e erros.
 
@@ -58,15 +58,15 @@ o consumo de energia.
 
 Com `rejuvenation.enabled: true`, o método `rejuvenation.method` roda ao fim de cada
 período de stress, com o monitor de ciclo de vida pausado. Métodos disponíveis
-(`src/rejuvenation.py`):
+(`METHODS` em `src/environment.py`):
 
 - `cleanup_keep_teastore` (padrão): remove os containers, as imagens e os volumes sem uso,
   **preservando tudo do TeaStore** (containers com o rótulo `containers-aging.role=teastore`,
   posto pelo `start_teastore.sh`, ou com imagem em `rejuvenation.protected_images`);
 - `full_reset`: o método antigo; apaga tudo, inclusive o TeaStore, e o sobe de novo.
 
-Para criar um método, escreva uma classe com `@register("nome")` em `src/rejuvenation.py`
-(o cabeçalho do arquivo tem um exemplo) e coloque o nome em `rejuvenation.method`. Cada
+Para criar um método, escreva uma função `(runtime, config, start_teastore) -> dict` em
+`src/environment.py`, adicione-a em `METHODS` e coloque o nome em `rejuvenation.method`. Cada
 aplicação vai para `logs/rejuvenation.csv` (método, duração e o que foi removido).
 
 4. **Compare os cenários** juntando as pastas de `results/` das várias máquinas numa só:
@@ -86,22 +86,36 @@ outro host, apontando para a máquina do experimento.
 
 ## O que é gerado em `logs/`
 
+O coletor grava só **valores brutos** (contadores acumulados do kernel, kB, ns, uma linha por
+instância de processo), um CSV por métrica, todos com `date_time`. As contas (CPU em %, taxas de
+disco, soma das instâncias de cada processo, MB/GB, energia por intervalo) são feitas em
+`plot/metrics.py`, que `plot_data.py`, `mannkendall.py` e `theilsen.py` usam. Contadores
+acumulados vêm com `uptime_s`, o relógio usado nas taxas.
+
 | Arquivo | Conteúdo |
 |---|---|
-| `cpu.csv`, `memory.csv`, `disk.csv`, `disk_write_read.csv`, `process.csv` | recursos da máquina (mpstat, free, df, iostat, zumbis) |
-| `<processo>.csv` | CPU, memória, threads e swap de cada processo do runtime (dockerd, containerd, conmon, …) |
-| `<container>.csv` | tempos de cada etapa do ciclo de vida (carregar imagem, subir, parar, remover) |
+| `cpu.csv` | linha `cpu` do `/proc/stat` (ticks acumulados: user, nice, system, idle, iowait, ...) |
+| `memory.csv` | campos do `/proc/meminfo` (kB) |
+| `disk.csv` | `statvfs("/")`: tamanho do bloco, blocos totais, livres e disponíveis |
+| `disk_io.csv` | os 17 campos do `/proc/diskstats` do disco monitorado |
+| `processes.csv` | uma linha por instância de cada processo monitorado (`monitoring.processes`): pid, início, utime/stime em ticks, threads, VSZ, RSS e swap (kB) |
+| `zombies.csv` | quantidade de processos zumbis |
+| `kernel.csv` | mensagens novas do kernel sobre processos mortos (`killed`) e OOM (`oom`) |
+| `lifecycle.csv` | tempo (ns) de cada etapa do ciclo de vida de cada container (carregar imagem, subir, parar, remover) |
 | `fragmentation_*.csv` | fragmentação de memória (systemtap, `fragmentation.stp`) |
-| `killed.csv`, `omm.csv` | mensagens novas do kernel sobre processos mortos e OOM |
-| `energy_rapl.csv`, `energy_smart_plug.csv` | energia, quando habilitada |
+| `energy_rapl.csv`, `cpu_temp.csv`, `energy_smart_plug.csv` | contadores RAPL (`energy_uj` e o máximo, para a volta do contador), temperatura do pacote (m°C) e potência da tomada (mW), quando habilitados |
 | `errors.csv` | falhas ao subir, matar ou remover containers |
-| `monitoring_cost.csv` | CPU de cada parte do coletor (threads + comandos que elas executam), acumulada e em % de um núcleo |
-| `collector.csv` | processo coletor inteiro: CPU, RSS, VSZ e threads; `monitoring_cpu_pct` é o custo só do monitoramento |
+| `monitoring_cost.csv` | CPU acumulada de cada parte do coletor (threads + comandos que elas executam) |
+| `collector.csv` | processo coletor inteiro: CPU acumulada própria e dos comandos, RSS, VSZ e threads |
+| `qtd_containers.csv` | containers criados e removidos por cada thread de estresse |
 | `rejuvenation.csv`, `runs.csv` | aplicações do rejuvenescimento; início de cada fase (stress, sleep, rejuvenation) |
 | `collector.log` | logs do coletor (com `logging.to_file`) |
 | `config.yaml` | cópia do config usado na execução |
-| `raw/` | valores brutos (com `monitoring.raw_values`): contadores do `/proc` de onde saem CPU, memória, disco e processos (uma linha por instância), com o mesmo `date_time` das métricas |
-| `environment.txt`, `build-manifest.txt` | sistema, kernel e versões exatas do que foi compilado |
+| `environment.txt`, `build-manifest.txt` | sistema, kernel, `CLK_TCK` (usado nas contas de CPU dos processos) e versões exatas do que foi compilado |
+
+Para uma **métrica nova**: um leitor e um método em `MachineMetrics` (`src/monitoring.py`), com
+uma entrada em `MachineMetrics.METRICS`; a conta em `plot/metrics.py`; e uma linha em `PLOTS`
+(`plot/plot_data.py`).
 
 ## Organização
 
@@ -109,22 +123,17 @@ outro host, apontando para a máquina do experimento.
 main.py                 ponto de entrada: lê o config, roda o experimento e gera os gráficos
 config.yaml             parâmetros do experimento
 src/
-  config.py             leitura e validação do config.yaml
-  environment.py        fluxo principal: limpa, sobe o TeaStore, monitora, aplica o estresse
-  runtime.py            comandos do Docker/Podman e detecção do runtime e do disco
-  lifecycle.py          subir, parar e remover um container (com tentativas)
+  config.py             leitura do config.yaml
+  environment.py        fluxo principal (limpa, imagens, TeaStore, monitora, estresse) e rejuvenescimento
+  runtime.py            comandos do Docker/Podman, nome do cenário e ciclo de vida de um container
   stressload.py         ciclos de estresse: vários containers em paralelo
-  monitoring.py         threads de coleta (máquina, processos, kernel, fragmentação, energia, custo)
-  rejuvenation.py       métodos de rejuvenescimento (troque em rejuvenation.method)
-  activity.py           partes do sistema, comandos em andamento e CPU de cada parte
+  monitoring.py         leituras de /proc e /sys e as threads de coleta (máquina, processos, kernel,
+                        ciclo de vida, fragmentação, energia, custo)
+  activity.py           partes do sistema, comandos em andamento, CPU de cada parte e parada (Ctrl+C)
   console.py            terminal interativo (threads, comandos, status, custo)
-  logsetup.py           níveis e destino dos logs
-  energy.py             leitura do RAPL e do smart plug
-  images.py             baixa as imagens e salva os .tar usados no monitoramento e no estresse
-  utils.py              execução de comandos e escrita dos CSVs
+  utils.py              logs, execução de comandos e escrita dos CSVs
 start_teastore.sh       sobe a aplicação TeaStore
 fragmentation.stp       script systemtap de fragmentação de memória
 install/                instalador (versões fixas, compilação do fonte)
-plot/                   análise e gráficos dos resultados
-tools/                  hardware falso (RAPL e smart plug) para testar a coleta de energia
+plot/                   contas sobre os dados brutos (metrics.py), gráficos e análises
 ```

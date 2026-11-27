@@ -17,6 +17,7 @@ PKGS_MONITORING=(sysstat procps-ng util-linux gcc make)
 PKGS_KERNEL_HEADERS=("kernel-devel-$KERNEL_VERSION")
 PKGS_DOCKER=(iptables-nft)
 PKGS_PODMAN=(iptables-nft)
+PKGS_NFTABLES=(nftables)
 
 # ---- pacotes so de compilacao (removidos no final) ---------------------------------------
 BUILD_COMMON=(git-core curl xz make gcc gcc-c++ glibc-static pkgconf-pkg-config autoconf automake libtool)
@@ -29,3 +30,10 @@ install_kernel_debug_symbols() {
   pkg_install dnf-plugins-core
   dnf -y -q debuginfo-install "kernel-core-$KERNEL_VERSION"
 }
+
+# Runtimes de container da distro, removidos antes de instalar os compilados
+# (container-selinux fica: e' a politica SELinux que os containers precisam).
+DISTRO_RUNTIME_PKGS=(podman podman-docker podman-remote podman-sequoia podman-plugins podman-compose
+  crun conmon netavark aardvark-dns catatonit containers-common containers-common-extra
+  buildah skopeo toolbox containernetworking-plugins
+  moby-engine docker-cli docker-ce docker-ce-cli docker-buildx docker-compose containerd containerd.io runc)

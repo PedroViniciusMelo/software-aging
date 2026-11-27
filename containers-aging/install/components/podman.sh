@@ -5,6 +5,7 @@
 PODMAN_LIBEXEC=/usr/local/libexec/podman
 
 # Mesmo conjunto de recursos em todas as distros (sem deteccao automatica do Makefile).
+# Padrao das versoes 5.x; o arquivo versions/podman-<versao>.env pode redefinir.
 PODMAN_BUILDTAGS="apparmor selinux seccomp systemd exclude_graphdriver_btrfs exclude_graphdriver_devicemapper"
 
 podman_build_deps() { echo "${BUILD_PODMAN[@]}"; }
@@ -53,7 +54,7 @@ install_podman() {
 
   manifest_add "podman=$PODMAN_REF@$PODMAN_COMMIT buildtags=\"$PODMAN_BUILDTAGS\""
   manifest_add "crun=$CRUN_VERSION conmon=$CONMON_REF@$CONMON_COMMIT catatonit=$CATATONIT_REF@$CATATONIT_COMMIT"
-  manifest_add "netavark=$NETAVARK_REF@$NETAVARK_COMMIT aardvark-dns=$AARDVARK_REF@$AARDVARK_COMMIT"
+  manifest_add "netavark=$NETAVARK_REF@$NETAVARK_COMMIT aardvark-dns=$AARDVARK_REF@$AARDVARK_COMMIT firewall=${NETAVARK_FIREWALL_DRIVER:-auto}"
   manifest_add "podman_go=$GO_VERSION podman_rust=$RUST_VERSION"
 
   has_systemd && systemctl daemon-reload
@@ -80,6 +81,10 @@ init_path = "$PODMAN_LIBEXEC/catatonit"
 runtime = "crun"
 helper_binaries_dir = ["$PODMAN_LIBEXEC"]
 EOF
+  # netavark >= 2 so' tem o driver nftables; fixa-lo evita depender da deteccao automatica.
+  if [ -n "${NETAVARK_FIREWALL_DRIVER:-}" ] && ! grep -q '^\[network\]' /etc/containers/containers.conf; then
+    printf '\n[network]\nfirewall_driver = "%s"\n' "$NETAVARK_FIREWALL_DRIVER" >> /etc/containers/containers.conf
+  fi
   [ -f /etc/containers/storage.conf ] || cat > /etc/containers/storage.conf << 'EOF'
 [storage]
 driver = "overlay"

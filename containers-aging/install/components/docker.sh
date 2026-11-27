@@ -17,7 +17,7 @@ install_docker() {
 
   log "runc $RUNC_REF"
   fetch_git "$RUNC_REPO" "$RUNC_REF" "$RUNC_COMMIT" "$src/runc"
-  make -C "$src/runc" COMMIT="$RUNC_COMMIT"
+  make -C "$src/runc" COMMIT="$RUNC_COMMIT" RUNC_BUILDTAGS="${RUNC_BUILDTAGS:-}"
   make -C "$src/runc" PREFIX=/usr/local install
 
   log "tini $TINI_REF (docker-init)"
@@ -26,11 +26,13 @@ install_docker() {
   (cd "$src/tini" && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 . > /dev/null && make tini-static)
   install -m 755 "$src/tini/tini-static" /usr/local/bin/docker-init
 
-  # moby e cli ainda usam vendor.mod + GOPATH (sem go.mod) nesta versao.
+  # Ate a v28 o moby usa vendor.mod + GOPATH (sem go.mod); a partir da v29 e' um modulo Go.
+  # O cli usa vendor.mod + GOPATH em todas as versoes suportadas (o script dele ja' faz isso).
   log "moby $MOBY_REF (dockerd, docker-proxy)"
-  local moby="$GOPATH/src/github.com/docker/docker"
+  local moby="$GOPATH/src/github.com/docker/docker" moby_gomod=off
   fetch_git "$MOBY_REPO" "$MOBY_REF" "$MOBY_COMMIT" "$moby"
-  (cd "$moby" && GO111MODULE=off VERSION="$DOCKER_VERSION" DOCKER_GITCOMMIT="${MOBY_COMMIT:0:7}" \
+  [ -f "$moby/go.mod" ] && moby_gomod=on
+  (cd "$moby" && GO111MODULE="$moby_gomod" VERSION="$DOCKER_VERSION" DOCKER_GITCOMMIT="${MOBY_COMMIT:0:7}" \
     DOCKER_BUILDTAGS="exclude_graphdriver_btrfs exclude_graphdriver_devicemapper" hack/make.sh dynbinary)
   install -m 755 "$moby/bundles/dynbinary-daemon/dockerd" /usr/local/bin/dockerd
   install -m 755 "$moby/bundles/dynbinary-daemon/docker-proxy" /usr/local/bin/docker-proxy
@@ -48,7 +50,7 @@ install_docker() {
   keep_runtime_libs_of /usr/local/bin/{containerd,containerd-shim-runc-v2,dockerd,docker-proxy,docker} /usr/local/sbin/runc
 
   manifest_add "docker=$DOCKER_VERSION moby=$MOBY_REF@$MOBY_COMMIT cli=$CLI_REF@$CLI_COMMIT"
-  manifest_add "containerd=$CONTAINERD_REF@$CONTAINERD_COMMIT runc=$RUNC_REF@$RUNC_COMMIT tini=$TINI_REF@$TINI_COMMIT"
+  manifest_add "containerd=$CONTAINERD_REF@$CONTAINERD_COMMIT runc=$RUNC_REF@$RUNC_COMMIT runc_buildtags=\"${RUNC_BUILDTAGS:-}\" tini=$TINI_REF@$TINI_COMMIT"
   manifest_add "docker_go=$GO_VERSION"
 
   if has_systemd; then

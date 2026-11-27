@@ -3,10 +3,9 @@ import random
 import threading
 from datetime import datetime, timedelta
 
-from src import activity, shutdown
+from src import activity
 from src.config import ContainerConfig, LifecycleConfig, StressloadConfig
-from src.lifecycle import ContainerLifecycle
-from src.runtime import ContainerRuntime
+from src.runtime import ContainerLifecycle, ContainerRuntime
 from src.utils import current_time, execute_command, log, log_error, write_csv_row
 
 
@@ -55,7 +54,7 @@ class StressLoad:
         execute_command(self.runtime.load_image(f"{self.scripts_folder}/temp_{container.name}.tar"))
 
         qtd_container = 0
-        while datetime.now() < max_date and not shutdown.stopping():
+        while datetime.now() < max_date and not activity.stopping():
             exec_runs = random.randint(self.config.min_lifecycle_runs, self.config.max_lifecycle_runs)
             results = run_in_threads([
                 (f"stressload_{container.name}_{index}", self.container_stressload,
@@ -64,10 +63,8 @@ class StressLoad:
             ])
             for result in results:
                 qtd_container += result or 0  # None: o lote terminou com erro inesperado
-            log.debug("Stressload %s: %d parallel batches done, %d containers so far",
-                      container.name, exec_runs, qtd_container)
         log.info("Stressload %s finished%s: %d containers created and removed", container.name,
-                 " (stop requested)" if shutdown.stopping() else "", qtd_container)
+                 " (stop requested)" if activity.stopping() else "", qtd_container)
 
         write_csv_row(f"{self.logs_path}/qtd_containers.csv", "thread;qtd_containers;date",
                       container.name, qtd_container, current_time())
@@ -79,13 +76,13 @@ class StressLoad:
 
         image_name = f"temp_{container.name}"
         activity.waiting(sleep_time, "waiting before batch")
-        if shutdown.wait(sleep_time):
+        if activity.wait(sleep_time):
             return 0
 
         errors = 0
         done = 0
         for i in range(qtt_containers):
-            if shutdown.stopping():  # termina o container atual, mas nao comeca outro
+            if activity.stopping():  # termina o container atual, mas nao comeca outro
                 break
             container_name = f"{image_name}-{run}-{i}"
             done += 1
@@ -94,7 +91,7 @@ class StressLoad:
                 log.warning("Could not start container %s, skipping it", container_name)
                 log_error(self.logs_path, "start", image_name, current_time())
                 execute_command(self.runtime.force_remove(container_name), continue_if_error=True,
-                                error_informative=False)
+                                warn_on_error=False)
                 errors += 1
                 continue
 

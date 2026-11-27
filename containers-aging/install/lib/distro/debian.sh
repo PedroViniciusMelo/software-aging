@@ -27,6 +27,7 @@ PKGS_MONITORING=(sysstat procps util-linux gcc make)
 PKGS_KERNEL_HEADERS=("linux-headers-$KERNEL_VERSION")
 PKGS_DOCKER=(iptables)
 PKGS_PODMAN=(iptables)
+PKGS_NFTABLES=(nftables)
 
 # ---- pacotes so' de compilacao (removidos no final) ---------------------------------------
 BUILD_COMMON=(git curl xz-utils make gcc g++ libc6-dev pkg-config autoconf automake libtool)
@@ -49,3 +50,8 @@ install_kernel_debug_symbols() {
     pkg_install "linux-image-$KERNEL_VERSION-dbg"
   fi
 }
+
+# Runtimes de container da distro, removidos antes de instalar os compilados.
+DISTRO_RUNTIME_PKGS=(podman podman-docker crun conmon netavark aardvark-dns catatonit buildah skopeo
+  golang-github-containers-common golang-github-containers-image containernetworking-plugins
+  docker.io docker-cli docker-ce docker-ce-cli docker-buildx docker-compose containerd containerd.io runc)

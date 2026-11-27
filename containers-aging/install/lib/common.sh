@@ -101,3 +101,18 @@ build_deps_end() {
   fi
   BUILD_DEPS_SNAPSHOT=""
 }
+
+# Runtimes de pacote da distro (ex.: o podman que vem no Fedora Server) sao removidos: os
+# compilados sempre tem prioridade, e o sistema base fica igual nos cenarios Docker e Podman
+# (sem outro binario no PATH, outro conmon/crun ou a configuracao do containers-common).
+# A lista fica em DISTRO_RUNTIME_PKGS (lib/distro/<familia>.sh); so' remove o que estiver instalado.
+remove_distro_runtime_packages() {
+  local installed
+  installed="$(pkg_list_installed | sort -u | grep -xF -f <(printf '%s\n' "${DISTRO_RUNTIME_PKGS[@]}"))" || true
+  [ -n "$installed" ] || return 0
+  log "Removendo runtimes de container da distro: $(echo $installed)"
+  has_systemd && systemctl disable --now docker.socket docker.service containerd.service \
+    podman.socket podman.service > /dev/null 2>&1 || true
+  # shellcheck disable=SC2086
+  pkg_remove $installed
+}

@@ -2,7 +2,7 @@
 Console interativo: digite comandos no terminal enquanto o experimento roda.
 
 Fica bloqueado lendo a entrada (sem consumir CPU) e so' le' /proc quando um comando pede.
-Liga com console.enabled no config.yaml; desliga sozinho se a entrada nao for um terminal
+Liga com logging.console no config.yaml; desliga sozinho se a entrada nao for um terminal
 (nohup, systemd, redirecionamento). Ctrl+C continua encerrando o experimento.
 """
 import sys
@@ -11,15 +11,14 @@ import time
 from datetime import datetime
 
 from src import activity
-from src.logsetup import level_name, set_level
-from src.utils import log
+from src.utils import log, log_level_name, set_log_level
 
 HELP = """Commands:
   threads  (t)   threads of each part of the system: TID, CPU, what each one is doing now
   children (c)   external commands running right now (docker, stap, dmesg...)
   status   (s)   experiment phase, run, rejuvenation and logging
   cost           last sample of the monitoring cost (CPU per part)
-  log <level>    change the logging level: debug | info | quiet
+  log <level>    change the logging level: info | quiet
   help     (h)   this help
   exit           close the console (the experiment keeps running)"""
 
@@ -156,7 +155,7 @@ class Console:
             f"Expected end: {status.expected_end:%Y-%m-%d %H:%M:%S}" if status.expected_end else "Expected end: -",
             f"Rejuvenation: {status.rejuvenation}",
             f"Monitoring:   {'running' if self.monitoring.running else 'stopped'}",
-            f"Logging:      {level_name()}",
+            f"Logging:      {log_level_name()}",
         ]
         return "\n".join(lines)
 
@@ -174,6 +173,6 @@ class Console:
 
     @staticmethod
     def log_level(*args):
-        if args and set_level(args[0]):
+        if args and set_log_level(args[0]):
             return f"Logging level: {args[0]}"
-        return f"Logging level: {level_name()}. Use: log debug | info | quiet"
+        return f"Logging level: {log_level_name()}. Use: log info | quiet"
